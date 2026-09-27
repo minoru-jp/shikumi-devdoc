@@ -2,6 +2,18 @@
 
 This changelog records the versioned change history of `shikumi-devdoc`. Development milestones that were not published are explicitly identified as such.
 
+## V0_3_1
+
+This release clarifies the roles of the distribution artifacts and makes the sdist a complete source distribution sufficient to reconstruct and verify the release.
+
+version: 0.3.1
+
+Changed:
+
+- Changed sdist file selection in `pyproject.toml` from an explicit `include` list to a policy that respects VCS ignore rules and explicitly excludes only repository-operation content. The resulting release source includes `src/`, `tests/`, `devdocs/`, `docs/`, `scripts/`, plus the root release documents and build metadata.
+- Made `scripts/check_dist.py` required sdist content and updated the distribution contract so the sdist itself can be used to re-run build, archive-content, installation, CLI, `pip check`, and dogfood-rendering verification.
+- Kept the wheel role unchanged: it contains the implementation, the `devdocs/` reference corpus, and the published README, Project Status, CHANGELOG, and `docs/` as package resources.
+
 ## V0_3_0
 
 This release unifies the dedicated developer-document systems into a generic canonical-document model with author-defined field vocabularies.

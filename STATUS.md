@@ -8,7 +8,7 @@ This document is authored with the unified canonical-document model and the stan
 
 title: Development stage
 
-Current development stage: Beta. Current public version: `0.3.0`.
+Current development stage: Beta. Current public version: `0.3.1`.
 
 ## STATUS_002
 
@@ -20,7 +20,7 @@ Current supported Python range: `>=3.11`.
 
 title: Shikumi compatibility
 
-`shikumi-devdoc 0.3.0` requires `shikumi>=0.2.0`, establishing Shikumi 0.2.0 as the compatibility baseline after the breaking-change release. Because Shikumi's policy from 0.2.0 onward is to preserve backward compatibility, no upper bound is imposed unless a concrete incompatibility is identified.
+`shikumi-devdoc 0.3.1` requires `shikumi>=0.2.0`. The compatibility baseline was established by the breaking 0.3.0 release. Because Shikumi's policy from 0.2.0 onward is to preserve backward compatibility, no upper bound is imposed unless a concrete incompatibility is identified.
 
 ## STATUS_004
 

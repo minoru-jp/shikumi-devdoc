@@ -1,6 +1,6 @@
 # Distribution
 
-Rules for documentation assets included in the wheel and their status.
+Rules for documentation assets in the wheel and release-source contents in the sdist.
 
 ## DIST_001 Installed reference corpus
 
@@ -49,3 +49,16 @@ level: MUST
 Standard realizers and public artifact values must be grouped under `shikumi_devdoc.realizers.<domain>`, where contextually sufficient short names such as `MarkdownRealizer` may be used within each domain.
 
 level: MUST
+
+## DIST_009 Complete release source in sdist
+
+The sdist must contain the release source required to build, test, regenerate documentation, and verify the distribution. At minimum, it must include the implementation, tests, `devdocs/`, published `docs/`, `scripts/`, root published documents, license, and build metadata.
+
+level: MUST
+
+## DIST_010 Repository-operation files are outside sdist
+
+The sdist must not require configuration used only for repository operations such as Git hosting or hosted CI. Repository-operation-only paths such as `.github/` may be excluded, and VCS-ignored caches, virtual environments, build artifacts, and IDE metadata must not be distributed.
+
+level: MUST NOT
+

@@ -10,4 +10,4 @@
 | [Domain field vocabularies](api-reference.md) | Rules for composing domain-specific documentation from standard or author-defined fields. |
 | [Rendering](rendering.md) | Rules for Markdown realization, realization context, and the canonical-document boundary. |
 | [Command-line interface](cli.md) | Input and output rules for the `shikumi-devdoc` CLI. |
-| [Distribution](distribution.md) | Rules for documentation assets distributed in the wheel. |
+| [Distribution](distribution.md) | Rules for documentation assets in the wheel and release-source contents in the sdist. |

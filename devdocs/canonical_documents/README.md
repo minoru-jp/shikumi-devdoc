@@ -127,7 +127,7 @@ docstring、`prose_field`、`title @= ...` は template-bearing content とし�
 
 ## バージョン
 
-現在のバージョンは `0.3.0`。Python `>=3.11` を対象とする。現在の開発段階や今後の方向は [`STATUS.md`](STATUS.md) を参照する。
+現在のバージョンは `0.3.1`。Python `>=3.11` を対象とする。現在の開発段階や今後の方向は [`STATUS.md`](STATUS.md) を参照する。
 
 ## ライセンス
 

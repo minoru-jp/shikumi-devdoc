@@ -25,4 +25,4 @@ Canonical source は `devdocs/canonical_sources/specification/__init__.py` で�
 | [Domain field vocabularies](api-reference.md) | ドメイン固有記述を標準または作者定義 field で構成する規則。 |
 | [Rendering](rendering.md) | Markdown 実現、realization context、canonical document 境界に関する規則。 |
 | [Command-line interface](cli.md) | `shikumi-devdoc` CLI の入出力規則。 |
-| [Distribution](distribution.md) | wheel に含める文書資産とその位置づけに関する規則。 |
+| [Distribution](distribution.md) | wheel の文書資産と、sdist のリリースソース構成に関する規則。 |

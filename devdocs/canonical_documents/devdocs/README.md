@@ -184,3 +184,9 @@ published document は canonical document から利用者ごとの publication w
 `devdocs/` 全体は canonical source と canonical document を対にして読める参照コーパスとして wheel に含める。インストール後は `shikumi_devdoc/resources/devdocs/` に配置される。
 
 同じ wheel には、その版でこのリポジトリが用意した published `README.md`、`STATUS.md`、`CHANGELOG.md`、`docs/` も `shikumi_devdoc/resources/published_docs/` に含める。これはこのリポジトリの配布方針であり、`shikumi-devdoc` が一般に publication workflow を規定することを意味しない。これらは importable public API ではなく package resource である。MIT License 本文は `license-files` による通常の wheel license metadata として配布する。
+
+## sdist での配布
+
+sdist はこの版のリリースソースを再構成・検証するための完全な source distribution とする。実装だけでなく、`tests/`、`devdocs/`、公開 `docs/`、`scripts/`、ルートの公開文書、license、build metadata を含める。`scripts/check_dist.py` 自体も sdist に含め、取得した source distribution から同じ distribution verification を再実行できるようにする。
+
+file selection は個別ファイルを列挙するのではなく、Hatchling が VCS ignore を尊重する既定動作を基礎に、原則としてリリースソース全体を収録する。Git hosting や hosted CI など repository operation にだけ必要な `.github/` は明示的に除外する。cache、virtual environment、`dist/`、IDE metadata など開発機固有または生成済みの一時物は `.gitignore` により配布対象から除外する。

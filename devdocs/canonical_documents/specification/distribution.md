@@ -15,7 +15,7 @@ Canonical source は `devdocs/canonical_sources/specification/__init__.py` で�
 
 # Distribution
 
-wheel に含める文書資産と、その位置づけに関する規則。
+wheel に含める文書資産と、sdist に含めるリリースソースに関する規則。
 
 ## DIST_001
 
@@ -80,3 +80,19 @@ level: MUST
 title: Namespaced realizer surface
 
 level: MUST
+
+## DIST_009
+
+sdist は、そのリリースを build・test・文書再生成・distribution verification できるリリースソースを含めなければならない。少なくとも実装、テスト、`devdocs/`、公開 `docs/`、`scripts/`、ルートの公開文書、license、build metadata を含める。
+
+title: Complete release source in sdist
+
+level: MUST
+
+## DIST_010
+
+sdist は Git hosting や hosted CI などリポジトリ運用にだけ必要な設定をリリースソースとして要求してはならない。`.github/` のような repository-operation-only path は除外してよく、VCS ignore 対象の cache、virtual environment、build artifact、IDE metadata は配布してはならない。
+
+title: Repository-operation files are outside sdist
+
+level: MUST NOT

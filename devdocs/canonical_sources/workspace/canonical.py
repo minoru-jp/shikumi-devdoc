@@ -234,3 +234,12 @@ class SECTION_001:
         merge @= TERMS.TERM_001
         merge @= TERMS.TERM_002
         merge @= TERMS.TERM_004
+
+    class SECTION_010:
+        r"""
+        sdist はこの版のリリースソースを再構成・検証するための完全な source distribution とする。実装だけでなく、`tests/`、`devdocs/`、公開 `docs/`、`scripts/`、ルートの公開文書、license、build metadata を含める。`scripts/check_dist.py` 自体も sdist に含め、取得した source distribution から同じ distribution verification を再実行できるようにする。
+
+        file selection は個別ファイルを列挙するのではなく、Hatchling が VCS ignore を尊重する既定動作を基礎に、原則としてリリースソース全体を収録する。Git hosting や hosted CI など repository operation にだけ必要な `.github/` は明示的に除外する。cache、virtual environment、`dist/`、IDE metadata など開発機固有または生成済みの一時物は `.gitignore` により配布対象から除外する。
+        """
+        title @= "sdist での配布"
+

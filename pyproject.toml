@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "shikumi-devdoc"
-version = "0.3.0"
+version = "0.3.1"
 description = "Reusable Shikumi regulations and Markdown realizers for developer-facing project documents."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -51,14 +51,6 @@ packages = ["src/shikumi_devdoc"]
 "docs" = "shikumi_devdoc/resources/published_docs/docs"
 
 [tool.hatch.build.targets.sdist]
-include = [
-  "/src/shikumi_devdoc",
-  "/tests",
-  "/devdocs",
-  "/docs",
-  "/README.md",
-  "/CHANGELOG.md",
-  "/STATUS.md",
-  "/LICENSE",
-  "/pyproject.toml",
+exclude = [
+  "/.github",
 ]

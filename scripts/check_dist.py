@@ -41,6 +41,7 @@ REQUIRED_SDIST_SUFFIXES = {
     "CHANGELOG.md",
     "LICENSE",
     "pyproject.toml",
+    "scripts/check_dist.py",
 }
 
 FORBIDDEN_ARCHIVE_PARTS = {".github", "__pycache__", ".pytest_cache"}

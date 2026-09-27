@@ -17,6 +17,15 @@ from shikumi_devdoc.norms.common import canonical_source
 class CHANGELOG:
     """`shikumi-devdoc` の versioned change history を記録する。公開されなかった開発 milestone はその旨を明記する。"""
 
+    class V0_3_1:
+        """配布物の役割を整理し、sdist をリリース再構成・検証に十分な完全なソース配布物へ変更した。"""
+
+        version @= "0.3.1"
+
+        changed @= '`pyproject.toml` の sdist file selection を個別 `include` 列挙から、VCS ignore を尊重しつつリポジトリ運用物だけを明示的に除外する方式へ変更した。これにより `src/`、`tests/`、`devdocs/`、`docs/`、`scripts/` とルートのリリース文書・build metadata を一つのリリースソースとして配布する。'
+        changed @= '`scripts/check_dist.py` を sdist の必須内容として扱い、sdist 自身から build・archive 内容・install・CLI・`pip check`・dogfood rendering を再検証できる配布契約へ更新した。'
+        changed @= 'wheel は従来どおり実装、`devdocs/` 参照コーパス、公開 README / Project Status / CHANGELOG / `docs/` を package resource として含める役割を維持する。'
+
     class V0_3_0:
         """開発文書の専用文書型を汎用 canonical document model と作者定義 field vocabulary へ統合した破壊的変更。"""
 

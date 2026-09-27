@@ -165,3 +165,9 @@ This repository translates the Japanese canonical documents into English and pla
 The complete `devdocs/` tree is included in the wheel as a reference corpus under `shikumi_devdoc/resources/devdocs/`. Published README, STATUS, CHANGELOG, and `docs/` are included separately under `shikumi_devdoc/resources/published_docs/`.
 
 These resources are not importable public API. The MIT License is distributed through normal wheel license metadata.
+
+## Distribution in the sdist
+
+The sdist is a complete source distribution for reconstructing and verifying this release. In addition to the implementation, it includes `tests/`, `devdocs/`, published `docs/`, `scripts/`, root published documents, the license, and build metadata. `scripts/check_dist.py` itself is included so the same distribution verification can be re-run from the downloaded source distribution.
+
+File selection does not enumerate every included path. Instead, it relies on Hatchling's default behavior of respecting VCS ignore rules and includes the release source by default. Repository-operation-only content such as `.github/` is explicitly excluded. Caches, virtual environments, `dist/`, IDE metadata, and other local or generated artifacts remain excluded by `.gitignore`.

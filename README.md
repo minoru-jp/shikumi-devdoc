@@ -112,7 +112,7 @@ English published documents at the repository root and under `docs/` are produce
 
 ## Version
 
-Current version: `0.3.0`. Supported Python: `>=3.11`. See [`STATUS.md`](STATUS.md) for the current development stage and notices.
+Current version: `0.3.1`. Supported Python: `>=3.11`. See [`STATUS.md`](STATUS.md) for the current development stage and notices.
 
 ## License
 

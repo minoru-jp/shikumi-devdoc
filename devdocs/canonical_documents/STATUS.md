@@ -22,7 +22,7 @@ Canonical source は `devdocs/canonical_sources/status/canonical.py` です。
 
 ## STATUS_001
 
-現在の開発段階は Beta。現在の公開バージョンは `0.3.0`。
+現在の開発段階は Beta。現在の公開バージョンは `0.3.1`。
 
 title: Development stage
 
@@ -34,7 +34,7 @@ title: Supported Python
 
 ## STATUS_003
 
-`shikumi-devdoc 0.3.0` は破壊的変更後の基準として `shikumi>=0.2.0` を要求する。Shikumi 0.2.0 以降は後方互換性を維持する方針のため、既知の非互換性がない限り上限は設けない。
+`shikumi-devdoc 0.3.1` は `shikumi>=0.2.0` を要求する。互換性の基準線は破壊的変更を行った 0.3.0 で確立した。Shikumi 0.2.0 以降は後方互換性を維持する方針のため、既知の非互換性がない限り上限は設けない。
 
 title: Shikumi compatibility
 

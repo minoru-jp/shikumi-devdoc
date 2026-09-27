@@ -4,10 +4,10 @@ from devdocs.canonical_sources.vocabulary.canonical import TERMS
 from shikumi_devdoc.norms.common import canonical_source, merge, summary
 from shikumi_devdoc.norms.document import title
 
-@summary('wheel に含める文書資産とその位置づけに関する規則。')
+@summary('wheel の文書資産と、sdist のリリースソース構成に関する規則。')
 @canonical_source('Distribution', filename='distribution.md', order=90, placeholders=True, heading="identity")
 class SPECIFICATION_PART:
-    """wheel に含める文書資産と、その位置づけに関する規則。"""
+    """wheel に含める文書資産と、sdist に含めるリリースソースに関する規則。"""
 
     class DIST_001:
         """wheel は `devdocs/` 全体を `shikumi_devdoc/resources/devdocs/` に参照コーパスとして含めなければならない。"""
@@ -52,3 +52,13 @@ class SPECIFICATION_PART:
         """標準 Realizer と公開成果物値は `shikumi_devdoc.realizers.<domain>` に分類し、各 domain 内では `MarkdownRealizer` など文脈上十分な短い名前を利用できなければならない。"""
         title @= 'Namespaced realizer surface'
         level @= MUST
+    class DIST_009:
+        """sdist は、そのリリースを build・test・文書再生成・distribution verification できるリリースソースを含めなければならない。少なくとも実装、テスト、`devdocs/`、公開 `docs/`、`scripts/`、ルートの公開文書、license、build metadata を含める。"""
+        title @= 'Complete release source in sdist'
+        level @= MUST
+
+    class DIST_010:
+        """sdist は Git hosting や hosted CI などリポジトリ運用にだけ必要な設定をリリースソースとして要求してはならない。`.github/` のような repository-operation-only path は除外してよく、VCS ignore 対象の cache、virtual environment、build artifact、IDE metadata は配布してはならない。"""
+        title @= 'Repository-operation files are outside sdist'
+        level @= MUST_NOT
+

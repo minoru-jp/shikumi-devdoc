@@ -11,10 +11,13 @@ def test_test_extra_declares_pytest() -> None:
     assert project["optional-dependencies"]["test"] == ["pytest>=8.0"]
 
 
-def test_sdist_contains_test_sources_and_build_metadata() -> None:
+def test_sdist_uses_release_source_snapshot_policy() -> None:
     sdist = _pyproject()["tool"]["hatch"]["build"]["targets"]["sdist"]
-    assert "/tests" in sdist["include"]
-    assert "/pyproject.toml" in sdist["include"]
+    assert "include" not in sdist
+    assert sdist["exclude"] == ["/.github"]
+
+    for path in ("src", "tests", "devdocs", "docs", "scripts"):
+        assert Path(path).exists()
 
 
 def test_runtime_dependency_targets_shikumi_0_2_or_newer() -> None:
