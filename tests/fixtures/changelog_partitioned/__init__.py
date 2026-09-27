@@ -1,1 +1,0 @@
-"""Partitioned changelog fixture."""

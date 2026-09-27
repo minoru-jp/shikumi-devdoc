@@ -1,0 +1,1 @@
+"""Canonical Authoring Guide collection."""

@@ -2,15 +2,19 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import json
 from types import ModuleType
 
-from shikumi import Diagnostic, RealizationCheck, Realizer, SemanticView
+from shikumi import Diagnostic, RealizationCheck, Realizer, SemanticView, information_of
 
-from shikumi_devdoc.norms.common import VocabularySource
-from shikumi_devdoc.norms.vocabulary import PreserveSpelling, TermName, vocabulary_system
+from shikumi_devdoc.norms._common import MergeBinding
+from shikumi_devdoc.norms._vocabulary import (
+    PreserveSpelling,
+    TermName,
+    canonical_vocabulary_term,
+)
+from .markdown_document import MarkdownDocument
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,14 +50,13 @@ class TranslationManifest:
         return json.dumps(payload, ensure_ascii=False, indent=2)
 
 
-class TranslationSourceRealizer(Realizer[str]):
-    """Wrap a Markdown realizer and embed translation-relevant semantics.
+MarkdownRealization = str | MarkdownDocument | tuple[MarkdownDocument, ...]
 
-    The wrapped realizer remains responsible for document rendering. This wrapper
-    only carries semantic policy that would otherwise disappear after realization.
-    """
 
-    def __init__(self, markdown_realizer: Realizer[str]) -> None:
+class TranslationSourceRealizer(Realizer[MarkdownRealization]):
+    """Wrap a Markdown realizer and embed translation-relevant semantics."""
+
+    def __init__(self, markdown_realizer: Realizer) -> None:
         self.markdown_realizer = markdown_realizer
 
     def check(self, view: SemanticView) -> RealizationCheck:
@@ -61,55 +64,69 @@ class TranslationSourceRealizer(Realizer[str]):
         _, diagnostics = translation_manifest(view)
         return RealizationCheck(view, (*base.diagnostics, *diagnostics))
 
-    def realize(self, view: SemanticView) -> str:
+    def realize(self, view: SemanticView) -> MarkdownRealization:
         rendered = self.markdown_realizer.realize(view)
         manifest, _ = translation_manifest(view)
         if not manifest.preserve_spelling:
             return rendered
-        return f"<!-- shikumi-devdoc:translation-metadata\n{manifest.to_json()}\n-->\n\n{rendered}"
+
+        def add_metadata(content: str) -> str:
+            return (
+                "<!-- shikumi-devdoc:translation-metadata\n"
+                f"{manifest.to_json()}\n"
+                "-->\n\n"
+                f"{content}"
+            )
+
+        if isinstance(rendered, str):
+            return add_metadata(rendered)
+        if isinstance(rendered, MarkdownDocument):
+            return replace(rendered, content=add_metadata(rendered.content))
+        return tuple(
+            replace(document, content=add_metadata(document.content))
+            for document in rendered
+        )
+
+
+def _information_values(subject: object, information_type) -> tuple[object, ...]:
+    return tuple(
+        record.value
+        for record in information_of(subject)
+        if record.type is information_type
+    )
+
+
+def _term_manifest_entry(target: object) -> PreserveSpellingTerm | None:
+    canonical = canonical_vocabulary_term(target)
+    if canonical is None:
+        return None
+    if _information_values(canonical, PreserveSpelling) != (True,):
+        return None
+    names = _information_values(canonical, TermName)
+    if len(names) != 1 or not isinstance(names[0], str):
+        return None
+    return PreserveSpellingTerm(
+        source=getattr(canonical, "__module__", "<vocabulary>"),
+        identifier=getattr(canonical, "__name__", "<term>"),
+        text=names[0],
+    )
 
 
 def translation_manifest(view: SemanticView) -> tuple[TranslationManifest, tuple[Diagnostic, ...]]:
-    """Collect translation policy from attached or directly viewed vocabularies."""
+    """Collect translation policy from direct Vocabulary views or merge targets.
 
-    sources = _unique_identity(
-        source
-        for item in view.entities
-        for source in item.values(VocabularySource)
-    )
+    A canonical document no longer attaches an entire Vocabulary. Translation
+    policy follows the Vocabulary term objects that are explicitly bound through
+    ``merge``. A direct Vocabulary view still exposes every preserve-spelling
+    term because the Vocabulary itself is the realization subject.
+    """
 
-    vocabulary_views: list[tuple[str, SemanticView]] = []
     diagnostics: list[Diagnostic] = []
-
-    if sources:
-        for source in sources:
-            try:
-                placement = () if isinstance(source, ModuleType) and not hasattr(source, "__path__") else None
-                result = vocabulary_system.validate(source, placement=placement)
-            except Exception as exc:
-                diagnostics.append(
-                    Diagnostic(
-                        f"translation vocabulary could not be interpreted: {exc}",
-                        code="translation.vocabulary.invalid",
-                    )
-                )
-                continue
-            if not result.is_valid:
-                diagnostics.append(
-                    Diagnostic(
-                        "translation vocabulary does not satisfy the vocabulary regulation",
-                        code="translation.vocabulary.invalid",
-                        subject=source,
-                    )
-                )
-                continue
-            vocabulary_views.append((getattr(source, "__name__", "<vocabulary>"), result.view))
-    elif any(item.has(TermName) for item in view.entities):
-        vocabulary_views.append((_view_source_name(view), view))
-
     preserved: list[PreserveSpellingTerm] = []
-    for source_name, vocabulary_view in vocabulary_views:
-        for item in vocabulary_view.entities:
+
+    if any(item.has(TermName) for item in view.entities):
+        source_name = _view_source_name(view)
+        for item in view.entities:
             if item.values(PreserveSpelling) != (True,):
                 continue
             names = item.values(TermName)
@@ -129,17 +146,23 @@ def translation_manifest(view: SemanticView) -> tuple[TranslationManifest, tuple
                     text=names[0],
                 )
             )
+    else:
+        seen: set[type[object]] = set()
+        for item in view.entities:
+            for binding in item.values(MergeBinding):
+                if not isinstance(binding, tuple) or len(binding) != 2:
+                    continue
+                target = binding[1]
+                canonical = canonical_vocabulary_term(target)
+                if canonical is None or canonical in seen:
+                    continue
+                seen.add(canonical)
+                entry = _term_manifest_entry(canonical)
+                if entry is not None:
+                    preserved.append(entry)
 
     preserved.sort(key=lambda term: (term.source, term.identifier, term.text))
     return TranslationManifest(tuple(preserved)), tuple(diagnostics)
-
-
-def _unique_identity(values: Iterable[ModuleType]) -> list[ModuleType]:
-    result: list[ModuleType] = []
-    for value in values:
-        if not any(existing is value for existing in result):
-            result.append(value)
-    return result
 
 
 def _view_source_name(view: SemanticView) -> str:

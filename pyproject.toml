@@ -4,14 +4,15 @@ build-backend = "hatchling.build"
 
 [project]
 name = "shikumi-devdoc"
-version = "0.1.0"
+version = "0.3.0"
 description = "Reusable Shikumi regulations and Markdown realizers for developer-facing project documents."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "minoru_jp" }]
-dependencies = ["shikumi>=0.1.0"]
+dependencies = ["shikumi>=0.2.0"]
+
 keywords = [
   "developer-documentation",
   "docs-as-code",
@@ -20,12 +21,16 @@ keywords = [
   "llm",
 ]
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 4 - Beta",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
 ]
+
+[project.optional-dependencies]
+test = ["pytest>=8.0"]
 
 [project.scripts]
 shikumi-devdoc = "shikumi_devdoc.cli:main"
@@ -38,12 +43,22 @@ pythonpath = ["src"]
 [tool.hatch.build.targets.wheel]
 packages = ["src/shikumi_devdoc"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"devdocs" = "shikumi_devdoc/resources/devdocs"
+"README.md" = "shikumi_devdoc/resources/published_docs/README.md"
+"STATUS.md" = "shikumi_devdoc/resources/published_docs/STATUS.md"
+"CHANGELOG.md" = "shikumi_devdoc/resources/published_docs/CHANGELOG.md"
+"docs" = "shikumi_devdoc/resources/published_docs/docs"
+
 [tool.hatch.build.targets.sdist]
 include = [
   "/src/shikumi_devdoc",
   "/tests",
+  "/devdocs",
+  "/docs",
   "/README.md",
   "/CHANGELOG.md",
+  "/STATUS.md",
   "/LICENSE",
   "/pyproject.toml",
 ]

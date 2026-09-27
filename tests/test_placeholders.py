@@ -1,5 +1,5 @@
 from tests.fixtures import document_literal_placeholders
-from shikumi_devdoc.norms.document import document
+from shikumi_devdoc.norms._document import document
 from shikumi_devdoc.realizers.document_markdown import MarkdownRealizer
 from shikumi_devdoc.realizers._placeholders import PlaceholderResolver
 
@@ -22,7 +22,29 @@ def test_literal_term_marker_is_not_a_vocabulary_reference() -> None:
     check = realizer.check(result.view)
     assert check.is_realizable, check.diagnostics
 
-    rendered = realizer.realize(result.view)
-    assert "`${{ matrix.os }}`" in rendered
-    assert "`{{TERM_1}}`" in rendered
-    assert "InternalName" in rendered
+    rendered = realizer.realize(result.view)[0]
+    assert "`${{ matrix.os }}`" in rendered.content
+    assert "`{{widget}}`" in rendered.content
+    assert "InternalName" in rendered.content
+
+
+def test_canonical_document_can_forbid_external_placeholders() -> None:
+    from tests.fixtures import root_placeholders_forbidden
+    from shikumi_devdoc.norms.document import system
+
+    result = system.validate(root_placeholders_forbidden, placement=())
+    assert result.is_valid, result.diagnostics
+    check = MarkdownRealizer({"PROJECT": {"version": "1.0"}}).check(result.view)
+    assert not check.is_realizable
+    assert "markdown.document.placeholder.forbidden" in {d.code for d in check.diagnostics}
+
+
+def test_placeholder_policy_is_independent_from_document_shape() -> None:
+    from tests.fixtures import nested_placeholders_forbidden
+    from shikumi_devdoc.norms.document import system
+
+    result = system.validate(nested_placeholders_forbidden, placement=())
+    assert result.is_valid, result.diagnostics
+    check = MarkdownRealizer({"PROJECT": {"version": "1.0"}}).check(result.view)
+    assert not check.is_realizable
+    assert "markdown.document.placeholder.forbidden" in {d.code for d in check.diagnostics}

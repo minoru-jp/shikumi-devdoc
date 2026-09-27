@@ -1,23 +1,13 @@
-"""Public surface for shikumi-devdoc."""
+"""Public package entry points for shikumi-devdoc."""
 
+from . import fields, norms, realizers
 from .context import Context, ContextError, UnknownContextKeyError
-from .norms.common import (
-    CanonicalSource,
-    VocabularyReference,
-    VocabularySource,
-    canonical,
-    vocabulary,
-    vocabulary_refs,
-)
 
 __all__ = [
-    "CanonicalSource",
     "Context",
     "ContextError",
     "UnknownContextKeyError",
-    "VocabularyReference",
-    "VocabularySource",
-    "canonical",
-    "vocabulary",
-    "vocabulary_refs",
+    "fields",
+    "norms",
+    "realizers",
 ]

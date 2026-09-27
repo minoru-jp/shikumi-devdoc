@@ -1,1 +1,0 @@
-"""Invalid partitioned changelog fixture."""

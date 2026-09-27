@@ -1,17 +1,27 @@
-from shikumi_devdoc.norms.vocabulary import canonical, glossary, preserve_spelling, term, title
+from shikumi_devdoc.norms.common import canonical_source
+from shikumi_devdoc.norms.vocabulary import glossary, preserve_spelling, vocabulary
 
 
-@canonical
-@title("{{PROJECT.name}} Glossary")
-class VOCABULARY:
+@vocabulary
+@canonical_source(
+    "{{PROJECT.name}} Glossary",
+    filename="GLOSSARY.md",
+    placeholders=True,
+    heading="identity",
+)
+class TERMS:
     """Terms used by {{PROJECT.name}}."""
 
-    @term("Widget")
     class TERM_1:
-        """A reusable widget."""
-        glossary @= True
+        """{{Widget}}
 
-    @term("InternalName")
+        A reusable widget.
+        """
+
     class TERM_2:
-        """An implementation-only identifier."""
+        """{{InternalName}}
+
+        An implementation-only identifier.
+        """
+        glossary @= False
         preserve_spelling @= True

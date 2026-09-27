@@ -1,15 +1,13 @@
-from tests.fixtures import vocabulary_terms as terms
-from shikumi_devdoc.norms.document import canonical, title, vocabulary, vocabulary_refs
+from tests.fixtures.vocabulary_source import TERMS
+from shikumi_devdoc.norms.common import canonical_source, merge
 
 
-@canonical
-@vocabulary(terms)
-@title("Literal placeholders")
+@canonical_source("Literal placeholders", filename="document_literal_placeholders.md", placeholders=False, heading="identity")
 class TITLE_1:
     r"""GitHub Actions keeps `${{ matrix.os }}`.
 
-    An escaped marker stays literal: `\{{TERM_1}}`.
-    A semantic marker still resolves to {{TERM_2}}.
+    An escaped marker stays literal: `\{{widget}}`.
+    A semantic marker still resolves to {{internal_name}}.
     """
 
-    vocabulary_refs @= (terms.TERM_2,)
+    merge @= ("internal_name", TERMS.TERM_2)

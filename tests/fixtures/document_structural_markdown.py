@@ -1,8 +1,8 @@
-from shikumi_devdoc.norms.document import canonical, title
+from shikumi_devdoc.norms.common import canonical_source
+from shikumi_devdoc.norms.document import title
 
 
-@canonical
-@title("Structure")
+@canonical_source("Structure", filename="document_structural_markdown.md", placeholders=True, heading="title")
 class TITLE_1:
     r"""A fenced example is allowed:
 
@@ -13,26 +13,26 @@ class TITLE_1:
     ## Hidden semantic heading
     """
 
-    @title("Level 2")
     class TITLE_2:
         """"""
+        title @= "Level 2"
 
-        @title("Level 3")
         class TITLE_3:
             """"""
+            title @= "Level 3"
 
-            @title("Level 4")
             class TITLE_4:
                 """"""
+                title @= "Level 4"
 
-                @title("Level 5")
                 class TITLE_5:
                     """"""
+                    title @= "Level 5"
 
-                    @title("Level 6")
                     class TITLE_6:
                         """"""
+                        title @= "Level 6"
 
-                        @title("Level 7")
                         class TITLE_7:
                             """"""
+                            title @= "Level 7"

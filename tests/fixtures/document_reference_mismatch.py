@@ -1,16 +1,14 @@
-from tests.fixtures import vocabulary_terms as terms
-from shikumi_devdoc.norms.document import canonical, title, vocabulary, vocabulary_refs
+from tests.fixtures.vocabulary_source import TERMS
+from shikumi_devdoc.norms.common import canonical_source, merge
+from shikumi_devdoc.norms.document import title
 
 
-@canonical
-@vocabulary(terms)
-@title("Reference validation")
+@canonical_source("Merge scope", filename="document_reference_mismatch.md", placeholders=False, heading="title")
 class TITLE_1:
-    """Root text does not use a vocabulary term."""
+    """Root text uses {{widget}}."""
 
-    # This reference is intentionally misplaced: child references are local.
-    vocabulary_refs @= (terms.TERM_1,)
+    merge @= ("widget", TERMS.TERM_1)
 
-    @title("Child")
     class TITLE_2:
-        """This child uses {{TERM_1}} without declaring a local reference."""
+        """Local merges are not inherited: {{widget}}."""
+        title @= "Child"

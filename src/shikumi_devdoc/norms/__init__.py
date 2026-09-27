@@ -1,19 +1,9 @@
-"""Reusable Shikumi regulations for developer documentation."""
+"""Public regulation namespaces for shikumi-devdoc."""
 
-from .common import (
-    CanonicalSource,
-    VocabularyReference,
-    VocabularySource,
-    canonical,
-    vocabulary,
-    vocabulary_refs,
-)
+from . import common, document, vocabulary
 
 __all__ = [
-    "CanonicalSource",
-    "VocabularyReference",
-    "VocabularySource",
-    "canonical",
+    "common",
+    "document",
     "vocabulary",
-    "vocabulary_refs",
 ]

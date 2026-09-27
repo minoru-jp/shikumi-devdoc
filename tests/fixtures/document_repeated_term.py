@@ -1,11 +1,9 @@
-from tests.fixtures import vocabulary_terms as terms
-from shikumi_devdoc.norms.document import canonical, title, vocabulary, vocabulary_refs
+from tests.fixtures.vocabulary_source import TERMS
+from shikumi_devdoc.norms.common import canonical_source, merge
 
 
-@canonical
-@vocabulary(terms)
-@title("Repeated reference")
+@canonical_source("Repeated reference", filename="document_repeated_term.md", placeholders=False, heading="identity")
 class TITLE_1:
-    """{{TERM_1}} appears twice: {{TERM_1}}."""
+    """{{widget}} appears twice: {{widget}}."""
 
-    vocabulary_refs @= (terms.TERM_1,)
+    merge @= ("widget", TERMS.TERM_1)

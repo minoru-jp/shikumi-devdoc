@@ -1,15 +1,18 @@
-from tests.fixtures import vocabulary_terms as terms
-from shikumi_devdoc.norms.document import canonical, title, vocabulary, vocabulary_refs
+from tests.fixtures.vocabulary_source import TERMS
+from shikumi_devdoc.norms.common import canonical_source, merge
+from shikumi_devdoc.norms.document import title
 
 
-@canonical
-@vocabulary(terms)
-@title("{{PROJECT.name}}")
+@canonical_source("{{PROJECT.name}}", filename="document_source.md", placeholders=True, heading="title")
 class TITLE_1:
-    """Version {{PROJECT.version}} documents the {{TERM_1}} API."""
+    """Version {{PROJECT.version}} documents the {{widget}} API.
 
-    vocabulary_refs @= (terms.TERM_1,)
+    Translation-sensitive identifier: {{internal_name}}.
+    """
 
-    @title("Install")
+    merge @= ("widget", TERMS.TERM_1)
+    merge @= ("internal_name", TERMS.TERM_2)
+
     class TITLE_2:
         """Requires Python {{PYTHON.minimum}}+."""
+        title @= "Install"

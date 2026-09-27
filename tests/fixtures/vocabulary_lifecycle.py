@@ -1,29 +1,29 @@
+from shikumi_devdoc.norms.common import canonical_source
 from shikumi_devdoc.norms.vocabulary import (
     alias,
-    canonical,
     deprecated,
-    glossary,
     replacement,
-    term,
-    title,
+    vocabulary,
 )
 
 
-@canonical
-@title("Example Glossary")
-class VOCABULARY:
+@vocabulary
+@canonical_source("Example Glossary", filename="GLOSSARY.md", heading="identity")
+class TERMS:
     """Public terms."""
 
-    @term("Widget")
     class TERM_1:
-        """The current public term."""
-        glossary @= True
+        """{{Widget}}
+
+        The current public term.
+        """
         alias @= "Component"
         alias @= "UI Widget"
 
-    @term("OldWidget")
     class TERM_2:
-        """The former public term."""
-        glossary @= True
+        """{{OldWidget}}
+
+        The former public term.
+        """
         deprecated @= True
         replacement @= "Widget"

@@ -1,25 +1,23 @@
-from shikumi_devdoc.norms.vocabulary import (
-    alias,
-    canonical,
-    deprecated,
-    replacement,
-    term,
-    title,
-)
+from shikumi_devdoc.norms.common import canonical_source
+from shikumi_devdoc.norms.vocabulary import alias, deprecated, replacement, vocabulary
 
 
-@canonical
-@title("Invalid Glossary")
-class VOCABULARY:
-    """Invalid relationships."""
+@vocabulary
+@canonical_source("Invalid Glossary", filename="GLOSSARY.md", heading="identity")
+class TERMS:
+    """Invalid lifecycle examples."""
 
-    @term("Widget")
     class TERM_1:
-        """Current term."""
+        """{{Widget}}
+
+        Current term.
+        """
         alias @= "OldWidget"
 
-    @term("OldWidget")
     class TERM_2:
-        """Old term."""
+        """{{OldWidget}}
+
+        Old term.
+        """
         deprecated @= True
-        replacement @= "Missing"
+        replacement @= "MissingWidget"
