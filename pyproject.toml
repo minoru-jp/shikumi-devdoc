@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "shikumi-devdoc"
+version = "0.1.0"
+description = "Reusable Shikumi regulations and Markdown realizers for developer-facing project documents."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "minoru_jp" }]
+dependencies = ["shikumi>=0.1.0"]
+keywords = [
+  "developer-documentation",
+  "docs-as-code",
+  "documentation-generation",
+  "changelog",
+  "llm",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
+
+[project.scripts]
+shikumi-devdoc = "shikumi_devdoc.cli:main"
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/shikumi_devdoc"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src/shikumi_devdoc",
+  "/tests",
+  "/README.md",
+  "/CHANGELOG.md",
+  "/LICENSE",
+  "/pyproject.toml",
+]
