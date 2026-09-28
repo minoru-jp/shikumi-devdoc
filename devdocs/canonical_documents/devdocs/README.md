@@ -146,7 +146,7 @@ shikumi-devdoc render index \
   --translation-source
 ```
 
-Authoring Guide、CHANGELOG、STATUS、`devdocs/README.md` は `@canonical_source(..., placeholders=False)` として template-bearing content の external placeholder を拒否する。README、Specification、API Reference は用途に応じて external placeholder を許可する。field 系 writer の `@=` binding と、`merge @= target` または `merge @= ("name", target)` が追加する local reference は canonical source 内で完結するため、この policy とは独立して利用できる。
+`merge_policy` は local merge と external context の許可範囲を `"all"` / `"local"` / `"external"` / `"forbidden"` で宣言する。このリポジトリでは CHANGELOG を `"forbidden"` とし、過去の記録が後の local/external 値変更で変化しないようにする。TRUST 型の自己完結文書に相当する文書や Authoring Guide、STATUS、`devdocs/README.md` は必要に応じて `"local"` を使い、README、Specification、API Reference は外部 context が必要な箇所で `"all"` を使う。旧 `placeholders` は 0.3.2 から非推奨である。
 
 ## テスト
 

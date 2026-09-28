@@ -14,7 +14,7 @@ collection_example = test_target_field("collection layout")
     "Building a document collection",
     filename="collections.md",
     order=100,
-    placeholders=False,
+    merge_policy="local",
     unreferenced_fields=IGNORE,
     heading="title",
 )

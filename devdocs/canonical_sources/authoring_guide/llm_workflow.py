@@ -10,7 +10,7 @@ from shikumi_devdoc.norms.document import title
     "LLM authoring workflow",
     filename="llm-workflow.md",
     order=120,
-    placeholders=False,
+    merge_policy="local",
     unreferenced_fields=IGNORE,
     heading="title",
 )

@@ -12,7 +12,7 @@ quickstart_example = test_target_field("quick-start command")
     "Writing a Getting Started guide",
     filename="getting-started.md",
     order=20,
-    placeholders=False,
+    merge_policy="local",
     unreferenced_fields=IGNORE,
     heading="title",
 )

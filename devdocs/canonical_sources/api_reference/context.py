@@ -4,7 +4,7 @@ from devdocs.canonical_sources.vocabulary.canonical import TERMS
 from shikumi_devdoc.norms.common import canonical_source, merge, summary
 
 @summary('realization context の保持と解決に関する公開 API。')
-@canonical_source('Context', filename='context.md', order=10, placeholders=True, heading="identity")
+@canonical_source('Context', filename='context.md', order=10, merge_policy="all", heading="identity")
 class API_REFERENCE_PART:
     """{{TERM_005}} の保持と参照に関するトップレベル公開 API。"""
     merge @= TERMS.TERM_005

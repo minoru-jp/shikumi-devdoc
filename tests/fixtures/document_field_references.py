@@ -10,7 +10,7 @@ summary = prose_field("summary")
 @canonical_source(
     "Field references",
     filename="field-references.md",
-    placeholders=False,
+    merge_policy="local",
     unreferenced_fields=APPEND,
     heading="identity",
 )

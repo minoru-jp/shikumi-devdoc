@@ -28,7 +28,7 @@ def test_repository_realization_context_is_explicit_json() -> None:
     assert context == {
         "project": {
             "name": "shikumi-devdoc",
-            "version": "0.3.1",
+            "version": "0.3.2",
             "requires-python": ">=3.11",
         }
     }

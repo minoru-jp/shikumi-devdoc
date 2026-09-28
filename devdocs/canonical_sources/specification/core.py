@@ -7,7 +7,7 @@ from shikumi_devdoc.norms.document import title
 
 
 @summary('canonical source と文書体系全体に共通する中核規則。')
-@canonical_source("Core", filename="core.md", order=0, placeholders=True, heading="identity")
+@canonical_source("Core", filename="core.md", order=0, merge_policy="all", heading="identity")
 class SPECIFICATION_PART:
     """文書体系全体に共通する中核規則。"""
 
@@ -58,7 +58,7 @@ class SPECIFICATION_PART:
         level @= MUST
 
     class CORE_008:
-        """{{TERM_002}} の root title、filename、nested heading policy、任意 order、{{TERM_012}} policy、未参照 field policy は文書内容の意味論から独立した共通 metadata として `@canonical_source(...)` に宣言されなければならない。nested heading policy は `heading="title"` または `heading="identity"` のどちらかを作者が明示し、realizer が文書種別から推論してはならない。"""
+        """{{TERM_002}} の root title、filename、nested heading policy、任意 order、merge policy、未参照 field policy は文書内容の意味論から独立した共通 metadata として `@canonical_source(...)` に宣言されなければならない。nested heading policy は `heading="title"` または `heading="identity"` のどちらかを作者が明示し、realizer が文書種別から推論してはならない。"""
         merge @= TERMS.TERM_002
         merge @= TERMS.TERM_012
         title @= "Canonical document metadata"
@@ -73,12 +73,24 @@ class SPECIFICATION_PART:
         level @= MUST
 
     class CORE_010:
-        r"""`@canonical_source(..., placeholders=False)` は docstring、`prose_field`、`title @= ...` など {{TERM_010}} における {{TERM_012}} `\{{...}}` を禁止しなければならない。この policy は field 系 writer の `@=` binding、および `merge @= target` または `merge @= ("name", target)` が提供する canonical-local な {{TERM_013}} や、{{TERM_011}} 内の placeholder-like text を禁止してはならない。"""
+        r"""`@canonical_source(..., merge_policy=...)` は {{TERM_010}} が参照できる値の出所を `"all"`、`"local"`、`"external"`、`"forbidden"` の4段階で制御しなければならない。`"all"` は {{TERM_013}} と {{TERM_012}} の双方を許可し、`"local"` は {{TERM_013}} だけ、`"external"` は {{TERM_012}} だけを許可し、`"forbidden"` は双方を禁止する。未指定時は `"all"` とする。"""
         merge @= TERMS.TERM_010
         merge @= TERMS.TERM_012
         merge @= TERMS.TERM_013
+        title @= "Merge policy"
+        level @= MUST
+
+    class CORE_010A:
+        r"""`merge_policy="external"` または `merge_policy="forbidden"` の canonical document は、使用の有無にかかわらず `merge @= ...` 宣言を持ってはならず、field binding を含む {{TERM_013}} を {{TERM_010}} から参照してはならない。通常の field value は {{TERM_011}} として保持でき、その内部の placeholder-like text は template 解釈してはならない。"""
+        merge @= TERMS.TERM_010
         merge @= TERMS.TERM_011
-        title @= "Document-local external placeholder policy"
+        merge @= TERMS.TERM_013
+        title @= "Local merge prohibition"
+        level @= MUST
+
+    class CORE_010B:
+        r"""非推奨の `placeholders=True` は `merge_policy="all"`、`placeholders=False` は `merge_policy="local"` と等価に解釈されなければならない。`placeholders` と `merge_policy` を同時指定してはならない。`placeholders` の使用は API 直接利用時にも deprecation warning を送出し、CLI 利用時にはその warning が利用者へ表示されなければならない。`placeholders` は 1.0.0 で削除予定とする。"""
+        title @= "Legacy placeholders compatibility"
         level @= MUST
 
     class CORE_011:

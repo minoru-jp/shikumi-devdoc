@@ -5,7 +5,7 @@ from shikumi_devdoc.norms.common import canonical_source
 from tests.fixtures.logical_reference_target.document import TARGET
 
 
-@canonical_source("Source", filename="source.md", placeholders=False, heading="identity")
+@canonical_source("Source", filename="source.md", merge_policy="local", heading="identity")
 class SOURCE:
     class SECTION_001:
         """Source section."""

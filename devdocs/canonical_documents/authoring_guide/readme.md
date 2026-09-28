@@ -48,7 +48,7 @@ from shikumi_devdoc.norms.common import canonical_source
 from shikumi_devdoc.norms.document import title
 
 
-@canonical_source("Example", filename="README.md", placeholders=False, heading="title")
+@canonical_source("Example", filename="README.md", merge_policy="local", heading="title")
 class README:
     """A small tool for processing example inputs."""
 

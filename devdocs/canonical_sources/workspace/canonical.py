@@ -5,7 +5,7 @@ from shikumi_devdoc.norms.common import IGNORE, canonical_source, merge
 from shikumi_devdoc.norms.document import title
 
 
-@canonical_source('devdocs/', filename='README.md', placeholders=False, unreferenced_fields=IGNORE, heading="title")
+@canonical_source('devdocs/', filename='README.md', merge_policy="local", unreferenced_fields=IGNORE, heading="title")
 class SECTION_001:
     r"""
     `devdocs/` は、このリポジトリ自身の文書体系をドッグフーディングするためのオーサリング・ワークスペースである。
@@ -174,7 +174,7 @@ class SECTION_001:
           --translation-source
         ```
 
-        Authoring Guide、CHANGELOG、STATUS、`devdocs/README.md` は `@canonical_source(..., placeholders=False)` として {{TERM_010}} の {{TERM_012}} を拒否する。README、Specification、API Reference は用途に応じて {{TERM_012}} を許可する。field 系 writer の `@=` binding と、`merge @= target` または `merge @= ("name", target)` が追加する {{TERM_013}} は {{TERM_001}} 内で完結するため、この policy とは独立して利用できる。
+        `merge_policy` は local merge と external context の許可範囲を `"all"` / `"local"` / `"external"` / `"forbidden"` で宣言する。このリポジトリでは CHANGELOG を `"forbidden"` とし、過去の記録が後の local/external 値変更で変化しないようにする。TRUST 型の自己完結文書に相当する文書や Authoring Guide、STATUS、`devdocs/README.md` は必要に応じて `"local"` を使い、README、Specification、API Reference は外部 context が必要な箇所で `"all"` を使う。旧 `placeholders` は 0.3.2 から非推奨である。
         """
         title @= "生成"
 

@@ -8,13 +8,18 @@ import inspect
 from pathlib import Path
 import sys
 import tomllib
+import warnings
 from types import ModuleType
 from typing import Sequence
 
 from shikumi import Diagnostic
 
 from shikumi_devdoc.context import Context, ContextError
-from shikumi_devdoc.norms._common import CanonicalSource, _source_path_for_module
+from shikumi_devdoc.norms._common import (
+    CanonicalSource,
+    ShikumiDevdocDeprecationWarning,
+    _source_path_for_module,
+)
 from shikumi_devdoc.norms._document import document
 from shikumi_devdoc.norms._vocabulary import vocabulary_system
 from shikumi_devdoc.realizers import common as common_realizers
@@ -183,7 +188,9 @@ def _render_markdown(
     index_title: str | None,
 ) -> int:
     importlib.invalidate_caches()
-    module = importlib.import_module(module_name)
+    with warnings.catch_warnings():
+        warnings.simplefilter("default", ShikumiDevdocDeprecationWarning)
+        module = importlib.import_module(module_name)
 
     directory_output_kinds = {"document", "index"}
 

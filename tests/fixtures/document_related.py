@@ -6,7 +6,7 @@ from shikumi_devdoc.norms.common import IGNORE, canonical_source
 from shikumi_devdoc.norms.document import title
 
 
-@canonical_source("Guide", filename="document_related.md", placeholders=True, unreferenced_fields=IGNORE, heading="title")
+@canonical_source("Guide", filename="document_related.md", merge_policy="all", unreferenced_fields=IGNORE, heading="title")
 class TITLE_1:
     """Purpose-oriented explanation whose source records structured relations."""
 

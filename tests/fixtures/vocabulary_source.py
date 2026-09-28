@@ -6,7 +6,7 @@ from shikumi_devdoc.norms.vocabulary import glossary, preserve_spelling, vocabul
 @canonical_source(
     "{{PROJECT.name}} Glossary",
     filename="GLOSSARY.md",
-    placeholders=True,
+    merge_policy="all",
     heading="identity",
 )
 class TERMS:

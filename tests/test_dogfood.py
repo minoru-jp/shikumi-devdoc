@@ -163,6 +163,9 @@ def test_repository_changelog_dogfoods_list_fields() -> None:
     assert len(documents) == 1
     changelog = documents[0]
     assert changelog.filename == "CHANGELOG.md"
+    assert "## V0_3_2" in changelog.content
+    assert "version: 0.3.2" in changelog.content
+    assert 'merge_policy="forbidden"' in changelog.content
     assert "## V0_3_1" in changelog.content
     assert "version: 0.3.1" in changelog.content
     assert "## V0_3_0" in changelog.content

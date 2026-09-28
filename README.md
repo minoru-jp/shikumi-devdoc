@@ -28,7 +28,7 @@ A minimal canonical source needs only a root class decorated with `@canonical_so
 ```python
 from shikumi_devdoc.norms.common import canonical_source
 
-@canonical_source("Example", filename="example.md", placeholders=False, heading="identity")
+@canonical_source("Example", filename="example.md", merge_policy="local", heading="identity")
 class EXAMPLE:
     class Introduction:
         '''Hello from shikumi-devdoc.'''
@@ -85,7 +85,9 @@ Templates can normally use a short reference such as `{{TERM_001}}`. If multiple
 
 Document-specific structured information is declared as fields. Authors can define project-local field vocabularies or reuse common standard field sets from `shikumi_devdoc.fields`. The generic core does not own the domain meaning of those fields.
 
-Docstrings, `prose_field`, and `title @= ...` are template-bearing content and can use local references and external placeholders. A field written with `name @= value` is automatically available to templates on the same node as `{{name}}`; `merge` adds class targets, literal strings, or explicit aliases to the same local namespace. Ordinary `field`, `list_field`, `table_field`, and `test_target_field` values themselves remain literal content. `test_target_field` separates literal text that ordinary tests should inspect directly; Markdown fences and language markers belong in the surrounding template. Use `reference_field` when a Python object relationship should realize as a logical Markdown reference; the standard `related` field is a convenience field built on that presentation. Unreferenced fields can be appended to the body with `APPEND` or retained as source-only semantic information with `IGNORE`.
+Docstrings, `prose_field`, and `title @= ...` are template-bearing content and can use local references and external placeholders. A field written with `name @= value` is automatically available to templates on the same node as `{{name}}`; `merge` adds class targets, literal strings, or explicit aliases to the same local namespace. `merge_policy` controls which sources may participate: `"all"` allows local and external merge, `"local"` allows only local references, `"external"` allows only realization context, and `"forbidden"` allows neither. Use `"forbidden"` for snapshot-style sources such as a CHANGELOG when later changes must not rewrite historical content. The old `placeholders` boolean is deprecated in 0.3.2 and will be removed in 1.0.0; `True` maps to `"all"` and `False` maps to `"local"`.
+
+Ordinary `field`, `list_field`, `table_field`, and `test_target_field` values themselves remain literal content. `test_target_field` separates literal text that ordinary tests should inspect directly; Markdown fences and language markers belong in the surrounding template. Use `reference_field` when a Python object relationship should realize as a logical Markdown reference; the standard `related` field is a convenience field built on that presentation. Unreferenced fields can be appended to the body with `APPEND` or retained as source-only semantic information with `IGNORE`.
 
 ## Documentation workflows with LLMs
 
@@ -112,7 +114,7 @@ English published documents at the repository root and under `docs/` are produce
 
 ## Version
 
-Current version: `0.3.1`. Supported Python: `>=3.11`. See [`STATUS.md`](STATUS.md) for the current development stage and notices.
+Current version: `0.3.2`. Supported Python: `>=3.11`. See [`STATUS.md`](STATUS.md) for the current development stage and notices.
 
 ## License
 

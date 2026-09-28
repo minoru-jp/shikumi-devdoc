@@ -5,6 +5,6 @@ from shikumi_devdoc.fields.common import related
 from shikumi_devdoc.norms.common import canonical_source
 
 
-@canonical_source("Source", filename="collision.md", placeholders=False, heading="identity")
+@canonical_source("Source", filename="collision.md", merge_policy="local", heading="identity")
 class SOURCE:
     related @= (SPEC_001,)

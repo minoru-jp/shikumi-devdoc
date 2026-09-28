@@ -13,7 +13,7 @@ minimal_readme_example = test_target_field("minimal README source")
     "Writing a README",
     filename="readme.md",
     order=10,
-    placeholders=False,
+    merge_policy="local",
     unreferenced_fields=IGNORE,
     heading="title",
 )
@@ -67,7 +67,7 @@ class AUTHORING_GUIDE_PART:
         from shikumi_devdoc.norms.document import title
 
 
-        @canonical_source("Example", filename="README.md", placeholders=False, heading="title")
+        @canonical_source("Example", filename="README.md", merge_policy="local", heading="title")
         class README:
             """A small tool for processing example inputs."""
 

@@ -1,5 +1,22 @@
 # shikumi-devdoc Changelog
 
+## V0_3_2
+
+version: 0.3.2
+
+Added:
+
+- Added `merge_policy="all" | "local" | "external" | "forbidden"` to `@canonical_source(...)`. The policy independently expresses whether template-bearing content may merge node-local references and realization-context values. `"forbidden"` supports snapshot sources that must not be recomposed from either source.
+
+Changed:
+
+- `merge_policy="external"` and `merge_policy="forbidden"` reject `merge @= ...` declarations even when unused, and reject local template references including field bindings. Literal field values remain literal and may still be stored.
+- The project's own CHANGELOG canonical source now uses `merge_policy="forbidden"` so historical release snapshots cannot change through later local or external values.
+
+Deprecated:
+
+- Deprecated `@canonical_source(..., placeholders=...)`. `placeholders=True` is interpreted as `merge_policy="all"`; `placeholders=False` is interpreted as `merge_policy="local"`. Direct API use emits `DeprecationWarning`, and CLI use surfaces the warning. `placeholders` is scheduled for removal in 1.0.0.
+
 This changelog records the versioned change history of `shikumi-devdoc`. Development milestones that were not published are explicitly identified as such.
 
 ## V0_3_1

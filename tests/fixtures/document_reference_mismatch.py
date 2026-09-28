@@ -3,7 +3,7 @@ from shikumi_devdoc.norms.common import canonical_source, merge
 from shikumi_devdoc.norms.document import title
 
 
-@canonical_source("Merge scope", filename="document_reference_mismatch.md", placeholders=False, heading="title")
+@canonical_source("Merge scope", filename="document_reference_mismatch.md", merge_policy="local", heading="title")
 class TITLE_1:
     """Root text uses {{widget}}."""
 

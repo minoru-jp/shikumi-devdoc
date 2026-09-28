@@ -2,7 +2,7 @@ from devdocs.canonical_sources.vocabulary.canonical import TERMS
 from shikumi_devdoc.norms.common import canonical_source, merge
 
 
-@canonical_source("Vocabulary Reference Example", filename="vocabulary-reference.md", placeholders=False, heading="identity")
+@canonical_source("Vocabulary Reference Example", filename="vocabulary-reference.md", merge_policy="local", heading="identity")
 class DOCUMENT:
     # DOC-SNIPPET authoring-vocabulary-reference START
     class Overview:

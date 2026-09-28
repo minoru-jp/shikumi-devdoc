@@ -17,7 +17,7 @@ documented_snippet = test_target_field("documented snippet")
     "Advanced authoring decisions",
     filename="advanced-authoring.md",
     order=110,
-    placeholders=False,
+    merge_policy="local",
     unreferenced_fields=IGNORE,
     heading="title",
 )
@@ -49,7 +49,7 @@ class AUTHORING_GUIDE_PART:
         title @= "Node identity と表示 title を分離する"
 
         section_identity_example @= r'''
-        @canonical_source("Guide", filename="guide.md", heading="title", placeholders=False)
+        @canonical_source("Guide", filename="guide.md", heading="title", merge_policy="local")
         class GUIDE:
             class SECTION_017:
                 """Introductory text."""
@@ -89,6 +89,8 @@ class AUTHORING_GUIDE_PART:
     class SECTION_005:
         r"""
         同じ canonical source を将来再実現したとき値が変わってよいなら {{TERM_005}} の候補になる。現在の project version などは context に向く。過去の release version、採用済み設計判断、規範条件など後から変えてはいけない事実は canonical source に置く。
+
+        `merge_policy="all"` は local/external の双方、`"local"` は local のみ、`"external"` は external のみを許可し、`"forbidden"` は双方を拒否する。外部 context による変化だけを防ぎたい自己完結文書は `"local"`、CHANGELOG のように後から参照先の変更でも内容を変えたくない snapshot 文書は `"forbidden"` を選ぶ。
         """
         title @= "Realization context は変化してよい外部値だけに使う"
 
@@ -110,7 +112,7 @@ class AUTHORING_GUIDE_PART:
 
         example = test_target_field("example")
 
-        @canonical_source("Guide", filename="guide.md", placeholders=False, heading="title")
+        @canonical_source("Guide", filename="guide.md", merge_policy="local", heading="title")
         class GUIDE:
             class SECTION_001:
                 """

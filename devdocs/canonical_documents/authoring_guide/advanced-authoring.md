@@ -30,7 +30,7 @@ nested node の human-readable title は `title @= "..."` に統一する。`@ti
 narrative document では `@canonical_source(..., heading="title")` を選ぶと、解決済み title が Markdown heading になる。node に意味名を持たせる必要がない場合は `SECTION_NNN` のような opaque identity を推奨する。`NNN` は表示順、見出しレベル、公開節番号を表さない。並べ替え、title 変更、階層移動でも既存 identity は維持する。
 
 ```python
-@canonical_source("Guide", filename="guide.md", heading="title", placeholders=False)
+@canonical_source("Guide", filename="guide.md", heading="title", merge_policy="local")
 class GUIDE:
     class SECTION_017:
         """Introductory text."""
@@ -64,6 +64,8 @@ merge を一般的な macro system として長い文章の断片化に使わな
 
 同じ canonical source を将来再実現したとき値が変わってよいなら realization context の候補になる。現在の project version などは context に向く。過去の release version、採用済み設計判断、規範条件など後から変えてはいけない事実は canonical source に置く。
 
+`merge_policy="all"` は local/external の双方、`"local"` は local のみ、`"external"` は external のみを許可し、`"forbidden"` は双方を拒否する。外部 context による変化だけを防ぎたい自己完結文書は `"local"`、CHANGELOG のように後から参照先の変更でも内容を変えたくない snapshot 文書は `"forbidden"` を選ぶ。
+
 ## Code example は通常のテストで保護する
 
 実装 drift を検出したい sample code、設定、command、expected output などは `test_target_field` へ分離し、値そのものを pytest など通常のテストから検証する。fence や language 指定は surrounding docstring に書く。文書生成時に `eval` / `exec` する特殊なテスト DSL を作らない。
@@ -74,7 +76,7 @@ from shikumi_devdoc.norms.document import test_target_field, title
 
 example = test_target_field("example")
 
-@canonical_source("Guide", filename="guide.md", placeholders=False, heading="title")
+@canonical_source("Guide", filename="guide.md", merge_policy="local", heading="title")
 class GUIDE:
     class SECTION_001:
         """

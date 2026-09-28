@@ -8,7 +8,7 @@ from shikumi_devdoc.norms.document import title
 @canonical_source(
     "Title heading",
     filename="title-heading.md",
-    placeholders=True,
+    merge_policy="all",
     heading="title",
 )
 class TITLE_HEADING:
@@ -22,7 +22,7 @@ class TITLE_HEADING:
 @canonical_source(
     "Identity heading",
     filename="identity-heading.md",
-    placeholders=True,
+    merge_policy="all",
     heading="identity",
 )
 class IDENTITY_HEADING:

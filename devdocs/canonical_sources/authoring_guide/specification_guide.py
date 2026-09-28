@@ -14,7 +14,7 @@ specification_example = test_target_field("specification example")
     "Writing a Specification",
     filename="specification.md",
     order=50,
-    placeholders=False,
+    merge_policy="local",
     unreferenced_fields=IGNORE,
     heading="title",
 )

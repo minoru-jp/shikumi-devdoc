@@ -43,7 +43,7 @@ pip install shikumi-devdoc
 ```python
 from shikumi_devdoc.norms.common import canonical_source
 
-@canonical_source("Example", filename="example.md", placeholders=False, heading="identity")
+@canonical_source("Example", filename="example.md", merge_policy="local", heading="identity")
 class EXAMPLE:
     class Introduction:
         '''Hello from shikumi-devdoc.'''
@@ -100,7 +100,7 @@ template では通常 `{{TERM_001}}` のような短い参照を使える。複�
 
 文書固有の構造化情報は field として宣言する。作者は project-local な field vocabulary を定義でき、頻出する組み合わせには `shikumi_devdoc.fields` の standard field set を利用できる。generic core は field のドメイン意味を所有しない。
 
-docstring、`prose_field`、`title @= ...` は template-bearing content として local reference や external placeholder を扱える。field 系の `@=` 左辺名は同じ node の local reference として自動的に利用でき、`merge` は class target、文字列、明示 alias など追加の参照を登録する。通常の `field`、`list_field`、`table_field`、`test_target_field` の値自体は literal content として扱う。`test_target_field` は通常のテストから直接検証したい文字列断片を分離するためのもので、Markdown fence や language は surrounding template 側に記述する。Python object relation を文書間参照として実現したい場合は `reference_field` を使い、標準 `related` はその convenience field として利用できる。未参照 field は `APPEND` で本文へ追加するか、`IGNORE` で source-only の意味情報として保持できる。
+docstring、`prose_field`、`title @= ...` は template-bearing content として local reference や external placeholder を扱える。field 系の `@=` 左辺名は同じ node の local reference として自動的に利用でき、`merge` は class target、文字列、明示 alias など追加の参照を登録する。`merge_policy="all"` は local/external の双方、`"local"` は local のみ、`"external"` は external のみを許可し、`"forbidden"` は双方を拒否する。旧 `placeholders` boolean は 0.3.2 で非推奨となり、1.0.0 で削除予定である。通常の `field`、`list_field`、`table_field`、`test_target_field` の値自体は literal content として扱う。`test_target_field` は通常のテストから直接検証したい文字列断片を分離するためのもので、Markdown fence や language は surrounding template 側に記述する。Python object relation を文書間参照として実現したい場合は `reference_field` を使い、標準 `related` はその convenience field として利用できる。未参照 field は `APPEND` で本文へ追加するか、`IGNORE` で source-only の意味情報として保持できる。
 
 ## LLM を介した文書運用
 
@@ -127,7 +127,7 @@ docstring、`prose_field`、`title @= ...` は template-bearing content とし�
 
 ## バージョン
 
-現在のバージョンは `0.3.1`。Python `>=3.11` を対象とする。現在の開発段階や今後の方向は [`STATUS.md`](STATUS.md) を参照する。
+現在のバージョンは `0.3.2`。Python `>=3.11` を対象とする。現在の開発段階や今後の方向は [`STATUS.md`](STATUS.md) を参照する。
 
 ## ライセンス
 

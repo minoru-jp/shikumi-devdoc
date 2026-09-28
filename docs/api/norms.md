@@ -38,7 +38,7 @@ kind: Value
 
 #### shikumi_devdoc.norms.common.canonical_source
 
-Decorator that marks a canonical source unit. For canonical documents it declares the root title, filename, `heading="title"|"identity"` nested-heading policy, optional order, external-placeholder policy, and unreferenced-field policy.
+Decorator that marks a canonical source unit. For canonical documents it declares the root title, filename, `heading="title"|"identity"` nested-heading policy, optional order, `merge_policy="all"|"local"|"external"|"forbidden"`, and the unreferenced-field policy. The legacy `placeholders` parameter is deprecated in 0.3.2 and scheduled for removal in 1.0.0.
 
 name: shikumi_devdoc.norms.common.canonical_source
 

@@ -8,7 +8,7 @@ from shikumi_devdoc.norms.vocabulary import vocabulary
 @canonical_source(
     "shikumi-devdoc 内部用語",
     filename="GLOSSARY.md",
-    placeholders=False,
+    merge_policy="local",
     heading="identity",
 )
 class TERMS:

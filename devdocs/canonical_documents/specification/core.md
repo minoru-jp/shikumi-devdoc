@@ -75,7 +75,7 @@ level: MUST
 
 ## CORE_008
 
-canonical document の root title、filename、nested heading policy、任意 order、external placeholder policy、未参照 field policy は文書内容の意味論から独立した共通 metadata として `@canonical_source(...)` に宣言されなければならない。nested heading policy は `heading="title"` または `heading="identity"` のどちらかを作者が明示し、realizer が文書種別から推論してはならない。
+canonical document の root title、filename、nested heading policy、任意 order、merge policy、未参照 field policy は文書内容の意味論から独立した共通 metadata として `@canonical_source(...)` に宣言されなければならない。nested heading policy は `heading="title"` または `heading="identity"` のどちらかを作者が明示し、realizer が文書種別から推論してはならない。
 
 title: Canonical document metadata
 
@@ -91,9 +91,25 @@ level: MUST
 
 ## CORE_010
 
-`@canonical_source(..., placeholders=False)` は docstring、`prose_field`、`title @= ...` など template-bearing content における external placeholder `{{...}}` を禁止しなければならない。この policy は field 系 writer の `@=` binding、および `merge @= target` または `merge @= ("name", target)` が提供する canonical-local な local reference や、literal content 内の placeholder-like text を禁止してはならない。
+`@canonical_source(..., merge_policy=...)` は template-bearing content が参照できる値の出所を `"all"`、`"local"`、`"external"`、`"forbidden"` の4段階で制御しなければならない。`"all"` は local reference と external placeholder の双方を許可し、`"local"` は local reference だけ、`"external"` は external placeholder だけを許可し、`"forbidden"` は双方を禁止する。未指定時は `"all"` とする。
 
-title: Document-local external placeholder policy
+title: Merge policy
+
+level: MUST
+
+## CORE_010A
+
+`merge_policy="external"` または `merge_policy="forbidden"` の canonical document は、使用の有無にかかわらず `merge @= ...` 宣言を持ってはならず、field binding を含む local reference を template-bearing content から参照してはならない。通常の field value は literal content として保持でき、その内部の placeholder-like text は template 解釈してはならない。
+
+title: Local merge prohibition
+
+level: MUST
+
+## CORE_010B
+
+非推奨の `placeholders=True` は `merge_policy="all"`、`placeholders=False` は `merge_policy="local"` と等価に解釈されなければならない。`placeholders` と `merge_policy` を同時指定してはならない。`placeholders` の使用は API 直接利用時にも deprecation warning を送出し、CLI 利用時にはその warning が利用者へ表示されなければならない。`placeholders` は 1.0.0 で削除予定とする。
+
+title: Legacy placeholders compatibility
 
 level: MUST
 

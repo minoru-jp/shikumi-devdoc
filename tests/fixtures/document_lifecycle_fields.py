@@ -11,7 +11,7 @@ from shikumi_devdoc.norms.common import APPEND, canonical_source
 @canonical_source(
     "Lifecycle fields",
     filename="lifecycle-fields.md",
-    placeholders=False,
+    merge_policy="local",
     unreferenced_fields=APPEND,
     heading="identity",
 )

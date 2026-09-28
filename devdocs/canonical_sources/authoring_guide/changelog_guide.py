@@ -15,7 +15,7 @@ lifecycle_example = test_target_field("lifecycle example")
     "Writing a CHANGELOG",
     filename="changelog.md",
     order=70,
-    placeholders=False,
+    merge_policy="local",
     unreferenced_fields=IGNORE,
     heading="title",
 )
@@ -54,7 +54,7 @@ class AUTHORING_GUIDE_PART:
 
     class SECTION_003:
         r"""
-        現在の project version は realization context に置けるが、過去 release の version や変更内容は canonical source に固定する。再実現したときに過去の CHANGELOG が現在値へ書き換わる設計にしない。
+        現在の project version は realization context に置けるが、過去 release の version や変更内容は canonical source に固定する。再実現したときに過去の CHANGELOG が現在値へ書き換わる設計にしない。CHANGELOG 自体の `@canonical_source(...)` には `merge_policy="forbidden"` を指定し、local merge と external merge の双方を拒否する。
         """
         title @= "Current context と歴史的事実を分ける"
 

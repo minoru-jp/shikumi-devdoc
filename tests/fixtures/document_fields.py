@@ -20,7 +20,7 @@ hidden = field("hidden", str)
     "Field templates",
     filename="field-templates.md",
     order=10,
-    placeholders=True,
+    merge_policy="all",
     unreferenced_fields=APPEND,
     heading="identity",
 )
@@ -45,7 +45,7 @@ External value: {{PROJECT.name}}.
     "Ignored fields",
     filename="ignored-fields.md",
     order=20,
-    placeholders=False,
+    merge_policy="local",
     unreferenced_fields=IGNORE,
     heading="identity",
 )

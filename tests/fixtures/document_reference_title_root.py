@@ -8,7 +8,7 @@ from shikumi_devdoc.norms.document import title
 @canonical_source(
     "Narrative target",
     filename="target-root.md",
-    placeholders=False,
+    merge_policy="local",
     heading="title",
 )
 class TARGET:
@@ -21,7 +21,7 @@ class TARGET:
 @canonical_source(
     "Reference source",
     filename="source-root.md",
-    placeholders=False,
+    merge_policy="local",
     heading="identity",
 )
 class SOURCE:

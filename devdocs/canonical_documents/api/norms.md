@@ -53,7 +53,7 @@ kind: Value
 
 #### canonical_source
 
-canonical source unit を宣言する decorator。canonical document では root title、filename、`heading="title"|"identity"` の nested heading policy、任意 order、external placeholder policy、未参照 field policy を共通 metadata として宣言する。
+canonical source unit を宣言する decorator。canonical document では root title、filename、`heading="title"|"identity"` の nested heading policy、任意 order、`merge_policy="all"|"local"|"external"|"forbidden"`、未参照 field policy を共通 metadata として宣言する。旧 `placeholders` は 0.3.2 で非推奨となり、1.0.0 で削除予定である。
 
 name: shikumi_devdoc.norms.common.canonical_source
 

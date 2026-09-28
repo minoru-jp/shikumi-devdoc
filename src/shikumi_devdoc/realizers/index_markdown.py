@@ -11,9 +11,10 @@ from shikumi_devdoc._placeholder_syntax import placeholder_keys
 from shikumi_devdoc.context import Context, UnknownContextKeyError
 from shikumi_devdoc.norms._common import (
     CanonicalFilename,
-    CanonicalPlaceholders,
+    CanonicalMergePolicy,
     CanonicalSummary,
     CanonicalTitle,
+    MergePolicy,
 )
 from shikumi_devdoc.norms._document import template_reference_bindings
 from shikumi_devdoc.norms._partitioned import validate_filename
@@ -120,7 +121,8 @@ class IndexMarkdownRealizer(Realizer[MarkdownDocument]):
                 )
 
             local = self._local_reference_names(document)
-            placeholders_allowed = document.values(CanonicalPlaceholders) == (True,)
+            policies = document.values(CanonicalMergePolicy)
+            merge_policy = policies[0] if len(policies) == 1 else MergePolicy.ALL
             for label, texts in (("title", titles), ("summary", summaries)):
                 if len(texts) != 1:
                     continue
@@ -139,7 +141,7 @@ class IndexMarkdownRealizer(Realizer[MarkdownDocument]):
                             )
                         )
                         continue
-                    if not placeholders_allowed:
+                    if not merge_policy.allows_external:
                         diagnostics.append(
                             Diagnostic(
                                 f"canonical document forbids external placeholder {key!r} in its {label}",

@@ -3,7 +3,7 @@ from shikumi_devdoc.norms.common import canonical_source, merge
 from shikumi_devdoc.norms.document import title
 
 
-@canonical_source("{{PROJECT.name}}", filename="document_source.md", placeholders=True, heading="title")
+@canonical_source("{{PROJECT.name}}", filename="document_source.md", merge_policy="all", heading="title")
 class TITLE_1:
     """Version {{PROJECT.version}} documents the {{widget}} API.
 

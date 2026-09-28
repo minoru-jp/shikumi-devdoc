@@ -9,7 +9,7 @@ from devdocs.canonical_sources.specification.core import SPECIFICATION_PART as C
 
 
 @summary('Markdown 実現、realization context、canonical document 境界に関する規則。')
-@canonical_source("Rendering", filename="rendering.md", order=70, placeholders=True, heading="identity")
+@canonical_source("Rendering", filename="rendering.md", order=70, merge_policy="all", heading="identity")
 class SPECIFICATION_PART:
     """Markdown 実現、realization context、canonical document 境界に関する規則。"""
 

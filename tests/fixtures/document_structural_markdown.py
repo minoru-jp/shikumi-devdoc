@@ -2,7 +2,7 @@ from shikumi_devdoc.norms.common import canonical_source
 from shikumi_devdoc.norms.document import title
 
 
-@canonical_source("Structure", filename="document_structural_markdown.md", placeholders=True, heading="title")
+@canonical_source("Structure", filename="document_structural_markdown.md", merge_policy="all", heading="title")
 class TITLE_1:
     r"""A fenced example is allowed:
 

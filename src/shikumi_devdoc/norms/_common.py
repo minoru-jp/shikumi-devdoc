@@ -7,6 +7,7 @@ from inspect import cleandoc
 import keyword
 from pathlib import Path, PurePosixPath
 import sys
+import warnings
 from types import ModuleType
 from typing import TypeVar
 
@@ -22,7 +23,26 @@ CanonicalContent = InformationType("canonical content", str)
 CanonicalFilename = InformationType("canonical filename", str)
 CanonicalDocumentPath = InformationType("canonical document path", str)
 CanonicalOrder = InformationType("canonical order", int)
-CanonicalPlaceholders = InformationType("canonical placeholders", bool)
+
+
+class MergePolicy(str, Enum):
+    """Which template-reference sources a canonical document may merge."""
+
+    ALL = "all"
+    LOCAL = "local"
+    EXTERNAL = "external"
+    FORBIDDEN = "forbidden"
+
+    @property
+    def allows_local(self) -> bool:
+        return self in (MergePolicy.ALL, MergePolicy.LOCAL)
+
+    @property
+    def allows_external(self) -> bool:
+        return self in (MergePolicy.ALL, MergePolicy.EXTERNAL)
+
+
+CanonicalMergePolicy = InformationType("canonical merge policy", MergePolicy)
 MergeBinding = InformationType("merge binding", tuple, cardinality=Cardinality.MANY)
 
 
@@ -55,6 +75,20 @@ CanonicalHeadingPolicy = InformationType(
 
 
 S = TypeVar("S")
+
+
+class ShikumiDevdocDeprecationWarning(DeprecationWarning):
+    """Deprecation warning emitted by shikumi-devdoc public APIs."""
+
+
+class _Unspecified:
+    __slots__ = ()
+
+    def __repr__(self) -> str:
+        return "<unspecified>"
+
+
+_UNSPECIFIED = _Unspecified()
 
 
 def _docstring(subject: object) -> str:
@@ -112,7 +146,8 @@ class CanonicalSourceDecorator:
         *,
         filename: str | None = None,
         order: int | None = None,
-        placeholders: bool = True,
+        placeholders: bool | _Unspecified = _UNSPECIFIED,
+        merge_policy: str | MergePolicy | _Unspecified = _UNSPECIFIED,
         unreferenced_fields: UnreferencedFieldPolicy = APPEND,
         heading: str | HeadingPolicy | None = None,
     ):
@@ -120,7 +155,8 @@ class CanonicalSourceDecorator:
             if (
                 filename is not None
                 or order is not None
-                or placeholders is not True
+                or placeholders is not _UNSPECIFIED
+                or merge_policy is not _UNSPECIFIED
                 or unreferenced_fields is not APPEND
                 or heading is not None
             ):
@@ -134,8 +170,28 @@ class CanonicalSourceDecorator:
             raise TypeError("canonical_source() requires filename= for canonical documents")
         filename = validate_filename(filename, label="canonical filename")
         order = validate_optional_order(order, label="canonical order")
-        if not isinstance(placeholders, bool):
-            raise TypeError("canonical placeholders policy must be a bool")
+        if placeholders is not _UNSPECIFIED and merge_policy is not _UNSPECIFIED:
+            raise TypeError("canonical_source() cannot specify both placeholders= and merge_policy=")
+        if placeholders is not _UNSPECIFIED:
+            if not isinstance(placeholders, bool):
+                raise TypeError("canonical placeholders policy must be a bool")
+            effective_merge_policy = MergePolicy.ALL if placeholders else MergePolicy.LOCAL
+            warnings.warn(
+                f"'placeholders={placeholders}' is deprecated and will be removed in 1.0.0; "
+                f"use 'merge_policy=\"{effective_merge_policy.value}\"' instead.",
+                ShikumiDevdocDeprecationWarning,
+                stacklevel=2,
+            )
+        else:
+            if merge_policy is _UNSPECIFIED:
+                effective_merge_policy = MergePolicy.ALL
+            else:
+                try:
+                    effective_merge_policy = MergePolicy(merge_policy)
+                except (TypeError, ValueError) as exc:
+                    raise ValueError(
+                        'canonical merge_policy must be "all", "local", "external", or "forbidden"'
+                    ) from exc
         if not isinstance(unreferenced_fields, UnreferencedFieldPolicy):
             raise TypeError("canonical unreferenced_fields must be APPEND or IGNORE")
         if heading is None:
@@ -159,7 +215,7 @@ class CanonicalSourceDecorator:
             )
             if order is not None:
                 attach_information(subject, CanonicalOrder, order)
-            attach_information(subject, CanonicalPlaceholders, placeholders)
+            attach_information(subject, CanonicalMergePolicy, effective_merge_policy)
             attach_information(subject, CanonicalUnreferencedFields, unreferenced_fields)
             attach_information(subject, CanonicalHeadingPolicy, heading_policy)
             if isinstance(subject, type):

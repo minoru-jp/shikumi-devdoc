@@ -7,7 +7,7 @@ from devdocs.canonical_sources.specification.distribution import SPECIFICATION_P
 
 
 @summary('canonical source や語彙を成果物へ変換する公開 realizer API。')
-@canonical_source('Realizers', filename='realizers.md', order=30, placeholders=True, heading="identity")
+@canonical_source('Realizers', filename='realizers.md', order=30, merge_policy="all", heading="identity")
 class API_REFERENCE_PART:
     """意味像を Markdown または Python 参照モジュールへ変換する公開実現 API。"""
 

@@ -12,7 +12,7 @@ cli_example = test_target_field("CLI example")
     "Writing CLI documentation",
     filename="cli-documentation.md",
     order=40,
-    placeholders=False,
+    merge_policy="local",
     unreferenced_fields=IGNORE,
     heading="title",
 )

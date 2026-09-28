@@ -13,9 +13,19 @@ from shikumi_devdoc.fields.changelog import (
 from shikumi_devdoc.norms.common import canonical_source
 
 
-@canonical_source("shikumi-devdoc 変更履歴", filename="CHANGELOG.md", placeholders=False, heading="identity")
+@canonical_source("shikumi-devdoc 変更履歴", filename="CHANGELOG.md", merge_policy="forbidden", heading="identity")
 class CHANGELOG:
     """`shikumi-devdoc` の versioned change history を記録する。公開されなかった開発 milestone はその旨を明記する。"""
+
+    class V0_3_2:
+        """canonical document の merge 許可範囲を明示する policy を追加し、旧 placeholder boolean を後方互換のまま非推奨化した。"""
+
+        version @= "0.3.2"
+
+        added @= '`@canonical_source(...)` に `merge_policy="all" | "local" | "external" | "forbidden"` を追加した。local reference と realization context の許可範囲を独立に表現でき、`"forbidden"` では snapshot 文書が local/external の双方から内容を合成しないことを宣言できる。'
+        changed @= '`merge_policy="external"` と `merge_policy="forbidden"` は、template で実際に参照される local binding だけでなく、未使用の `merge @= ...` 宣言自体も validation error とする。literal field value は引き続き template 解釈せず保持できる。'
+        changed @= '自身の CHANGELOG canonical source を `merge_policy="forbidden"` に変更し、release snapshot が将来の local/external 値変更で変化しないことを明示した。'
+        deprecated @= '`@canonical_source(..., placeholders=...)` を非推奨化した。`placeholders=True` は `merge_policy="all"`、`placeholders=False` は `merge_policy="local"` と後方互換に解釈し、API 利用時に `DeprecationWarning` を送出する。CLI はその warning を表示する。`placeholders` は 1.0.0 で削除予定である。'
 
     class V0_3_1:
         """配布物の役割を整理し、sdist をリリース再構成・検証に十分な完全なソース配布物へ変更した。"""

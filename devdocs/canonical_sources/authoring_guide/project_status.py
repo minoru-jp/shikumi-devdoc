@@ -11,7 +11,7 @@ from shikumi_devdoc.norms.document import title
     "Writing Project Status",
     filename="project-status.md",
     order=90,
-    placeholders=False,
+    merge_policy="local",
     unreferenced_fields=IGNORE,
     heading="title",
 )

@@ -5,7 +5,7 @@ from tests.fixtures.vocabulary_collision_a import VocabularyA
 term_field = prose_field("local term")
 
 
-@canonical_source("Qualified field reference", filename="qualified-field.md", placeholders=False, heading="identity")
+@canonical_source("Qualified field reference", filename="qualified-field.md", merge_policy="local", heading="identity")
 class QUALIFIED_FIELD_REFERENCE:
     """{{local_term}} and {{VocabularyA.TERM_001}}."""
 

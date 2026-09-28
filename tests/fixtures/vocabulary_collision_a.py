@@ -3,7 +3,7 @@ from shikumi_devdoc.norms.vocabulary import vocabulary
 
 
 @vocabulary
-@canonical_source("Vocabulary A", filename="A.md", placeholders=False, heading="identity")
+@canonical_source("Vocabulary A", filename="A.md", merge_policy="local", heading="identity")
 class VocabularyA:
     """Vocabulary A."""
 

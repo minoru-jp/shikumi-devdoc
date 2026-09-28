@@ -6,8 +6,14 @@ from collections.abc import Mapping
 
 from shikumi import Diagnostic, RealizationCheck, Realizer, SemanticView
 
-from shikumi_devdoc.context import Context
-from shikumi_devdoc.norms._common import CanonicalContent, CanonicalTitle
+from shikumi_devdoc._placeholder_syntax import placeholder_keys
+from shikumi_devdoc.context import Context, UnknownContextKeyError
+from shikumi_devdoc.norms._common import (
+    CanonicalContent,
+    CanonicalMergePolicy,
+    CanonicalTitle,
+    MergePolicy,
+)
 from shikumi_devdoc.norms._vocabulary import (
     Alias,
     Definition,
@@ -96,6 +102,8 @@ class MarkdownRealizer(Realizer[str]):
             )
 
         resolver = PlaceholderResolver(self.context)
+        policies = document.values(CanonicalMergePolicy)
+        merge_policy = policies[0] if len(policies) == 1 else MergePolicy.ALL
         pairs = [
             (document, (CanonicalTitle, CanonicalContent)),
             *[(entry, (Definition,)) for entry in entries],
@@ -112,14 +120,26 @@ class MarkdownRealizer(Realizer[str]):
                         )
                     )
                     continue
-                for key in resolver.unknown(values[0]):
-                    diagnostics.append(
-                        Diagnostic(
-                            f"glossary references unknown placeholder {key!r}",
-                            code="markdown.glossary.placeholder.unknown",
-                            subject=item.subject,
+                for key in placeholder_keys(values[0]):
+                    if not merge_policy.allows_external:
+                        diagnostics.append(
+                            Diagnostic(
+                                f"canonical vocabulary forbids external placeholder {key!r}",
+                                code="markdown.glossary.placeholder.forbidden",
+                                subject=item.subject,
+                            )
                         )
-                    )
+                        continue
+                    try:
+                        resolver.resolve(key)
+                    except UnknownContextKeyError:
+                        diagnostics.append(
+                            Diagnostic(
+                                f"glossary references unknown placeholder {key!r}",
+                                code="markdown.glossary.placeholder.unknown",
+                                subject=item.subject,
+                            )
+                        )
 
         return RealizationCheck(view, tuple(diagnostics))
 

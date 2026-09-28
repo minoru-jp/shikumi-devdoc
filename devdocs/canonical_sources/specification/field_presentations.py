@@ -7,7 +7,7 @@ from shikumi_devdoc.norms.document import title
 
 
 @summary('作者定義 field の汎用 Markdown 表現に関する規則。')
-@canonical_source("Field presentations", filename="field-presentations.md", order=30, placeholders=True, heading="identity")
+@canonical_source("Field presentations", filename="field-presentations.md", order=30, merge_policy="all", heading="identity")
 class SPECIFICATION_PART:
     """作者定義 field が canonical Markdown 上で選択できる汎用表現に関する規則。"""
 

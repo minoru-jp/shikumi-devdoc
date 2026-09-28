@@ -12,7 +12,7 @@ configuration_example = test_target_field("configuration example")
     "Writing a Configuration Guide",
     filename="configuration-guide.md",
     order=30,
-    placeholders=False,
+    merge_policy="local",
     unreferenced_fields=IGNORE,
     heading="title",
 )

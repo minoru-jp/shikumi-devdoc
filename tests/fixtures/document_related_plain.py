@@ -6,7 +6,7 @@ from shikumi_devdoc.norms.common import canonical_source
 from shikumi_devdoc.norms.document import title
 
 
-@canonical_source("Guide", filename="document_related_plain.md", placeholders=True, heading="identity")
+@canonical_source("Guide", filename="document_related_plain.md", merge_policy="all", heading="identity")
 class TITLE_1:
     """Relation target is resolved by Python before shikumi-devdoc sees it."""
 

@@ -16,7 +16,7 @@ external_vocabulary_merge_example = test_target_field("external Vocabulary merge
     "Writing a Glossary / Vocabulary",
     filename="glossary.md",
     order=80,
-    placeholders=False,
+    merge_policy="local",
     unreferenced_fields=IGNORE,
     heading="title",
 )
@@ -47,7 +47,7 @@ class AUTHORING_GUIDE_PART:
 
 
         @vocabulary
-        @canonical_source("Project Vocabulary", filename="GLOSSARY.md", placeholders=False, heading="identity")
+        @canonical_source("Project Vocabulary", filename="GLOSSARY.md", merge_policy="local", heading="identity")
         class TERMS:
             class TERM_001:
                 """

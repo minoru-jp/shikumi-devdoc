@@ -8,7 +8,7 @@ This document is authored with the unified canonical-document model and the stan
 
 title: Development stage
 
-Current development stage: Beta. Current public version: `0.3.1`.
+Current development stage: Beta. Current public version: `0.3.2`.
 
 ## STATUS_002
 
@@ -20,7 +20,7 @@ Current supported Python range: `>=3.11`.
 
 title: Shikumi compatibility
 
-`shikumi-devdoc 0.3.1` requires `shikumi>=0.2.0`. The compatibility baseline was established by the breaking 0.3.0 release. Because Shikumi's policy from 0.2.0 onward is to preserve backward compatibility, no upper bound is imposed unless a concrete incompatibility is identified.
+`shikumi-devdoc 0.3.2` requires `shikumi>=0.2.0`. The compatibility baseline was established by the breaking 0.3.0 release. Because Shikumi's policy from 0.2.0 onward is to preserve backward compatibility, no upper bound is imposed unless a concrete incompatibility is identified.
 
 ## STATUS_004
 
@@ -51,3 +51,13 @@ kind: General
 condition: From the `0.3.0` Beta release until the first major-version release.
 
 From the `0.3.0` Beta release onward, public APIs will be maintained without backward-incompatible changes. The project will continue to be used in real workflows and dogfooded to confirm API stability; if no material problems emerge, it will then move to a major-version release.
+## NOTICE_002
+
+title: Deprecation of placeholders
+
+kind: General
+
+condition: From `0.3.2` until migration to `1.0.0`.
+
+`@canonical_source(..., placeholders=...)` is deprecated as of 0.3.2. `placeholders=True` remains backward-compatible with `merge_policy="all"`, while `placeholders=False` remains backward-compatible with `merge_policy="local"`. New code should use `merge_policy`. The `placeholders` parameter is scheduled for removal in 1.0.0.
+

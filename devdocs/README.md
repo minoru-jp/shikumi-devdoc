@@ -129,7 +129,7 @@ shikumi-devdoc render index \
   --translation-source
 ```
 
-Authoring Guide, CHANGELOG, STATUS, and `devdocs/README.md` use `@canonical_source(..., placeholders=False)` to reject external placeholders in template-bearing content. README, Specification, and API Reference allow external placeholders where useful. Node-local references contributed by field `@=` bindings or by `merge @= target` / `merge @= ("name", target)` are independent of that policy. Class targets use the shortest unambiguous suffix of their Python identity, with longer qualification available when names collide; field bindings use their `@=` left-hand names and may be given explicit aliases when needed.
+`merge_policy` declares which merge sources a canonical document accepts: `"all"`, `"local"`, `"external"`, or `"forbidden"`. This repository uses `"forbidden"` for CHANGELOG so historical snapshots cannot change through later local or external values, `"local"` for self-contained documents that may reuse canonical-local information, and `"all"` where realization context is intentionally part of the document. The legacy `placeholders` boolean is deprecated as of 0.3.2 and scheduled for removal in 1.0.0. Class merge targets use the shortest unambiguous suffix of their Python identity, with longer qualification available when names collide; field bindings use their `@=` left-hand names and may be given explicit aliases when needed.
 
 ## Tests
 

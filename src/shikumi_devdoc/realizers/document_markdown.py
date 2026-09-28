@@ -28,12 +28,13 @@ from shikumi_devdoc.norms._common import (
     CanonicalDocumentPath,
     CanonicalFilename,
     CanonicalHeadingPolicy,
-    CanonicalPlaceholders,
+    CanonicalMergePolicy,
     CanonicalSource,
     CanonicalTitle,
     CanonicalUnreferencedFields,
     HeadingPolicy,
     MergeBinding,
+    MergePolicy,
 )
 from shikumi_devdoc.norms._document import (
     DocumentField,
@@ -500,7 +501,8 @@ class MarkdownRealizer(Realizer[tuple[MarkdownDocument, ...]]):
         resolver = self._resolver()
 
         for document in documents:
-            placeholders_allowed = document.values(CanonicalPlaceholders) == (True,)
+            policies = document.values(CanonicalMergePolicy)
+            merge_policy = policies[0] if len(policies) == 1 else MergePolicy.ALL
             for item in self._document_members(view, document):
                 depth = heading_depth(view, item, (CanonicalContent,))
                 if depth > 6:
@@ -572,7 +574,7 @@ class MarkdownRealizer(Realizer[tuple[MarkdownDocument, ...]]):
                                 )
                             )
                     for key in self._external_keys(item, text):
-                        if not placeholders_allowed:
+                        if not merge_policy.allows_external:
                             diagnostics.append(
                                 Diagnostic(
                                     f"canonical document forbids external placeholder {key!r}",

@@ -7,7 +7,7 @@ code = test_target_field("code")
 table = table_field("table", columns=("expression", "meaning"))
 
 
-@canonical_source("Literal fields", filename="literal-fields.md", placeholders=False, heading="identity")
+@canonical_source("Literal fields", filename="literal-fields.md", merge_policy="local", heading="identity")
 class LITERAL_FIELDS:
     """Literal test target:
 

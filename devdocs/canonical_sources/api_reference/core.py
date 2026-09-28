@@ -4,7 +4,7 @@ from shikumi_devdoc.norms.common import canonical_source, summary
 from devdocs.canonical_sources.specification.distribution import SPECIFICATION_PART as DISTRIBUTION_SPEC
 
 @summary('トップレベルの公開名前空間と主要エントリポイント。')
-@canonical_source('Core', filename='core.md', order=0, placeholders=True, heading="identity")
+@canonical_source('Core', filename='core.md', order=0, merge_policy="all", heading="identity")
 class API_REFERENCE_PART:
     """トップレベルの公開名前空間。"""
 

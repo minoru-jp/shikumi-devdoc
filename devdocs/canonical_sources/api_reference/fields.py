@@ -5,7 +5,7 @@ from shikumi_devdoc.norms.common import canonical_source, summary
 
 
 @summary('用途別に再利用できる標準 field set。')
-@canonical_source("Standard fields", filename="fields.md", order=25, placeholders=True, heading="identity")
+@canonical_source("Standard fields", filename="fields.md", order=25, merge_policy="all", heading="identity")
 class API_REFERENCE_PART:
     """Generic field primitives から構成される任意利用の標準 field set。realizer はこれらを特別扱いしない。"""
 

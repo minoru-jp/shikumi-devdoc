@@ -25,7 +25,7 @@ Change-category fields are literal list content. Do not write `{{...}}` inside t
 
 ## Separate current context from historical facts
 
-The current project version may come from realization context, but past release versions and their changes belong directly in the canonical source. Re-realizing the document must not rewrite old CHANGELOG entries with current values.
+The current project version may come from realization context, but past release versions and their changes belong directly in the canonical source. Re-realizing the document must not rewrite old CHANGELOG entries with current values. Set the CHANGELOG canonical source to `merge_policy="forbidden"` so both local and external merge are rejected.
 
 ## Subject lifecycle can also live with the subject
 

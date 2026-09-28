@@ -7,7 +7,7 @@ from shikumi_devdoc.norms.document import title
 
 
 @summary('作者定義 field と自己完結した canonical document に関する規則。')
-@canonical_source("Structured fields", filename="specification.md", order=50, placeholders=True, heading="identity")
+@canonical_source("Structured fields", filename="specification.md", order=50, merge_policy="all", heading="identity")
 class SPECIFICATION_PART:
     """作者定義 field と自己完結した canonical document に関する規則。"""
 

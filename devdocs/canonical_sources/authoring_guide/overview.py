@@ -10,7 +10,7 @@ from shikumi_devdoc.norms.document import title
     "Authoring Guide overview",
     filename="overview.md",
     order=0,
-    placeholders=False,
+    merge_policy="local",
     unreferenced_fields=IGNORE,
     heading="title",
 )

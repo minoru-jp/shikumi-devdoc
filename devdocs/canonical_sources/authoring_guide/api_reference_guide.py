@@ -14,7 +14,7 @@ api_example = test_target_field("API reference example")
     "Writing an API Reference",
     filename="api-reference.md",
     order=60,
-    placeholders=False,
+    merge_policy="local",
     unreferenced_fields=IGNORE,
     heading="title",
 )

@@ -8,7 +8,7 @@ from shikumi_devdoc.norms.document import test_target_field, title
 example = test_target_field("example")
 
 
-@canonical_source("Guide", filename="guide.md", placeholders=False, heading="title")
+@canonical_source("Guide", filename="guide.md", merge_policy="local", heading="title")
 class GUIDE:
     class SECTION_001:
         """

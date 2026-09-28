@@ -16,7 +16,7 @@ from devdocs.canonical_sources.specification.distribution import SPECIFICATION_P
 
 
 @summary('canonical source と文書記述に使う公開 DSL。')
-@canonical_source('Regulations and descriptors', filename='norms.md', order=20, placeholders=True, heading="identity")
+@canonical_source('Regulations and descriptors', filename='norms.md', order=20, merge_policy="all", heading="identity")
 class API_REFERENCE_PART:
     """{{TERM_001}} の記述に使う公開 DSL。"""
     bind @= TERMS.TERM_001
@@ -49,7 +49,7 @@ class API_REFERENCE_PART:
                 kind @= API_VALUE
 
             class canonical_source:
-                """{{TERM_001}} unit を宣言する decorator。{{TERM_002}} では root title、filename、`heading="title"|"identity"` の nested heading policy、任意 order、{{TERM_012}} policy、未参照 {{TERM_007}} policy を共通 metadata として宣言する。"""
+                """{{TERM_001}} unit を宣言する decorator。{{TERM_002}} では root title、filename、`heading="title"|"identity"` の nested heading policy、任意 order、`merge_policy="all"|"local"|"external"|"forbidden"`、未参照 {{TERM_007}} policy を共通 metadata として宣言する。旧 `placeholders` は 0.3.2 で非推奨となり、1.0.0 で削除予定である。"""
                 bind @= TERMS.TERM_001
                 bind @= TERMS.TERM_002
                 bind @= TERMS.TERM_012

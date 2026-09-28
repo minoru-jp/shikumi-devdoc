@@ -27,7 +27,7 @@ render_command = test_target_field("render command")
 rendered_markdown = test_target_field("rendered Markdown")
 vocabulary_merge_example = test_target_field("Vocabulary merge example")
 
-@canonical_source('{{project.name}}', filename='README.md', placeholders=True, unreferenced_fields=IGNORE, heading="title")
+@canonical_source('{{project.name}}', filename='README.md', merge_policy="all", unreferenced_fields=IGNORE, heading="title")
 class SECTION_001:
     r"""
     `{{project.name}}` は、開発文書を意味構造を持つ Python の {{TERM_001}} として記述し、[Shikumi](https://pypi.org/project/shikumi/) で検証し、Markdown の {{TERM_002}} へ実現するためのライブラリである。
@@ -99,7 +99,7 @@ class SECTION_001:
         minimal_source @= """
         from shikumi_devdoc.norms.common import canonical_source
 
-        @canonical_source("Example", filename="example.md", placeholders=False, heading="identity")
+        @canonical_source("Example", filename="example.md", merge_policy="local", heading="identity")
         class EXAMPLE:
             class Introduction:
                 '''Hello from shikumi-devdoc.'''
@@ -173,7 +173,7 @@ class SECTION_001:
 
         文書固有の構造化情報は {{TERM_007}} として宣言する。作者は project-local な {{TERM_008}} を定義でき、頻出する組み合わせには `shikumi_devdoc.fields` の {{TERM_009}} を利用できる。generic core は field のドメイン意味を所有しない。
 
-        docstring、`prose_field`、`title @= ...` は {{TERM_010}} として {{TERM_013}} や external placeholder を扱える。field 系の `@=` 左辺名は同じ node の local reference として自動的に利用でき、`merge` は class target、文字列、明示 alias など追加の参照を登録する。通常の `field`、`list_field`、`table_field`、`test_target_field` の値自体は {{TERM_011}} として扱う。`test_target_field` は通常のテストから直接検証したい文字列断片を分離するためのもので、Markdown fence や language は surrounding template 側に記述する。Python object relation を文書間参照として実現したい場合は `reference_field` を使い、標準 `related` はその convenience field として利用できる。未参照 field は `APPEND` で本文へ追加するか、`IGNORE` で source-only の意味情報として保持できる。
+        docstring、`prose_field`、`title @= ...` は {{TERM_010}} として {{TERM_013}} や external placeholder を扱える。field 系の `@=` 左辺名は同じ node の local reference として自動的に利用でき、`merge` は class target、文字列、明示 alias など追加の参照を登録する。`merge_policy="all"` は local/external の双方、`"local"` は local のみ、`"external"` は external のみを許可し、`"forbidden"` は双方を拒否する。旧 `placeholders` boolean は 0.3.2 で非推奨となり、1.0.0 で削除予定である。通常の `field`、`list_field`、`table_field`、`test_target_field` の値自体は {{TERM_011}} として扱う。`test_target_field` は通常のテストから直接検証したい文字列断片を分離するためのもので、Markdown fence や language は surrounding template 側に記述する。Python object relation を文書間参照として実現したい場合は `reference_field` を使い、標準 `related` はその convenience field として利用できる。未参照 field は `APPEND` で本文へ追加するか、`IGNORE` で source-only の意味情報として保持できる。
         """
         title @= "Vocabulary と構造化情報"
 

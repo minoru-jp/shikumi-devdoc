@@ -5,7 +5,7 @@ from shikumi_devdoc.norms.common import canonical_source, merge, summary
 from devdocs.canonical_sources.specification.cli import SPECIFICATION_PART as CLI_SPEC
 
 @summary('インストール時に利用できる `shikumi-devdoc` CLI。')
-@canonical_source('Command-line interface', filename='cli.md', order=40, placeholders=True, heading="identity")
+@canonical_source('Command-line interface', filename='cli.md', order=40, merge_policy="all", heading="identity")
 class API_REFERENCE_PART:
     """インストール時に公開される `shikumi-devdoc` コマンド。"""
 

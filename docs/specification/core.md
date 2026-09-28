@@ -46,7 +46,7 @@ level: MUST
 
 ## CORE_008 Canonical document metadata
 
-A canonical document's root title, filename, nested-heading policy, optional order, external-placeholder policy, and unreferenced-field policy must be declared as common metadata through `@canonical_source(...)`, independently from document-domain semantics. The author must explicitly select either `heading="title"` or `heading="identity"`; the realizer must not infer the policy from the document kind.
+A canonical document's root title, filename, nested-heading policy, optional order, merge policy, and unreferenced-field policy must be declared as common metadata through `@canonical_source(...)`, independently from document-domain semantics. The author must explicitly select either `heading="title"` or `heading="identity"`; the realizer must not infer the policy from the document kind.
 
 level: MUST
 
@@ -56,9 +56,21 @@ Canonical documents must use one document-node model. Root and nested classes sh
 
 level: MUST
 
-## CORE_010 Document-local external placeholder policy
+## CORE_010 Merge policy
 
-`@canonical_source(..., placeholders=False)` must forbid external `{{...}}` placeholders in template-bearing content such as docstrings, `prose_field`, and `title @= ...`. It must not forbid node-local references contributed by field `@=` bindings or by `merge @= target` / `merge @= ("name", target)`, nor placeholder-looking text inside literal fields.
+`@canonical_source(..., merge_policy=...)` must control which value sources template-bearing content may reference with four values: `"all"`, `"local"`, `"external"`, and `"forbidden"`. `"all"` allows both node-local references and external placeholders, `"local"` allows only node-local references, `"external"` allows only external placeholders, and `"forbidden"` allows neither. The default is `"all"`.
+
+level: MUST
+
+## CORE_010A Local merge prohibition
+
+A canonical document using `merge_policy="external"` or `merge_policy="forbidden"` must not contain `merge @= ...` declarations, even when they are unused, and template-bearing content must not reference node-local bindings, including field bindings. Ordinary field values remain literal content, and placeholder-looking text inside them must not be interpreted as a template.
+
+level: MUST
+
+## CORE_010B Legacy placeholders compatibility
+
+The deprecated `placeholders=True` parameter must be interpreted as `merge_policy="all"`, and `placeholders=False` as `merge_policy="local"`. `placeholders` and `merge_policy` must not be specified together. Direct API use of `placeholders` must emit a deprecation warning, CLI use must surface that warning, and `placeholders` is scheduled for removal in 1.0.0.
 
 level: MUST
 

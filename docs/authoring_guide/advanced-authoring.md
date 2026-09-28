@@ -15,7 +15,7 @@ A nested node's human-readable title is always recorded with `title @= "..."`; `
 For narrative documents, select `@canonical_source(..., heading="title")` so the resolved title becomes the Markdown heading. When the node does not need a meaningful external name, an opaque stable identity such as `SECTION_NNN` is recommended. The number is not display order, heading depth, or a published section number. Preserve the identity across reordering, title changes, and hierarchy moves.
 
 ```python
-@canonical_source("Guide", filename="guide.md", placeholders=False, heading="title")
+@canonical_source("Guide", filename="guide.md", merge_policy="local", heading="title")
 class GUIDE:
     class SECTION_017:
         """Introductory text."""
@@ -51,6 +51,8 @@ Do not use merge as a general macro system for fragmenting long prose. Docstring
 
 A value is a good realization-context candidate when it is allowed to change when the same canonical source is realized later. The current project version is a typical example. Historical release versions, accepted design decisions, and normative conditions should remain in the canonical source.
 
+`merge_policy="all"` allows local and external merge, `"local"` allows only local merge, `"external"` allows only external merge, and `"forbidden"` rejects both. Use `"local"` for self-contained documents that may reuse local canonical information but must not vary with external context. Use `"forbidden"` for snapshot documents such as a CHANGELOG when later changes must not alter recorded history.
+
 ## Protect code examples with normal tests
 
 Move sample code, configuration, commands, expected output, or similar fragments into `test_target_field` when ordinary tests should inspect the exact text. Put Markdown fences and language markers in the surrounding docstring, then verify the field value with pytest or another normal test mechanism. Do not make documentation generation execute code with `eval` or `exec` as a special testing DSL.
@@ -61,7 +63,7 @@ from shikumi_devdoc.norms.document import test_target_field, title
 
 example = test_target_field("example")
 
-@canonical_source("Guide", filename="guide.md", placeholders=False, heading="title")
+@canonical_source("Guide", filename="guide.md", merge_policy="local", heading="title")
 class GUIDE:
     class SECTION_001:
         """

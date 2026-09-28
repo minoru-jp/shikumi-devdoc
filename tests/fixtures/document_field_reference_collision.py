@@ -5,7 +5,7 @@ from tests.fixtures.vocabulary_collision_a import VocabularyA
 term_field = prose_field("local term")
 
 
-@canonical_source("Ambiguous field reference", filename="ambiguous-field.md", placeholders=False, heading="identity")
+@canonical_source("Ambiguous field reference", filename="ambiguous-field.md", merge_policy="local", heading="identity")
 class AMBIGUOUS_FIELD_REFERENCE:
     """{{TERM_001}}"""
 

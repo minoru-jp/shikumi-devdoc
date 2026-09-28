@@ -7,7 +7,7 @@ second = prose_field("second")
 matrix = table_field("matrix", columns=("a", "b"))
 
 
-@canonical_source("Invalid fields", filename="invalid-fields.md", placeholders=False, heading="identity")
+@canonical_source("Invalid fields", filename="invalid-fields.md", merge_policy="local", heading="identity")
 class INVALID_FIELDS:
     """{{first}}"""
 

@@ -30,12 +30,13 @@ from ._common import (
     CanonicalFilename,
     CanonicalHeadingPolicy,
     CanonicalOrder,
-    CanonicalPlaceholders,
+    CanonicalMergePolicy,
     CanonicalSource,
     CanonicalSummary,
     CanonicalTitle,
     CanonicalUnreferencedFields,
     MergeBinding,
+    MergePolicy,
     HeadingPolicy,
     canonical_source,
     merge,
@@ -685,6 +686,59 @@ def _validate_local_references(item):
             yield from visit(name)
 
 
+
+def _merge_policy_for_subject(subject: object) -> MergePolicy | None:
+    root = canonical_document_root(subject) if isinstance(subject, type) else None
+    if root is None:
+        return None
+    values = tuple(
+        record.value
+        for record in information_of(root)
+        if record.type is CanonicalMergePolicy
+    )
+    if len(values) == 1 and isinstance(values[0], MergePolicy):
+        return values[0]
+    return None
+
+
+def _validate_merge_policy(item):
+    policy = _merge_policy_for_subject(item.subject)
+    if policy is None or policy.allows_local:
+        return
+
+    if item.values(MergeBinding):
+        yield Diagnostic(
+            f'canonical document merge_policy="{policy.value}" forbids local merge declarations',
+            code="document.merge.policy.local",
+            subject=item.subject,
+        )
+
+    bindings, ambiguous = template_reference_bindings(item)
+    local_names = set(bindings) | set(ambiguous)
+    if not local_names:
+        return
+
+    reported: set[str] = set()
+    policy_texts = [*_template_texts(item)]
+    policy_texts.extend(
+        value
+        for info_type in (CanonicalTitle, CanonicalSummary)
+        for value in item.values(info_type)
+        if isinstance(value, str)
+    )
+    for text in policy_texts:
+        for key in placeholder_keys(text):
+            if key not in local_names or key in reported:
+                continue
+            reported.add(key)
+            yield Diagnostic(
+                f'canonical document merge_policy="{policy.value}" forbids local template reference {key!r}',
+                code="document.merge.policy.local",
+                subject=item.subject,
+            )
+
+
+
 def _validate_field_values(current):
     fields = current.values(DocumentField)
     if not fields:
@@ -867,7 +921,7 @@ def document_entity(view):
             (CanonicalContent, "document.content.required", "canonical document roots require exactly one content template"),
             (CanonicalFilename, "document.filename.required", "canonical document roots require exactly one filename"),
             (CanonicalDocumentPath, "document.path.required", "canonical document roots require exactly one logical document path"),
-            (CanonicalPlaceholders, "document.placeholders.required", "canonical document roots require exactly one external-placeholder policy"),
+            (CanonicalMergePolicy, "document.merge_policy.required", "canonical document roots require exactly one merge policy"),
             (CanonicalUnreferencedFields, "document.fields.policy.required", "canonical document roots require exactly one unreferenced-field policy"),
             (CanonicalHeadingPolicy, "document.heading.required", "canonical document roots require exactly one heading policy"),
             (CanonicalSource, "document.canonical_source.required", "canonical document roots require exactly one canonical source"),
@@ -924,7 +978,7 @@ def document_entity(view):
                 CanonicalFilename,
                 CanonicalDocumentPath,
                 CanonicalOrder,
-                CanonicalPlaceholders,
+                CanonicalMergePolicy,
                 CanonicalUnreferencedFields,
                 CanonicalHeadingPolicy,
             )
@@ -949,6 +1003,7 @@ def document_entity(view):
 
     if current.has(CanonicalTitle) or current.values(CanonicalContent):
         yield from _validate_local_references(current)
+        yield from _validate_merge_policy(current)
 
     yield from _validate_field_values(current)
 
@@ -969,7 +1024,7 @@ document = Shikumi(
         CanonicalDocumentPath,
         CanonicalFilename,
         CanonicalOrder,
-        CanonicalPlaceholders,
+        CanonicalMergePolicy,
         CanonicalUnreferencedFields,
         CanonicalHeadingPolicy,
     ],
@@ -990,7 +1045,7 @@ document = Shikumi(
         information_type_rule(CanonicalDocumentPath),
         information_type_rule(CanonicalFilename),
         information_type_rule(CanonicalOrder),
-        information_type_rule(CanonicalPlaceholders),
+        information_type_rule(CanonicalMergePolicy),
         information_type_rule(CanonicalUnreferencedFields),
         information_type_rule(CanonicalHeadingPolicy),
         document_module,
