@@ -16,3 +16,7 @@ dist/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# temporary data
+.tmp-diffs/
+
