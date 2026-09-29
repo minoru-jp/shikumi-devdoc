@@ -99,14 +99,14 @@ The design therefore favors explicit meaning, mechanical validation, and stable 
 
 `shikumi-devdoc` dogfoods its own documentation system.
 
-- [Authoring Guide](docs/authoring_guide/INDEX.md): practical guidance for designing and maintaining canonical source.
-- [Specification](docs/specification/INDEX.md): guaranteed behavior and constraints.
-- [API Reference](docs/api/INDEX.md): public interfaces.
-- [Project Status](STATUS.md): current state and forward-looking notices.
-- [CHANGELOG](CHANGELOG.md): past changes.
-- [devdocs workspace](devdocs/README.md): this repository's documentation-generation workspace.
-- [`devdocs/canonical_sources/`](devdocs/canonical_sources/): the canonical sources used by this project.
-- [`devdocs/canonical_documents/`](devdocs/canonical_documents/): Japanese canonical documents generated from validated source and realization context.
+- [Authoring Guide](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/authoring_guide/INDEX.md): practical guidance for designing and maintaining canonical source.
+- [Specification](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/specification/INDEX.md): guaranteed behavior and constraints.
+- [API Reference](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/api/INDEX.md): public interfaces.
+- [Project Status](https://github.com/minoru-jp/shikumi-devdoc/blob/main/STATUS.md): current state and forward-looking notices.
+- [CHANGELOG](https://github.com/minoru-jp/shikumi-devdoc/blob/main/CHANGELOG.md): past changes.
+- [devdocs workspace](https://github.com/minoru-jp/shikumi-devdoc/blob/main/devdocs/README.md): this repository's documentation-generation workspace.
+- [`devdocs/canonical_sources/`](https://github.com/minoru-jp/shikumi-devdoc/tree/main/devdocs/canonical_sources): the canonical sources used by this project.
+- [`devdocs/canonical_documents/`](https://github.com/minoru-jp/shikumi-devdoc/tree/main/devdocs/canonical_documents): Japanese canonical documents generated from validated source and realization context.
 
 The `devdocs/` tree also serves as a reference corpus for the authoring API. Comparing a canonical source with its corresponding canonical document shows the relationship between authoring, context injection, and realization output.
 
@@ -114,8 +114,8 @@ English published documents at the repository root and under `docs/` are produce
 
 ## Version
 
-Current version: `0.3.2`. Supported Python: `>=3.11`. See [`STATUS.md`](STATUS.md) for the current development stage and notices.
+Current version: `0.3.3`. Supported Python: `>=3.11`. See [`STATUS.md`](https://github.com/minoru-jp/shikumi-devdoc/blob/main/STATUS.md) for the current development stage and notices.
 
 ## License
 
-`shikumi-devdoc` is available under the MIT License. See [`LICENSE`](LICENSE).
+`shikumi-devdoc` is available under the MIT License. See [`LICENSE`](https://github.com/minoru-jp/shikumi-devdoc/blob/main/LICENSE).

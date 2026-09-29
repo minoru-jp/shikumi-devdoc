@@ -1,5 +1,19 @@
 # shikumi-devdoc Changelog
 
+## V0_3_3
+
+This release updates public project links for the now-public source repository so documentation is reachable from PyPI and exposes those public resources in package metadata.
+
+version: 0.3.3
+
+Added:
+
+- Added Repository, Documentation, Changelog, and Issues entries under `[project.urls]` in `pyproject.toml`, making the public GitHub resources available from PyPI project metadata.
+
+Changed:
+
+- Changed README references to repository documentation, STATUS, CHANGELOG, and LICENSE to absolute URLs rooted at `https://github.com/minoru-jp/shikumi-devdoc`, so the same public documents are reachable from the README displayed on PyPI.
+
 ## V0_3_2
 
 version: 0.3.2

@@ -23,3 +23,13 @@ def test_sdist_uses_release_source_snapshot_policy() -> None:
 def test_runtime_dependency_targets_shikumi_0_2_or_newer() -> None:
     project = _pyproject()["project"]
     assert project["dependencies"] == ["shikumi>=0.2.0"]
+
+
+def test_project_urls_point_to_public_repository() -> None:
+    urls = _pyproject()["project"]["urls"]
+    assert urls == {
+        "Repository": "https://github.com/minoru-jp/shikumi-devdoc",
+        "Documentation": "https://github.com/minoru-jp/shikumi-devdoc#documentation",
+        "Changelog": "https://github.com/minoru-jp/shikumi-devdoc/blob/main/CHANGELOG.md",
+        "Issues": "https://github.com/minoru-jp/shikumi-devdoc/issues",
+    }

@@ -8,7 +8,7 @@ This document is authored with the unified canonical-document model and the stan
 
 title: Development stage
 
-Current development stage: Beta. Current public version: `0.3.2`.
+Current development stage: Beta. Current public version: `0.3.3`.
 
 ## STATUS_002
 
@@ -20,7 +20,7 @@ Current supported Python range: `>=3.11`.
 
 title: Shikumi compatibility
 
-`shikumi-devdoc 0.3.2` requires `shikumi>=0.2.0`. The compatibility baseline was established by the breaking 0.3.0 release. Because Shikumi's policy from 0.2.0 onward is to preserve backward compatibility, no upper bound is imposed unless a concrete incompatibility is identified.
+`shikumi-devdoc 0.3.3` requires `shikumi>=0.2.0`. The compatibility baseline was established by the breaking 0.3.0 release. Because Shikumi's policy from 0.2.0 onward is to preserve backward compatibility, no upper bound is imposed unless a concrete incompatibility is identified.
 
 ## STATUS_004
 
@@ -34,13 +34,11 @@ The wheel includes the complete `devdocs/` reference corpus together with this r
 
 title: Distribution and CI status
 
-`shikumi-devdoc` is currently published **only through PyPI**. There is not yet a public web page for browsing the source repository.
+`shikumi-devdoc` is distributed through PyPI, and its source repository is public on [GitHub](https://github.com/minoru-jp/shikumi-devdoc). Repository references in the README use public GitHub URLs so that the documentation links also resolve from the README displayed on PyPI.
 
-As a result, some repository-relative links in the README and other published documentation do not resolve when the documentation is viewed on PyPI. This is a known limitation of the current distribution setup.
+GitHub Actions CI runs on pushes and pull requests to `main`. It checks Python 3.11 through 3.14, the minimum supported `shikumi==0.2.0`, canonical-document synchronization, the test suite, and wheel/sdist build and release-distribution verification.
 
-When the source repository is published on the web, for example on GitHub, the documentation links will be revised against the public repository URL so that they resolve correctly from the published documentation.
-
-There is also no hosted CI at present because there is no public source repository yet. Release verification and PyPI uploads are currently performed locally. CI will be introduced when the repository is published on GitHub and can be configured against that public environment.
+Publishing a GitHub Release runs the release workflow, which verifies that the tag matches the project version, builds and verifies the wheel and sdist, and publishes those verified artifacts to PyPI through Trusted Publishing.
 
 ## NOTICE_001
 

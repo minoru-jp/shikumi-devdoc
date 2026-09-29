@@ -112,14 +112,14 @@ docstring、`prose_field`、`title @= ...` は template-bearing content とし�
 
 `shikumi-devdoc` 自身の文書も `shikumi-devdoc` で構築している。
 
-- [Authoring Guide](docs/authoring_guide/INDEX.md): canonical source を設計・保守するための実践的な判断指針。
-- [Specification](docs/specification/INDEX.md): 保証する振る舞いと制約。
-- [API Reference](docs/api/INDEX.md): 公開インターフェース。
-- [Project Status](STATUS.md): 現在状態と現在から見た方向・告知。
-- [CHANGELOG](CHANGELOG.md): 過去の変更履歴。
-- [devdocs workspace](devdocs/README.md): このリポジトリの文書生成ワークスペース。
-- [`devdocs/canonical_sources/`](devdocs/canonical_sources/): 実際に使用している canonical source。
-- [`devdocs/canonical_documents/`](devdocs/canonical_documents/): 検証済み source と realization context から生成した日本語 canonical document。
+- [Authoring Guide](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/authoring_guide/INDEX.md): canonical source を設計・保守するための実践的な判断指針。
+- [Specification](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/specification/INDEX.md): 保証する振る舞いと制約。
+- [API Reference](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/api/INDEX.md): 公開インターフェース。
+- [Project Status](https://github.com/minoru-jp/shikumi-devdoc/blob/main/STATUS.md): 現在状態と現在から見た方向・告知。
+- [CHANGELOG](https://github.com/minoru-jp/shikumi-devdoc/blob/main/CHANGELOG.md): 過去の変更履歴。
+- [devdocs workspace](https://github.com/minoru-jp/shikumi-devdoc/blob/main/devdocs/README.md): このリポジトリの文書生成ワークスペース。
+- [`devdocs/canonical_sources/`](https://github.com/minoru-jp/shikumi-devdoc/tree/main/devdocs/canonical_sources): 実際に使用している canonical source。
+- [`devdocs/canonical_documents/`](https://github.com/minoru-jp/shikumi-devdoc/tree/main/devdocs/canonical_documents): 検証済み source と realization context から生成した日本語 canonical document。
 
 `devdocs/` は authoring API の参照例でもある。canonical source と対応する canonical document を比較すると、記述、context 注入、実現結果の関係を追跡できる。
 
@@ -127,8 +127,8 @@ docstring、`prose_field`、`title @= ...` は template-bearing content とし�
 
 ## バージョン
 
-現在のバージョンは `0.3.2`。Python `>=3.11` を対象とする。現在の開発段階や今後の方向は [`STATUS.md`](STATUS.md) を参照する。
+現在のバージョンは `0.3.3`。Python `>=3.11` を対象とする。現在の開発段階や今後の方向は [`STATUS.md`](https://github.com/minoru-jp/shikumi-devdoc/blob/main/STATUS.md) を参照する。
 
 ## ライセンス
 
-`shikumi-devdoc` は MIT License で提供する。ライセンス本文は [`LICENSE`](LICENSE) を参照すること。
+`shikumi-devdoc` は MIT License で提供する。ライセンス本文は [`LICENSE`](https://github.com/minoru-jp/shikumi-devdoc/blob/main/LICENSE) を参照すること。

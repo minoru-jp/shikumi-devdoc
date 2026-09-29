@@ -22,7 +22,7 @@ Canonical source は `devdocs/canonical_sources/status/canonical.py` です。
 
 ## STATUS_001
 
-現在の開発段階は Beta。現在の公開バージョンは `0.3.2`。
+現在の開発段階は Beta。現在の公開バージョンは `0.3.3`。
 
 title: Development stage
 
@@ -34,7 +34,7 @@ title: Supported Python
 
 ## STATUS_003
 
-`shikumi-devdoc 0.3.2` は `shikumi>=0.2.0` を要求する。互換性の基準線は破壊的変更を行った 0.3.0 で確立した。Shikumi 0.2.0 以降は後方互換性を維持する方針のため、既知の非互換性がない限り上限は設けない。
+`shikumi-devdoc 0.3.3` は `shikumi>=0.2.0` を要求する。互換性の基準線は破壊的変更を行った 0.3.0 で確立した。Shikumi 0.2.0 以降は後方互換性を維持する方針のため、既知の非互換性がない限り上限は設けない。
 
 title: Shikumi compatibility
 
@@ -48,11 +48,11 @@ related: [DIST_001](../specification/distribution.md#dist_001), [DIST_002](../sp
 
 ## STATUS_005
 
-`shikumi-devdoc` は現在 PyPI だけで公開しており、ソースリポジトリを閲覧できる公開 web page はまだ存在しない。そのため README やその他の公開文書にある repository-relative link の一部は、PyPI 上で文書を閲覧した場合には解決しない。これは現在の配布構成で既知の制約である。
+`shikumi-devdoc` は PyPI で配布し、ソースリポジトリを [GitHub](https://github.com/minoru-jp/shikumi-devdoc) で公開している。PyPI に表示される README からも文書へ移動できるよう、README の repository 内参照は公開 GitHub URL を使用する。
 
-ソースリポジトリを GitHub などで公開した時点で、公開リポジトリ URL を基準として文書 link を見直し、公開文書から正しく解決できるようにする。
+GitHub Actions の CI は `main` への push と pull request で実行し、Python 3.11 から 3.14、最低対応版 `shikumi==0.2.0`、canonical document の同期、test suite、wheel / sdist の build と release distribution verification を確認する。
 
-公開ソースリポジトリがまだないため hosted CI も現在は存在しない。release verification と PyPI upload はローカルで行う。GitHub でリポジトリを公開し、その公開環境に対して設定できる時点で CI を導入する。
+GitHub Release を publish すると release workflow が tag と project version の一致を確認し、wheel / sdist を build・検証した後、その検証済み artifact を PyPI Trusted Publishing で公開する。
 
 title: Distribution and CI status
 

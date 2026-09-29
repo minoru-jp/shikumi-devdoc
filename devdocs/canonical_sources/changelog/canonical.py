@@ -17,6 +17,14 @@ from shikumi_devdoc.norms.common import canonical_source
 class CHANGELOG:
     """`shikumi-devdoc` の versioned change history を記録する。公開されなかった開発 milestone はその旨を明記する。"""
 
+    class V0_3_3:
+        """公開リポジトリ化に合わせて、PyPI からも解決できる文書リンクと project metadata の公開 URL を整備した。"""
+
+        version @= "0.3.3"
+
+        added @= '`pyproject.toml` の `[project.urls]` に Repository、Documentation、Changelog、Issues の公開 URL を追加し、PyPI の project metadata から GitHub 上の公開リソースへ移動できるようにした。'
+        changed @= 'README の repository 内文書・STATUS・CHANGELOG・LICENSE への参照を `https://github.com/minoru-jp/shikumi-devdoc` を基準とする絶対 URL へ変更し、PyPI に表示される README からも同じ公開文書へ移動できるようにした。'
+
     class V0_3_2:
         """canonical document の merge 許可範囲を明示する policy を追加し、旧 placeholder boolean を後方互換のまま非推奨化した。"""
 

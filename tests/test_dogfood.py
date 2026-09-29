@@ -61,6 +61,9 @@ def test_repository_readme_keeps_related_source_only_under_ignore_policy() -> No
     rendered = realizer.realize(result.view)[0]
     assert "DOC_006" not in rendered.content
     assert "SPEC_008" not in rendered.content
+    assert "https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/authoring_guide/INDEX.md" in rendered.content
+    assert "https://github.com/minoru-jp/shikumi-devdoc/blob/main/STATUS.md" in rendered.content
+    assert "https://github.com/minoru-jp/shikumi-devdoc/blob/main/LICENSE" in rendered.content
 
 
 def test_repository_workspace_readme_is_canonical_document() -> None:
@@ -144,7 +147,8 @@ def test_repository_project_status_dogfoods_generic_documents() -> None:
     assert "condition: `0.3.0` の Beta 公開から最初のメジャーバージョンへ移行するまで。" in status_document.content
     assert "Installed documentation resources" in status_document.content
     assert "shikumi>=0.2.0" in status_document.content
-    assert "hosted CI" in status_document.content
+    assert "GitHub Actions" in status_document.content
+    assert "Trusted Publishing" in status_document.content
     assert "公開 API には破壊的変更を加えず" in status_document.content
     assert "メジャーバージョンへ移行する" in status_document.content
     assert "Beta" in status_document.content
@@ -163,6 +167,8 @@ def test_repository_changelog_dogfoods_list_fields() -> None:
     assert len(documents) == 1
     changelog = documents[0]
     assert changelog.filename == "CHANGELOG.md"
+    assert "## V0_3_3" in changelog.content
+    assert "version: 0.3.3" in changelog.content
     assert "## V0_3_2" in changelog.content
     assert "version: 0.3.2" in changelog.content
     assert 'merge_policy="forbidden"' in changelog.content
