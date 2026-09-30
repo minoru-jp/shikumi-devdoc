@@ -1,5 +1,21 @@
 # shikumi-devdoc Changelog
 
+## V0_3_4
+
+This release reorganizes the README around real usage and dogfooding, and narrows `merge_policy` to explicit insertion channels.
+
+version: 0.3.4
+
+Added:
+
+- Added README dogfooding examples based on the README and Specification canonical sources themselves. Code fragments shown in the README are separated as independent literal text with `test_target_field`; ordinary pytest tests compare them with corresponding executable modules at the AST level and then verify validation and realization. The README also clarifies that `test_target_field` does not run tests automatically: the project test layer decides what and how to verify.
+
+Changed:
+
+- Narrowed the local restriction of `merge_policy` to explicit `merge @= ...` declarations. Field bindings defined directly on the same document node with `name @= value` can be referenced from templates under every policy, including `external` and `forbidden`. External-context restrictions are unchanged; the policy constrains explicit insertion channels rather than Python-value provenance.
+- Reworked the README from a terminology-first explanation into a flow centered on uses in Spec-Driven Development, Docs as Code, and LLM-assisted development, followed by real dogfooding examples, insertion modes, and extensibility. `merge_policy` is now described as a partial constraint selecting whether `merge @= ...` and external-context insertion are allowed, not as a dominant policy that determines the overall nature of a document.
+- Changed the project's own Specification canonical sources to use `merge_policy="local"`, matching their actual operation without external context and keeping the README examples aligned with the dogfooding configuration.
+
 ## V0_3_3
 
 This release updates public project links for the now-public source repository so documentation is reachable from PyPI and exposes those public resources in package metadata.

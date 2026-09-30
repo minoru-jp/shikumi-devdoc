@@ -146,14 +146,12 @@ class SECTION_001:
         shikumi-devdoc render document \
           devdocs.canonical_sources.specification \
           -o devdocs/canonical_documents/specification \
-          --context "$CONTEXT" \
           --notice devdocs/config/notice.toml \
           --translation-source
 
         shikumi-devdoc render index \
           devdocs.canonical_sources.specification \
           -o devdocs/canonical_documents/specification \
-          --context "$CONTEXT" \
           --index-title "shikumi-devdoc Specification" \
           --notice devdocs/config/notice.toml \
           --translation-source
@@ -174,7 +172,7 @@ class SECTION_001:
           --translation-source
         ```
 
-        `merge_policy` は local merge と external context の許可範囲を `"all"` / `"local"` / `"external"` / `"forbidden"` で宣言する。このリポジトリでは CHANGELOG を `"forbidden"` とし、過去の記録が後の local/external 値変更で変化しないようにする。TRUST 型の自己完結文書に相当する文書や Authoring Guide、STATUS、`devdocs/README.md` は必要に応じて `"local"` を使い、README、Specification、API Reference は外部 context が必要な箇所で `"all"` を使う。旧 `placeholders` は 0.3.2 から非推奨である。
+        `merge_policy` は `merge @= ...` による local merge と external context の許可範囲を `"all"` / `"local"` / `"external"` / `"forbidden"` で宣言する。同じ node に直接定義した field の template 参照は policy の対象外である。このリポジトリでは README は両方の差し込みを使うため `"all"`、Specification は local merge だけを使うため `"local"`、CHANGELOG はどちらも使わないため `"forbidden"` を指定する。これは文書種別そのものではなく、各 canonical source が採用する差し込み経路に合わせた設定である。旧 `placeholders` は 0.3.2 から非推奨である。
         """
         title @= "生成"
 

@@ -8,7 +8,7 @@ from devdocs.canonical_sources.specification.specification import SPECIFICATION_
 
 
 @summary('`shikumi-devdoc` CLI の入出力規則。')
-@canonical_source("Command-line interface", filename="cli.md", order=80, merge_policy="all", heading="identity")
+@canonical_source("Command-line interface", filename="cli.md", order=80, merge_policy="local", heading="identity")
 class SPECIFICATION_PART:
     """`shikumi-devdoc` CLI の入出力規則。"""
 

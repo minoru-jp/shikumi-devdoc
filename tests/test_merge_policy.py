@@ -142,12 +142,15 @@ def test_external_policy_rejects_unused_merge_declaration() -> None:
     assert "document.merge.policy.local" in {d.code for d in result.diagnostics}
 
 
-def test_external_policy_rejects_local_field_reference() -> None:
+def test_external_policy_allows_direct_field_reference() -> None:
     from tests.fixtures import merge_policy_external_field
 
     result = system.validate(merge_policy_external_field, placement=())
-    assert not result.is_valid
-    assert "document.merge.policy.local" in {d.code for d in result.diagnostics}
+    assert result.is_valid, result.diagnostics
+    realizer = MarkdownRealizer(CONTEXT)
+    check = realizer.check(result.view)
+    assert check.is_realizable, check.diagnostics
+    assert realizer.realize(result.view)[0].content == "# External\n\nLocal\n"
 
 
 def test_forbidden_policy_allows_literal_fields_without_template_merge() -> None:
@@ -162,6 +165,19 @@ def test_forbidden_policy_allows_literal_fields_without_template_merge() -> None
     assert "Historical snapshot." in rendered
     assert "version: 1.2.3" in rendered
     assert "note: Literal {{PROJECT.version}}" in rendered
+
+
+def test_forbidden_policy_allows_direct_test_target_reference() -> None:
+    from tests.fixtures import merge_policy_forbidden_field
+
+    result = system.validate(merge_policy_forbidden_field, placement=())
+    assert result.is_valid, result.diagnostics
+    realizer = MarkdownRealizer(CONTEXT)
+    check = realizer.check(result.view)
+    assert check.is_realizable, check.diagnostics
+    rendered = realizer.realize(result.view)[0].content
+    assert "print('{{PROJECT.version}}')" in rendered
+    assert "1.2.3" not in rendered
 
 
 def test_forbidden_policy_rejects_explicit_merge_declaration() -> None:

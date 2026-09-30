@@ -22,7 +22,7 @@ class PROJECT_STATUS:
     merge @= TERMS.TERM_009
 
     class STATUS_001:
-        r"""現在の開発段階は Beta。現在の公開バージョンは `0.3.3`。"""
+        r"""現在の開発段階は Beta。現在の公開バージョンは `0.3.4`。"""
 
         title @= "Development stage"
 
@@ -32,7 +32,7 @@ class PROJECT_STATUS:
         title @= "Supported Python"
 
     class STATUS_003:
-        r"""`shikumi-devdoc 0.3.3` は `shikumi>=0.2.0` を要求する。互換性の基準線は破壊的変更を行った 0.3.0 で確立した。Shikumi 0.2.0 以降は後方互換性を維持する方針のため、既知の非互換性がない限り上限は設けない。"""
+        r"""`shikumi-devdoc 0.3.4` は `shikumi>=0.2.0` を要求する。互換性の基準線は破壊的変更を行った 0.3.0 で確立した。Shikumi 0.2.0 以降は後方互換性を維持する方針のため、既知の非互換性がない限り上限は設けない。"""
 
         title @= "Shikumi compatibility"
 

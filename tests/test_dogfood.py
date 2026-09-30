@@ -11,15 +11,11 @@ from devdocs.canonical_sources.workspace import canonical as workspace_source
 from devdocs.canonical_sources.specification.core import (
     SPECIFICATION_PART as CORE_SPEC,
 )
-from devdocs.canonical_sources.specification.document import (
-    SPECIFICATION_PART as DOCUMENT_SPEC,
-)
 from devdocs.canonical_sources.vocabulary.canonical import TERMS
 from shikumi_devdoc.norms.document import system as document
 
 document_system = document
 from shikumi_devdoc import fields as public_fields, norms as public_norms, realizers as public_realizers
-from shikumi_devdoc.norms._document import DocumentField, FieldValue
 from shikumi_devdoc.realizers.document import MarkdownRealizer as DocumentMarkdownRealizer
 from shikumi_devdoc.realizers.index import IndexMarkdownRealizer
 
@@ -41,26 +37,20 @@ def _public_paths(namespace, prefix: str) -> list[str]:
 CONTEXT = json.loads(Path("devdocs/config/context.json").read_text(encoding="utf-8"))
 
 
-def test_repository_readme_keeps_related_source_only_under_ignore_policy() -> None:
+def test_repository_readme_dogfoods_external_context_and_document_examples() -> None:
     result = document.validate(readme_source, placement=())
     assert result.is_valid, result.diagnostics
-
-    document_section = next(
-        item for item in result.view.entities if item.subject is readme_source.SECTION_001.SECTION_005
-    )
-    related_values = [
-        entry.value
-        for entry in document_section.values(DocumentField)
-        if isinstance(entry, FieldValue) and entry.schema.name == "related"
-    ]
-    assert any(DOCUMENT_SPEC.DOC_006 in value for value in related_values)
 
     realizer = DocumentMarkdownRealizer(CONTEXT)
     check = realizer.check(result.view)
     assert check.is_realizable, check.diagnostics
     rendered = realizer.realize(result.view)[0]
-    assert "DOC_006" not in rendered.content
-    assert "SPEC_008" not in rendered.content
+    assert rendered.filename == "README.md"
+    assert rendered.content.startswith("# shikumi-devdoc\n")
+    assert "## こんな開発に" in rendered.content
+    assert "merge_policy=\"all\"" in rendered.content
+    assert "merge_policy=\"local\"" in rendered.content
+    assert "| `forbidden` |" in rendered.content
     assert "https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/authoring_guide/INDEX.md" in rendered.content
     assert "https://github.com/minoru-jp/shikumi-devdoc/blob/main/STATUS.md" in rendered.content
     assert "https://github.com/minoru-jp/shikumi-devdoc/blob/main/LICENSE" in rendered.content
@@ -168,7 +158,7 @@ def test_repository_changelog_dogfoods_list_fields() -> None:
     changelog = documents[0]
     assert changelog.filename == "CHANGELOG.md"
     assert "## V0_3_3" in changelog.content
-    assert "version: 0.3.3" in changelog.content
+    assert "version: 0.3.4" in changelog.content
     assert "## V0_3_2" in changelog.content
     assert "version: 0.3.2" in changelog.content
     assert 'merge_policy="forbidden"' in changelog.content

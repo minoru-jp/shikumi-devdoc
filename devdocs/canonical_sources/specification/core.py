@@ -7,7 +7,7 @@ from shikumi_devdoc.norms.document import title
 
 
 @summary('canonical source と文書体系全体に共通する中核規則。')
-@canonical_source("Core", filename="core.md", order=0, merge_policy="all", heading="identity")
+@canonical_source("Core", filename="core.md", order=0, merge_policy="local", heading="identity")
 class SPECIFICATION_PART:
     """文書体系全体に共通する中核規則。"""
 
@@ -73,15 +73,16 @@ class SPECIFICATION_PART:
         level @= MUST
 
     class CORE_010:
-        r"""`@canonical_source(..., merge_policy=...)` は {{TERM_010}} が参照できる値の出所を `"all"`、`"local"`、`"external"`、`"forbidden"` の4段階で制御しなければならない。`"all"` は {{TERM_013}} と {{TERM_012}} の双方を許可し、`"local"` は {{TERM_013}} だけ、`"external"` は {{TERM_012}} だけを許可し、`"forbidden"` は双方を禁止する。未指定時は `"all"` とする。"""
+        r"""`@canonical_source(..., merge_policy=...)` は {{TERM_010}} へ明示的に値を取り込む経路として、`merge @= ...` による local merge と {{TERM_012}} の許可範囲を `"all"`、`"local"`、`"external"`、`"forbidden"` の4段階で制御しなければならない。`"all"` は双方、`"local"` は local merge のみ、`"external"` は {{TERM_012}} のみを許可し、`"forbidden"` は双方を禁止する。未指定時は `"all"` とする。同じ {{TERM_006}} に直接 `name @= value` として定義された field binding はこの制約の対象外とし、すべての policy で {{TERM_010}} から参照できなければならない。"""
+        merge @= TERMS.TERM_006
         merge @= TERMS.TERM_010
         merge @= TERMS.TERM_012
-        merge @= TERMS.TERM_013
         title @= "Merge policy"
         level @= MUST
 
     class CORE_010A:
-        r"""`merge_policy="external"` または `merge_policy="forbidden"` の canonical document は、使用の有無にかかわらず `merge @= ...` 宣言を持ってはならず、field binding を含む {{TERM_013}} を {{TERM_010}} から参照してはならない。通常の field value は {{TERM_011}} として保持でき、その内部の placeholder-like text は template 解釈してはならない。"""
+        r"""`merge_policy="external"` または `merge_policy="forbidden"` の canonical document は、使用の有無にかかわらず `merge @= ...` 宣言を持ってはならない。この禁止は同じ {{TERM_006}} に直接定義された field binding の {{TERM_013}} 参照には適用してはならない。`merge_policy` は `name @= value` の Python 評価前の由来を追跡する provenance 制約ではなく、明示的な merge/context 経路だけを制約しなければならない。通常の field value は {{TERM_011}} として保持でき、その内部の placeholder-like text は template 解釈してはならない。"""
+        merge @= TERMS.TERM_006
         merge @= TERMS.TERM_010
         merge @= TERMS.TERM_011
         merge @= TERMS.TERM_013

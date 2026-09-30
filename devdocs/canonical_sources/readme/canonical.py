@@ -1,245 +1,388 @@
 """Canonical Japanese README source for shikumi-devdoc."""
 
-from devdocs.canonical_sources.api_reference.norms import (
-    API_REFERENCE_PART as NORMS_API,
-)
-from devdocs.canonical_sources.api_reference.realizers import (
-    API_REFERENCE_PART as REALIZERS_API,
-)
-from devdocs.canonical_sources.specification.api_reference import (
-    SPECIFICATION_PART as API_REFERENCE_SPEC,
-)
-from devdocs.canonical_sources.specification.document import (
-    SPECIFICATION_PART as DOCUMENT_SPEC,
-)
-from devdocs.canonical_sources.specification.specification import (
-    SPECIFICATION_PART as SPECIFICATION_SPEC,
-)
-from devdocs.canonical_sources.vocabulary.canonical import TERMS
-from shikumi_devdoc.fields.common import related
-from shikumi_devdoc.norms.common import IGNORE, canonical_source, merge
+from shikumi_devdoc.norms.common import IGNORE, canonical_source
 from shikumi_devdoc.norms.document import test_target_field, title
 
 
+readme_source_example = test_target_field("README canonical source example")
+specification_source_example = test_target_field("Specification canonical source example")
 install_command = test_target_field("install command")
 minimal_source = test_target_field("minimal source")
 render_command = test_target_field("render command")
 rendered_markdown = test_target_field("rendered Markdown")
-vocabulary_merge_example = test_target_field("Vocabulary merge example")
 
-@canonical_source('{{project.name}}', filename='README.md', merge_policy="all", unreferenced_fields=IGNORE, heading="title")
+
+@canonical_source(
+    "{{project.name}}",
+    filename="README.md",
+    merge_policy="all",
+    unreferenced_fields=IGNORE,
+    heading="title",
+)
 class SECTION_001:
     r"""
-    `{{project.name}}` は、開発文書を意味構造を持つ Python の {{TERM_001}} として記述し、[Shikumi](https://pypi.org/project/shikumi/) で検証し、Markdown の {{TERM_002}} へ実現するためのライブラリである。
+    `{{project.name}}` は、**仕様や設計文書を、実装と一緒に育てるためのライブラリ**です。
 
-    {{TERM_014}} と共通の {{TERM_002}} model を二つの基盤として提供する。用語や表記は Vocabulary に集約し、README、Authoring Guide、Project Status、CHANGELOG、Specification、API Reference などは、nested class・docstring template・作者定義 {{TERM_007}} を組み合わせる同じ document model で構成する。
+    README、Specification、API Reference、CHANGELOG などの開発文書を、単なる Markdown ファイルではなく、意味と構造を持った Python の **canonical source** として記述します。
+
+    文書を「実装が終わったあとに整理するもの」ではなく、開発中も参照・更新される正本として扱いたい場合を想定しています。
     """
-
-    merge @= TERMS.TERM_001
-    merge @= TERMS.TERM_002
-    merge @= TERMS.TERM_007
-    merge @= TERMS.TERM_014
 
     class SECTION_002:
         r"""
-        `{{project.name}}` は、継続的に更新される開発文書について、正本を Python 上の検証可能な意味情報として保ち、必要な {{TERM_005}} を反映して再生成可能な {{TERM_002}} を得たい場合に使用する。
+        `{{project.name}}` は、特定の開発プロセスそのものを提供するライブラリではありません。
 
-        | 目的 | 基盤 |
-        | --- | --- |
-        | 用語の名称と概念定義を一元管理する | {{TERM_014}} |
-        | README、Authoring Guide、Project Status、CHANGELOG、Specification、API Reference などを構成する | {{TERM_002}} model |
+        その代わり、仕様や設計を開発の中心に置くための文書基盤を提供します。
 
-        Specification や API Reference は built-in の文書種別ではない。用途別の意味は作者側の {{TERM_008}} が担い、`shikumi_devdoc.fields` にある {{TERM_009}} を再利用しても、project-local な field を定義してもよい。
+        たとえば、次のような考え方と組み合わせられます。
+
+        - **Spec-Driven Development (SDD)**  
+          仕様を実装前の一時的な資料ではなく、実装とともに更新される開発上の正本として扱う。
+
+        - **Docs as Code**  
+          文書をコードと同じリポジトリで管理し、変更・レビュー・履歴をソフトウェア開発の一部として扱う。
+
+        - **LLM-assisted development**  
+          LLM に渡す仕様・設計・制約を、散在した文章ではなく、意味と構造を持った開発資産として維持する。
+
+        特に SDD では、仕様を書くこと自体よりも、**仕様を実装と乖離させずに維持し続けること**が重要になります。
+
+        `{{project.name}}` は、その正本を Python 上に置き、人間にも LLM にも扱いやすい文書として維持するための仕組みです。
         """
-        title @= "何に使えるのか"
 
-        merge @= TERMS.TERM_005
-        merge @= TERMS.TERM_002
-        merge @= TERMS.TERM_014
-        merge @= TERMS.TERM_008
-        merge @= TERMS.TERM_009
-
-        related @= (
-            SPECIFICATION_SPEC.SPEC_001,
-            API_REFERENCE_SPEC.APIREF_001,
-            DOCUMENT_SPEC.DOC_006,
-        )
+        title @= "こんな開発に"
 
     class SECTION_003:
         r"""
-        PyPI からインストールする。
+        `{{project.name}}` 自身の README、Specification、API Reference、CHANGELOG なども `{{project.name}}` で管理されています。
+
+        実際に使用している canonical source は [`devdocs/canonical_sources/`](https://github.com/minoru-jp/shikumi-devdoc/tree/main/devdocs/canonical_sources) にあります。
+
+        ここでは、性格の異なる二つの文書を例にします。
+        """
+
+        title @= "このプロジェクト自身がサンプルです"
+
+        class README_EXAMPLE:
+            r"""
+            README のような文書では、大部分は普通の文章です。
+
+            canonical source も、その性格をそのまま保って書けます。
+
+            ````python
+            {{readme_source_example}}
+            ````
+
+            文書の階層は Python の class 構造として表現し、本文は docstring としてそのまま記述できます。
+
+            文章主体の文書を、無理に細かなデータ構造へ分解する必要はありません。
+
+            必要な部分だけに意味や構造を与えながら、README のような自由な文書をそのまま扱えます。
+            """
+
+            title @= "README: 自由記述を中心とした文書"
+            readme_source_example @= r'''
+            from shikumi_devdoc.norms.common import IGNORE, canonical_source
+            from shikumi_devdoc.norms.document import test_target_field, title
+
+
+            example_source = test_target_field("example source")
+
+
+            @canonical_source(
+                "{{project.name}}",
+                filename="README.md",
+                merge_policy="all",
+                unreferenced_fields=IGNORE,
+                heading="title",
+            )
+            class SECTION_001:
+                r"""
+                `{{project.name}}` は、仕様や設計文書を
+                実装と一緒に育てるためのライブラリです。
+
+                ```python
+                {{example_source}}
+                ```
+                """
+
+                example_source @= r"""
+                from shikumi_devdoc.norms.common import canonical_source
+
+
+                @canonical_source("Example", filename="example.md", merge_policy="local", heading="identity")
+                class EXAMPLE:
+                    class Introduction:
+                        "Hello from shikumi-devdoc."
+                """
+
+                class SECTION_002:
+                    """このプロジェクト自身の文書も、この仕組みで管理しています。"""
+
+                    title @= "このプロジェクト自身がサンプルです"
+            '''
+
+        class SPECIFICATION_EXAMPLE:
+            r"""
+            Specification のような文書では、文章そのものよりも、個々の仕様項目が重要になります。
+
+            このプロジェクト自身の Specification も、同じ canonical source の仕組みを使っています。
+
+            ```python
+            {{specification_source_example}}
+            ```
+
+            README と Specification は、見た目も使い方もかなり異なります。
+
+            一方は自由記述が中心で、もう一方は意味を持つ項目の集合です。
+
+            `{{project.name}}` では、どちらか一方の形式へ文書を押し込むのではなく、同じ基盤の上でそれぞれの文書に適した形を選べます。
+
+            ```text
+            README
+              └─ 自由記述が中心
+                   └─ 必要な情報だけ構造化
+
+            Specification
+              └─ 項目の集合が中心
+                   └─ 各項目に意味を持たせる
+            ```
+
+            Specification や API Reference は特別な文書 grammar ではありません。
+
+            同じ canonical source の上に、その文書で必要な意味を組み合わせて構成されています。
+            """
+
+            title @= "Specification: 項目の集合として書く文書"
+            specification_source_example @= r'''
+            from devdocs.canonical_sources.vocabulary.canonical import TERMS
+            from shikumi_devdoc.fields.specification import MUST, level
+            from shikumi_devdoc.norms.common import canonical_source, merge
+            from shikumi_devdoc.norms.document import title
+
+
+            @canonical_source(
+                "Structured fields",
+                filename="specification.md",
+                order=50,
+                merge_policy="local",
+                heading="identity",
+            )
+            class SPECIFICATION_PART:
+                class SPEC_001:
+                    """canonical root 内の class は {{TERM_006}} として解釈されなければならない。"""
+
+                    merge @= TERMS.TERM_006
+                    title @= "Class-derived document-node identity"
+                    level @= MUST
+            '''
+
+    class SECTION_004:
+        r"""
+        canonical source の template では、固定された文章だけでなく、別に保持した値を `\{{name}}` として参照できます。
+
+        値の出所は、同じ node に定義した field、別の canonical source から取り込んだ local reference、realization 時に与える external context に分けられます。
+        """
+
+        title @= "値の参照と差し込み"
+
+        class NODE_LOCAL_INSERTION:
+            r"""
+            同じ node に `name @= value` として定義した field は、その node の docstring などの template から `\{{name}}` で参照できます。
+
+            上の README 例にある `example_source` もこの仕組みです。コード例を本文へ直接複製せず、独立した literal text として保持し、表示したい位置から参照しています。
+
+            `test_target_field` は、コード、設定、command、期待出力などを**通常のテストから直接参照したいテキストとして分離する**ために使えます。この README の作例コード自体も `test_target_field` として正本ソースから分離され、通常の pytest から対応する example module と構文を比較し、その module を検証・生成しています。
+
+            ただし、`test_target_field` に分離しただけで自動的にテストが作られたり実行されたりするわけではありません。何をどのように検証するかは、pytest などプロジェクト側のテスト設計に委ねられます。`test_target_field` はあくまで、テスト可能な単位としてテキストを正本上で独立させるための仕組みです。
+            """
+
+            title @= "同じ node に定義した値を参照する"
+
+        class SOURCE_INSERTION:
+            r"""
+            別の canonical source にある object を、同じ node の local reference として取り込むこともできます。
+
+            たとえば、共通の用語を定義して複数の文書から利用する Vocabulary は、この仕組みを使います。
+
+            ```python
+            merge @= TERMS.TERM_001
+            ```
+
+            用語や定義を文章へ直接複製するのではなく、正本同士の関係として持たせることができます。
+
+            Vocabulary は便利な利用例の一つですが、この仕組み自体は Vocabulary 専用ではありません。
+            """
+
+            title @= "別の canonical source から差し込む"
+
+        class EXTERNAL_INSERTION:
+            r"""
+            canonical source の外から値を与えることもできます。
+
+            たとえば README に表示する現在のバージョン番号や、生成時点で決まる値などです。
+
+            ```text
+            canonical source
+                   +
+            external context
+                   ↓
+                 document
+            ```
+
+            このような値を canonical source に直接固定しなくても、文書を生成するときの文脈として与えられます。
+            """
+
+            title @= "外部文脈から差し込む"
+
+    class SECTION_005:
+        r"""
+        同じ node に直接定義した field は、`merge_policy` にかかわらず template から参照できます。
+
+        `merge_policy` が制約するのは、明示的に値を取り込む二つの経路です。
+
+        - `merge @= ...` による local merge
+        - realization 時に与える external context
+
+        | policy | `merge @= ...` | external context |
+        | --- | --- | --- |
+        | `all` | 利用できる | 利用できる |
+        | `local` | 利用できる | 利用しない |
+        | `external` | 利用しない | 利用できる |
+        | `forbidden` | 利用しない | 利用しない |
+
+        この README は external context と local merge の両方を使うため `all`、Specification は local merge だけを使うため `local`、CHANGELOG はどちらも使わないため `forbidden` を指定しています。これは各文書で採用している差し込み方式に合わせた設定であり、文書種別そのものを決定するものではありません。
+
+        また、`merge_policy` は Python の値の由来を追跡する仕組みではありません。`name @= value` として同じ node に直接束縛された値は、その評価前にどこで定義されていたかにかかわらず node 自身の field として扱われます。
+
+        4種類の厳密な規則は [Authoring Guide](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/authoring_guide/advanced-authoring.md) と [Specification](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/specification/core.md) を参照してください。
+        """
+
+        title @= "merge policy で差し込み経路を選ぶ"
+
+    class SECTION_006:
+        r"""
+        `{{project.name}}` が標準で提供する表現や Markdown 出力は、唯一の使い方ではありません。
+
+        基盤には [Shikumi](https://github.com/minoru-jp/shikumi) を使用しています。Shikumi が提供する意味付け・構造化・検証・realization の仕組みについては、[Shikumi documentation](https://github.com/minoru-jp/shikumi/tree/main/docs) を参照してください。
+
+        その基盤の上で、`{{project.name}}` は二つの方向に拡張できます。
+        """
+
+        title @= "拡張できます"
+
+        class CUSTOM_SEMANTICS:
+            r"""
+            `{{project.name}}` が用意している意味表現だけに限定されません。
+
+            プロジェクト固有の意味を持つ記述を追加し、同じ canonical source の中で利用できます。
+
+            たとえば、独自の開発プロセスで必要になる Requirement、Risk、Decision、Owner、Component、Review status といった情報も表現できます。
+
+            既存の文書形式に合わせるのではなく、**そのプロジェクトが必要とする意味を文書へ持たせる**ことができます。
+            """
+
+            title @= "独自の意味を表現する"
+
+        class CUSTOM_OUTPUT:
+            r"""
+            `{{project.name}}` では Markdown 向けの realizer を提供しています。
+
+            別の形式が必要なら、Shikumi の仕組みに沿って独自の realizer を実装できます。
+
+            canonical source に持たせた意味と、最終的な出力形式は分離されているため、同じ正本を別の成果物へ展開できます。
+            """
+
+            title @= "Markdown 以外へ出力する"
+
+    class SECTION_007:
+        r"""
+        PyPI からインストールします。
 
         ```bash
         {{install_command}}
         ```
 
-        最小の {{TERM_001}} は `@canonical_source(...)` を付けた root class と、その下に置く nested class だけで記述できる。
+        最小の canonical source は、root class と nested class だけで記述できます。
 
         ```python
         {{minimal_source}}
         ```
 
-        module を CLI に渡すと {{TERM_002}} を生成する。
+        CLI へ module を渡します。
 
         ```bash
         {{render_command}}
         ```
 
-        生成される Markdown は次のようになる。
+        生成される Markdown は次のようになります。
 
         ```markdown
         {{rendered_markdown}}
         ```
 
-        nested class は追加 decorator なしで下位 {{TERM_006}} となり、その階層が見出し階層へ対応する。context、field、Vocabulary、index などは必要になった時点で同じモデルへ追加できる。
-        """
-        title @= "最小の使い方"
+        ここから、必要に応じて構造化された情報、差し込み、文書間参照などを追加していけます。
 
+        > [!IMPORTANT]
+        > canonical source は Python module として読み込まれます。信頼できない Python module を文書入力として実行しないでください。
+        """
+
+        title @= "最小の使い方"
         install_command @= "pip install shikumi-devdoc"
-        minimal_source @= """
+        minimal_source @= '''
         from shikumi_devdoc.norms.common import canonical_source
+
 
         @canonical_source("Example", filename="example.md", merge_policy="local", heading="identity")
         class EXAMPLE:
             class Introduction:
-                '''Hello from shikumi-devdoc.'''
-        """
+                """Hello from shikumi-devdoc."""
+        '''
         render_command @= "shikumi-devdoc render document myproject.example -o build/"
-        rendered_markdown @= """
+        rendered_markdown @= '''
         # Example
 
         ## Introduction
 
         Hello from shikumi-devdoc.
-        """
-
-        merge @= TERMS.TERM_001
-        merge @= TERMS.TERM_002
-        merge @= TERMS.TERM_006
-
-        related @= (
-            NORMS_API.norms.common.canonical_source,
-            REALIZERS_API.realizers.document.MarkdownRealizer,
-        )
-
-    class SECTION_004:
-        r"""
-        `{{project.name}}` では Markdown を直接編集して正本とせず、{{TERM_001}} と {{TERM_005}} から validation と realization を経て {{TERM_002}} を確定する。
-
-        ```text
-        {{TERM_001}}
-              + {{TERM_005}}
-                ↓ Shikumi による解釈・検証
-             SemanticView
-                ↓ shikumi-devdoc の realizer
-        {{TERM_002}}
-                ↓ project-specific {{TERM_004}}
-          {{TERM_003}}
-        ```
-
-        `shikumi-devdoc` が一貫して責任を持つのは {{TERM_002}} までである。翻訳、ローカライズ、文章表現の調整、媒体変換、配布などは、プロジェクト固有の {{TERM_004}} が {{TERM_003}} を作る工程として扱う。
-
-        {{TERM_002}} は共通の {{TERM_006}} / template / {{TERM_007}} / merge モデルで記述する。nested class が文書階層、docstring が本文 template、field が構造化された付加情報になる。背景説明のような prose は docstring に保ち、構造として意味を持つ情報だけを field として分離できる。
-
-        generic document core は Specification や API Reference の意味論を組み込まない。文書用途を増やすときは別 grammar を増やすのではなく、必要な {{TERM_008}} と presentation を同じ基盤へ組み合わせる。
-        """
-        title @= "コアモデル"
-
-        merge @= TERMS.TERM_001
-        merge @= TERMS.TERM_005
-        merge @= TERMS.TERM_002
-        merge @= TERMS.TERM_003
-        merge @= TERMS.TERM_004
-        merge @= TERMS.TERM_006
-        merge @= TERMS.TERM_007
-        merge @= TERMS.TERM_008
-
-        related @= (
-            DOCUMENT_SPEC.DOC_001,
-            DOCUMENT_SPEC.DOC_002,
-            DOCUMENT_SPEC.DOC_006,
-            REALIZERS_API.realizers.document.MarkdownRealizer,
-        )
-
-    class SECTION_005:
-        r"""
-        {{TERM_014}} は、用語の名称と概念定義を {{TERM_001}} として保持する。各 {{TERM_015}} は `TERM_N` 形式の安定した class identity を持つため、利用文書は実際の用語文字列を複製せず term class を参照できる。
-
-        ```python
-        {{vocabulary_merge_example}}
-        ```
-
-        template では通常 `\{{TERM_001}}` のような短い参照を使える。複数の Vocabulary から同名 identity を取り込んだ場合は、必要な範囲だけ Python identity を修飾して区別できる。具体的な名前解決規則は Specification を参照する。
-
-        文書固有の構造化情報は {{TERM_007}} として宣言する。作者は project-local な {{TERM_008}} を定義でき、頻出する組み合わせには `shikumi_devdoc.fields` の {{TERM_009}} を利用できる。generic core は field のドメイン意味を所有しない。
-
-        docstring、`prose_field`、`title @= ...` は {{TERM_010}} として {{TERM_013}} や external placeholder を扱える。field 系の `@=` 左辺名は同じ node の local reference として自動的に利用でき、`merge` は class target、文字列、明示 alias など追加の参照を登録する。`merge_policy="all"` は local/external の双方、`"local"` は local のみ、`"external"` は external のみを許可し、`"forbidden"` は双方を拒否する。旧 `placeholders` boolean は 0.3.2 で非推奨となり、1.0.0 で削除予定である。通常の `field`、`list_field`、`table_field`、`test_target_field` の値自体は {{TERM_011}} として扱う。`test_target_field` は通常のテストから直接検証したい文字列断片を分離するためのもので、Markdown fence や language は surrounding template 側に記述する。Python object relation を文書間参照として実現したい場合は `reference_field` を使い、標準 `related` はその convenience field として利用できる。未参照 field は `APPEND` で本文へ追加するか、`IGNORE` で source-only の意味情報として保持できる。
-        """
-        title @= "Vocabulary と構造化情報"
-
-        merge @= TERMS.TERM_014
-        merge @= TERMS.TERM_001
-        merge @= TERMS.TERM_015
-        merge @= TERMS.TERM_007
-        merge @= TERMS.TERM_008
-        merge @= TERMS.TERM_009
-        vocabulary_merge_example @= "merge @= TERMS.TERM_001"
-
-        merge @= TERMS.TERM_010
-        merge @= TERMS.TERM_011
-        merge @= TERMS.TERM_013
-
-        related @= (
-            SPECIFICATION_SPEC.SPEC_007,
-            SPECIFICATION_SPEC.SPEC_008,
-            DOCUMENT_SPEC.DOC_006,
-            NORMS_API.norms.document.field,
-        )
-
-    class SECTION_006:
-        r"""
-        `{{project.name}}` は、人間が意図や判断、レビューを担い、LLM が {{TERM_001}} の継続的な編集を支援する文書運用を主要な利用形態の一つとして想定する。
-
-        そのため、記述量の少なさだけを優先せず、意味の明示、機械的な validation、{{TERM_002}} の安定した再生成を重視する。一方で、LLM の利用は不要な複雑さを許容する理由にはせず、意味の重複や具体的な必要性のない抽象化は避ける。
-        """
-        title @= "LLM を介した文書運用"
-
-        merge @= TERMS.TERM_001
-        merge @= TERMS.TERM_002
-
-    class SECTION_007:
-        r"""
-        `{{project.name}}` 自身の文書も `{{project.name}}` で構築している。
-
-        - [Authoring Guide](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/authoring_guide/INDEX.md): canonical source を設計・保守するための実践的な判断指針。
-        - [Specification](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/specification/INDEX.md): 保証する振る舞いと制約。
-        - [API Reference](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/api/INDEX.md): 公開インターフェース。
-        - [Project Status](https://github.com/minoru-jp/shikumi-devdoc/blob/main/STATUS.md): 現在状態と現在から見た方向・告知。
-        - [CHANGELOG](https://github.com/minoru-jp/shikumi-devdoc/blob/main/CHANGELOG.md): 過去の変更履歴。
-        - [devdocs workspace](https://github.com/minoru-jp/shikumi-devdoc/blob/main/devdocs/README.md): このリポジトリの文書生成ワークスペース。
-        - [`devdocs/canonical_sources/`](https://github.com/minoru-jp/shikumi-devdoc/tree/main/devdocs/canonical_sources): 実際に使用している {{TERM_001}}。
-        - [`devdocs/canonical_documents/`](https://github.com/minoru-jp/shikumi-devdoc/tree/main/devdocs/canonical_documents): 検証済み source と {{TERM_005}} から生成した日本語 {{TERM_002}}。
-
-        `devdocs/` は authoring API の参照例でもある。{{TERM_001}} と対応する {{TERM_002}} を比較すると、記述、context 注入、実現結果の関係を追跡できる。
-
-        リポジトリ直下や `docs/` に配置する英語の {{TERM_003}} は、日本語 {{TERM_002}} を入力とする別の {{TERM_004}} で作成する。この翻訳・公開工程は `shikumi-devdoc` 自体の機能ではない。
-        """
-        title @= "Documentation"
-
-        merge @= TERMS.TERM_001
-        merge @= TERMS.TERM_005
-        merge @= TERMS.TERM_002
-        merge @= TERMS.TERM_003
-        merge @= TERMS.TERM_004
+        '''
 
     class SECTION_008:
         r"""
-        現在のバージョンは `{{project.version}}`。Python `{{project.requires-python}}` を対象とする。現在の開発段階や今後の方向は [`STATUS.md`](https://github.com/minoru-jp/shikumi-devdoc/blob/main/STATUS.md) を参照する。
+        このリポジトリの文書そのものが、`{{project.name}}` の実際の利用例です。
+
+        - [Authoring Guide](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/authoring_guide/INDEX.md): canonical source を設計・保守するための実践的なガイド。
+        - [Specification](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/specification/INDEX.md): `{{project.name}}` が保証する振る舞いと制約。
+        - [API Reference](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/api/INDEX.md): 公開インターフェース。
+        - [Project Status](https://github.com/minoru-jp/shikumi-devdoc/blob/main/STATUS.md): 現在の開発状態。
+        - [CHANGELOG](https://github.com/minoru-jp/shikumi-devdoc/blob/main/CHANGELOG.md): 変更履歴。
+        - [`devdocs/canonical_sources/`](https://github.com/minoru-jp/shikumi-devdoc/tree/main/devdocs/canonical_sources): このプロジェクト自身が使用している canonical source。
+        - [`devdocs/canonical_documents/`](https://github.com/minoru-jp/shikumi-devdoc/tree/main/devdocs/canonical_documents): canonical source から生成された日本語 canonical document。
+        - [devdocs workspace](https://github.com/minoru-jp/shikumi-devdoc/blob/main/devdocs/README.md): このリポジトリにおける canonical document の生成・管理方法。
+
+        canonical source と生成された文書を並べて読むことで、`{{project.name}}` の実際の運用方法を確認できます。
+
+        リポジトリ直下および `docs/` の英語文書は、日本語 canonical document を入力とする別の publication workflow で作成されています。この翻訳・公開工程自体は `{{project.name}}` の機能ではありません。
         """
-        title @= "バージョン"
+
+        title @= "Documentation"
 
     class SECTION_009:
         r"""
-        `{{project.name}}` は MIT License で提供する。ライセンス本文は [`LICENSE`](https://github.com/minoru-jp/shikumi-devdoc/blob/main/LICENSE) を参照すること。
+        Current version: `{{project.version}}`
+
+        Supported Python: `{{project.requires-python}}`
+
+        現在の開発段階や互換性に関する情報は [`STATUS.md`](https://github.com/minoru-jp/shikumi-devdoc/blob/main/STATUS.md) を参照してください。
         """
-        title @= "ライセンス"
+
+        title @= "Version"
+
+    class SECTION_010:
+        r"""
+        `{{project.name}}` is available under the MIT License.
+
+        See [`LICENSE`](https://github.com/minoru-jp/shikumi-devdoc/blob/main/LICENSE).
+        """
+
+        title @= "License"

@@ -101,14 +101,12 @@ shikumi-devdoc render document \
 shikumi-devdoc render document \
   devdocs.canonical_sources.specification \
   -o devdocs/canonical_documents/specification \
-  --context "$CONTEXT" \
   --notice devdocs/config/notice.toml \
   --translation-source
 
 shikumi-devdoc render index \
   devdocs.canonical_sources.specification \
   -o devdocs/canonical_documents/specification \
-  --context "$CONTEXT" \
   --index-title "shikumi-devdoc Specification" \
   --notice devdocs/config/notice.toml \
   --translation-source
@@ -129,7 +127,7 @@ shikumi-devdoc render index \
   --translation-source
 ```
 
-`merge_policy` declares which merge sources a canonical document accepts: `"all"`, `"local"`, `"external"`, or `"forbidden"`. This repository uses `"forbidden"` for CHANGELOG so historical snapshots cannot change through later local or external values, `"local"` for self-contained documents that may reuse canonical-local information, and `"all"` where realization context is intentionally part of the document. The legacy `placeholders` boolean is deprecated as of 0.3.2 and scheduled for removal in 1.0.0. Class merge targets use the shortest unambiguous suffix of their Python identity, with longer qualification available when names collide; field bindings use their `@=` left-hand names and may be given explicit aliases when needed.
+`merge_policy` declares which explicit insertion channels a canonical document accepts through `merge @= ...` and external context: `"all"`, `"local"`, `"external"`, or `"forbidden"`. Direct field references on the same node are outside the policy. This repository uses `"all"` for README because it uses both channels, `"local"` for Specification because it uses local merge only, and `"forbidden"` for CHANGELOG because it uses neither. These settings describe the insertion channels used by each canonical source rather than defining a document type. The legacy `placeholders` boolean is deprecated as of 0.3.2 and scheduled for removal in 1.0.0. Class merge targets use the shortest unambiguous suffix of their Python identity, with longer qualification available when names collide; field bindings use their `@=` left-hand names and may be given explicit aliases when needed.
 
 ## Tests
 

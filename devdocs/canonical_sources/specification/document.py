@@ -8,7 +8,7 @@ from devdocs.canonical_sources.specification.specification import SPECIFICATION_
 
 
 @summary('canonical document の node hierarchy、template、local reference に関する規則。')
-@canonical_source("Canonical document structure", filename="document.md", order=10, merge_policy="all", heading="identity")
+@canonical_source("Canonical document structure", filename="document.md", order=10, merge_policy="local", heading="identity")
 class SPECIFICATION_PART:
     """canonical document の node hierarchy、template、local reference に関する規則。"""
 

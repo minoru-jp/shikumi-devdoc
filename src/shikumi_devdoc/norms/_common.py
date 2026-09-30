@@ -26,7 +26,7 @@ CanonicalOrder = InformationType("canonical order", int)
 
 
 class MergePolicy(str, Enum):
-    """Which template-reference sources a canonical document may merge."""
+    """Which explicit merge/context sources a canonical document may use."""
 
     ALL = "all"
     LOCAL = "local"
@@ -35,6 +35,7 @@ class MergePolicy(str, Enum):
 
     @property
     def allows_local(self) -> bool:
+        """Whether explicit local ``merge @= ...`` declarations are allowed."""
         return self in (MergePolicy.ALL, MergePolicy.LOCAL)
 
     @property

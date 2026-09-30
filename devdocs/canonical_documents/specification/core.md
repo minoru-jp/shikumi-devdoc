@@ -91,7 +91,7 @@ level: MUST
 
 ## CORE_010
 
-`@canonical_source(..., merge_policy=...)` は template-bearing content が参照できる値の出所を `"all"`、`"local"`、`"external"`、`"forbidden"` の4段階で制御しなければならない。`"all"` は local reference と external placeholder の双方を許可し、`"local"` は local reference だけ、`"external"` は external placeholder だけを許可し、`"forbidden"` は双方を禁止する。未指定時は `"all"` とする。
+`@canonical_source(..., merge_policy=...)` は template-bearing content へ明示的に値を取り込む経路として、`merge @= ...` による local merge と external placeholder の許可範囲を `"all"`、`"local"`、`"external"`、`"forbidden"` の4段階で制御しなければならない。`"all"` は双方、`"local"` は local merge のみ、`"external"` は external placeholder のみを許可し、`"forbidden"` は双方を禁止する。未指定時は `"all"` とする。同じ document node に直接 `name @= value` として定義された field binding はこの制約の対象外とし、すべての policy で template-bearing content から参照できなければならない。
 
 title: Merge policy
 
@@ -99,7 +99,7 @@ level: MUST
 
 ## CORE_010A
 
-`merge_policy="external"` または `merge_policy="forbidden"` の canonical document は、使用の有無にかかわらず `merge @= ...` 宣言を持ってはならず、field binding を含む local reference を template-bearing content から参照してはならない。通常の field value は literal content として保持でき、その内部の placeholder-like text は template 解釈してはならない。
+`merge_policy="external"` または `merge_policy="forbidden"` の canonical document は、使用の有無にかかわらず `merge @= ...` 宣言を持ってはならない。この禁止は同じ document node に直接定義された field binding の local reference 参照には適用してはならない。`merge_policy` は `name @= value` の Python 評価前の由来を追跡する provenance 制約ではなく、明示的な merge/context 経路だけを制約しなければならない。通常の field value は literal content として保持でき、その内部の placeholder-like text は template 解釈してはならない。
 
 title: Local merge prohibition
 

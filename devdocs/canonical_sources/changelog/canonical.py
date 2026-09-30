@@ -17,6 +17,17 @@ from shikumi_devdoc.norms.common import canonical_source
 class CHANGELOG:
     """`shikumi-devdoc` の versioned change history を記録する。公開されなかった開発 milestone はその旨を明記する。"""
 
+    class V0_3_4:
+        """README を実際の利用像とドッグフーディング中心に再構成し、`merge_policy` の責務を明示的な差し込み経路の制約へ絞り込んだ。"""
+
+        version @= "0.3.4"
+
+        added @= 'README に、README 自身と Specification の canonical source を用いたドッグフーディング例を追加した。掲載するコード断片は `test_target_field` として正本上の独立した literal text に分離し、通常の pytest から対応する実行可能 module と AST を比較したうえで validation / realization を確認する構成にした。`test_target_field` 自体はテストを自動実行せず、何を検証するかは project 側の test layer が決めることも明記した。'
+
+        changed @= '`merge_policy` の local 制約を明示的な `merge @= ...` 宣言に限定した。同じ document node に直接 `name @= value` として定義した field binding は `external` / `forbidden` を含むすべての policy で template から参照できる。external context の制約は従来どおり維持し、policy は Python 値の provenance ではなく明示的な差し込み経路だけを制約する。'
+        changed @= 'README を、機能用語の説明から入る構成から、Spec-Driven Development、Docs as Code、LLM-assisted development での用途、実際のドッグフーディング例、差し込み方式、拡張性へ進む構成に刷新した。`merge_policy` は文書全体の性質を決める支配的 policy ではなく、`merge @= ...` と external context の差し込み許可範囲を選ぶ部分的な制約として説明するようにした。'
+        changed @= '自身の Specification canonical source は external context に依存しない実運用に合わせて `merge_policy="local"` を使用するようにし、README の例と実際の dogfooding configuration を一致させた。'
+
     class V0_3_3:
         """公開リポジトリ化に合わせて、PyPI からも解決できる文書リンクと project metadata の公開 URL を整備した。"""
 

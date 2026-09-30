@@ -706,36 +706,16 @@ def _validate_merge_policy(item):
     if policy is None or policy.allows_local:
         return
 
+    # ``merge_policy`` constrains explicit ``merge @= ...`` declarations, not
+    # references to fields written directly on the same document node.  Direct
+    # field bindings are intrinsic node data and remain available to templates
+    # under every policy.
     if item.values(MergeBinding):
         yield Diagnostic(
             f'canonical document merge_policy="{policy.value}" forbids local merge declarations',
             code="document.merge.policy.local",
             subject=item.subject,
         )
-
-    bindings, ambiguous = template_reference_bindings(item)
-    local_names = set(bindings) | set(ambiguous)
-    if not local_names:
-        return
-
-    reported: set[str] = set()
-    policy_texts = [*_template_texts(item)]
-    policy_texts.extend(
-        value
-        for info_type in (CanonicalTitle, CanonicalSummary)
-        for value in item.values(info_type)
-        if isinstance(value, str)
-    )
-    for text in policy_texts:
-        for key in placeholder_keys(text):
-            if key not in local_names or key in reported:
-                continue
-            reported.add(key)
-            yield Diagnostic(
-                f'canonical document merge_policy="{policy.value}" forbids local template reference {key!r}',
-                code="document.merge.policy.local",
-                subject=item.subject,
-            )
 
 
 

@@ -64,7 +64,7 @@ merge を一般的な macro system として長い文章の断片化に使わな
 
 同じ canonical source を将来再実現したとき値が変わってよいなら realization context の候補になる。現在の project version などは context に向く。過去の release version、採用済み設計判断、規範条件など後から変えてはいけない事実は canonical source に置く。
 
-`merge_policy="all"` は local/external の双方、`"local"` は local のみ、`"external"` は external のみを許可し、`"forbidden"` は双方を拒否する。外部 context による変化だけを防ぎたい自己完結文書は `"local"`、CHANGELOG のように後から参照先の変更でも内容を変えたくない snapshot 文書は `"forbidden"` を選ぶ。
+`merge_policy` は同じ node に直接定義した field を制約せず、`merge @= ...` と external context という明示的な差し込み経路だけを制約する。`"all"` は両方、`"local"` は local merge のみ、`"external"` は external context のみを許可し、`"forbidden"` は両方を拒否する。`name @= value` に直接束縛された値はすべての policy で template から参照でき、Python 評価前の値の由来は追跡しない。
 
 ## Code example は通常のテストで保護する
 

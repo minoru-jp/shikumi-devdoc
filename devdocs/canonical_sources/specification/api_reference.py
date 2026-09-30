@@ -7,7 +7,7 @@ from shikumi_devdoc.norms.document import title
 
 
 @summary('ドメイン固有記述を標準または作者定義 field で構成する規則。')
-@canonical_source("Domain field vocabularies", filename="api-reference.md", order=60, merge_policy="all", heading="identity")
+@canonical_source("Domain field vocabularies", filename="api-reference.md", order=60, merge_policy="local", heading="identity")
 class SPECIFICATION_PART:
     """Specification や API Reference のようなドメイン固有記述を作者定義 field として構成する規則。"""
 

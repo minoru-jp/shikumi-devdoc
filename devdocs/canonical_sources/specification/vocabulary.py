@@ -6,7 +6,7 @@ from shikumi_devdoc.norms.document import title
 
 
 @summary('語彙源、参照、公開用語集に関する規則。')
-@canonical_source('Vocabulary', filename='vocabulary.md', order=20, merge_policy="all", heading="identity")
+@canonical_source('Vocabulary', filename='vocabulary.md', order=20, merge_policy="local", heading="identity")
 class SPECIFICATION_PART:
     """語彙源、参照、公開用語集に関する規則。"""
 

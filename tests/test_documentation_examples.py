@@ -17,6 +17,9 @@ from tests.examples import (
     authoring_vocabulary,
     authoring_vocabulary_reference,
     authoring_test_target,
+    readme_dogfood_readme,
+    readme_dogfood_specification,
+    readme_embedded_example,
     readme_quickstart,
 )
 
@@ -58,10 +61,77 @@ def _test_target_field_value(module, subject: type[object], binding_name: str) -
     return cleandoc(values[0].value)
 
 
+def test_readme_dogfood_readme_source_is_executable() -> None:
+    documented = _test_target_field_value(
+        readme_source,
+        readme_source.SECTION_001.SECTION_003.README_EXAMPLE,
+        "readme_source_example",
+    )
+    executable = _source_snippet(
+        ROOT / "examples" / "readme_dogfood_readme.py",
+        "readme-dogfood-readme",
+    )
+    assert _same_python_syntax(documented, executable)
+
+    result = document_system.validate(readme_dogfood_readme, placement=())
+    assert result.is_valid, result.diagnostics
+    realizer = MarkdownRealizer({"project": {"name": "shikumi-devdoc"}})
+    check = realizer.check(result.view)
+    assert check.is_realizable, check.diagnostics
+    rendered = realizer.realize(result.view)[0]
+    assert rendered.filename == "README.md"
+    assert rendered.content.startswith("# shikumi-devdoc\n")
+    assert "## このプロジェクト自身がサンプルです" in rendered.content
+
+    embedded = _test_target_field_value(
+        readme_dogfood_readme,
+        readme_dogfood_readme.SECTION_001,
+        "example_source",
+    )
+    executable_embedded = _source_snippet(
+        ROOT / "examples" / "readme_embedded_example.py",
+        "readme-embedded-example",
+    )
+    assert _same_python_syntax(embedded, executable_embedded)
+
+    embedded_result = document_system.validate(readme_embedded_example, placement=())
+    assert embedded_result.is_valid, embedded_result.diagnostics
+    embedded_rendered = MarkdownRealizer().realize(embedded_result.view)[0]
+    assert embedded_rendered.filename == "example.md"
+    assert embedded_rendered.content == (
+        "# Example\n\n"
+        "## Introduction\n\n"
+        "Hello from shikumi-devdoc.\n"
+    )
+
+
+def test_readme_dogfood_specification_source_is_executable() -> None:
+    documented = _test_target_field_value(
+        readme_source,
+        readme_source.SECTION_001.SECTION_003.SPECIFICATION_EXAMPLE,
+        "specification_source_example",
+    )
+    executable = _source_snippet(
+        ROOT / "examples" / "readme_dogfood_specification.py",
+        "readme-dogfood-specification",
+    )
+    assert _same_python_syntax(documented, executable)
+
+    result = document_system.validate(readme_dogfood_specification, placement=())
+    assert result.is_valid, result.diagnostics
+    realizer = MarkdownRealizer()
+    check = realizer.check(result.view)
+    assert check.is_realizable, check.diagnostics
+    rendered = realizer.realize(result.view)[0]
+    assert rendered.filename == "specification.md"
+    assert "## SPEC_001" in rendered.content
+    assert "document node" in rendered.content
+
+
 def test_readme_minimal_source_is_the_tested_example_module() -> None:
     documented = _test_target_field_value(
         readme_source,
-        readme_source.SECTION_001.SECTION_003,
+        readme_source.SECTION_001.SECTION_007,
         "minimal_source",
     )
     executable = _source_snippet(

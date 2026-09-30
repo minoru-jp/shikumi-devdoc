@@ -5,7 +5,7 @@ from shikumi_devdoc.norms.common import canonical_source, merge, summary
 from shikumi_devdoc.norms.document import title
 
 @summary('wheel の文書資産と、sdist のリリースソース構成に関する規則。')
-@canonical_source('Distribution', filename='distribution.md', order=90, merge_policy="all", heading="identity")
+@canonical_source('Distribution', filename='distribution.md', order=90, merge_policy="local", heading="identity")
 class SPECIFICATION_PART:
     """wheel に含める文書資産と、sdist に含めるリリースソースに関する規則。"""
 

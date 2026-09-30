@@ -58,13 +58,13 @@ level: MUST
 
 ## CORE_010 Merge policy
 
-`@canonical_source(..., merge_policy=...)` must control which value sources template-bearing content may reference with four values: `"all"`, `"local"`, `"external"`, and `"forbidden"`. `"all"` allows both node-local references and external placeholders, `"local"` allows only node-local references, `"external"` allows only external placeholders, and `"forbidden"` allows neither. The default is `"all"`.
+`@canonical_source(..., merge_policy=...)` must control two explicit channels that bring values into template-bearing content: local merge through `merge @= ...` and external placeholders. The four values are `"all"`, `"local"`, `"external"`, and `"forbidden"`. `"all"` allows both channels, `"local"` allows local merge only, `"external"` allows external placeholders only, and `"forbidden"` allows neither. The default is `"all"`. A field binding defined directly on the same document node with `name @= value` is outside this restriction and must remain referenceable from template-bearing content under every policy.
 
 level: MUST
 
 ## CORE_010A Local merge prohibition
 
-A canonical document using `merge_policy="external"` or `merge_policy="forbidden"` must not contain `merge @= ...` declarations, even when they are unused, and template-bearing content must not reference node-local bindings, including field bindings. Ordinary field values remain literal content, and placeholder-looking text inside them must not be interpreted as a template.
+A canonical document using `merge_policy="external"` or `merge_policy="forbidden"` must not contain `merge @= ...` declarations, even when they are unused. This prohibition must not apply to template references that resolve to field bindings defined directly on the same document node. `merge_policy` is not a provenance constraint over the Python expression used by `name @= value`; it constrains only the explicit merge/context channels. Ordinary field values remain literal content, and placeholder-looking text inside them must not be interpreted as a template.
 
 level: MUST
 

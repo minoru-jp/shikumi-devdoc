@@ -1,19 +1,235 @@
 # shikumi-devdoc
 
-`shikumi-devdoc` is a library for describing developer documentation as Python canonical source with semantic structure, validating it with [Shikumi](https://pypi.org/project/shikumi/), and realizing it as Markdown canonical documents.
+`shikumi-devdoc` is a library for **growing specifications and design documents together with the implementation**.
 
-It provides two foundations: Vocabulary and a common canonical document model. Terminology and spelling live in Vocabulary, while README, Authoring Guide, Project Status, CHANGELOG, Specification, API Reference, and similar documents use the same document model built from nested classes, docstring templates, and author-defined fields.
+Developer documentation such as README, Specification, API Reference, and CHANGELOG is written not as standalone Markdown files, but as Python **canonical source** with meaning and structure.
 
-## What it is for
+It is intended for projects that want documentation to remain an authoritative source that is referenced and updated throughout development, rather than something organized only after implementation is complete.
 
-Use `shikumi-devdoc` when continuously maintained developer documentation should keep its authoritative source as validated semantic information in Python and produce reproducible canonical documents with the required realization context.
+## Where it fits
 
-| Purpose | Foundation |
-| --- | --- |
-| Manage terminology names and concept definitions in one place | Vocabulary |
-| Compose README, Authoring Guide, Project Status, CHANGELOG, Specification, API Reference, and similar documents | canonical document model |
+`shikumi-devdoc` does not provide a particular development process by itself.
 
-Specification and API Reference are not built-in document kinds. Domain-specific meaning belongs to the author's field vocabulary. You can reuse the standard field sets under `shikumi_devdoc.fields` or define project-local fields.
+Instead, it provides a documentation foundation for development styles that place specifications and design at the center of the work.
+
+For example, it can be combined with approaches such as:
+
+- **Spec-Driven Development (SDD)**  
+  Treat specifications not as temporary material written before implementation, but as an authoritative development source that evolves together with the implementation.
+
+- **Docs as Code**  
+  Manage documentation in the same repository as code, and treat changes, reviews, and history as part of software development.
+
+- **LLM-assisted development**  
+  Maintain the specifications, design, and constraints given to an LLM as development assets with meaning and structure instead of scattered prose.
+
+In SDD in particular, the challenge is not merely writing a specification, but **keeping the specification aligned with the implementation over time**.
+
+`shikumi-devdoc` provides a way to keep that authoritative source in Python so that it remains workable for both people and LLMs.
+
+## This project is its own sample
+
+`shikumi-devdoc` uses `shikumi-devdoc` to manage its own README, Specification, API Reference, CHANGELOG, and other documents.
+
+The canonical sources actually used by this project are under [`devdocs/canonical_sources/`](https://github.com/minoru-jp/shikumi-devdoc/tree/main/devdocs/canonical_sources).
+
+The following two examples show documents with very different characteristics.
+
+### README: prose-first documentation
+
+Most of a README is ordinary prose.
+
+Its canonical source can preserve that character directly.
+
+````python
+from shikumi_devdoc.norms.common import IGNORE, canonical_source
+from shikumi_devdoc.norms.document import test_target_field, title
+
+
+example_source = test_target_field("example source")
+
+
+@canonical_source(
+    "{{project.name}}",
+    filename="README.md",
+    merge_policy="all",
+    unreferenced_fields=IGNORE,
+    heading="title",
+)
+class SECTION_001:
+    r"""
+    `{{project.name}}` は、仕様や設計文書を
+    実装と一緒に育てるためのライブラリです。
+
+    ```python
+    {{example_source}}
+    ```
+    """
+
+    example_source @= r"""
+    from shikumi_devdoc.norms.common import canonical_source
+
+
+    @canonical_source("Example", filename="example.md", merge_policy="local", heading="identity")
+    class EXAMPLE:
+        class Introduction:
+            "Hello from shikumi-devdoc."
+    """
+
+    class SECTION_002:
+        """このプロジェクト自身の文書も、この仕組みで管理しています。"""
+
+        title @= "このプロジェクト自身がサンプルです"
+````
+
+The document hierarchy is represented by Python class structure, while the body can be written directly as docstrings.
+
+There is no need to decompose prose-oriented documentation into unnecessarily fine-grained data structures.
+
+You can keep a README free-form while giving meaning and structure only to the parts that need them.
+
+### Specification: documentation as a collection of items
+
+A Specification has a different shape: the individual specification items matter as much as the prose itself.
+
+This project's own Specification uses the same canonical-source mechanism.
+
+```python
+from devdocs.canonical_sources.vocabulary.canonical import TERMS
+from shikumi_devdoc.fields.specification import MUST, level
+from shikumi_devdoc.norms.common import canonical_source, merge
+from shikumi_devdoc.norms.document import title
+
+
+@canonical_source(
+    "Structured fields",
+    filename="specification.md",
+    order=50,
+    merge_policy="local",
+    heading="identity",
+)
+class SPECIFICATION_PART:
+    class SPEC_001:
+        """canonical root 内の class は {{TERM_006}} として解釈されなければならない。"""
+
+        merge @= TERMS.TERM_006
+        title @= "Class-derived document-node identity"
+        level @= MUST
+```
+
+README and Specification look and behave quite differently.
+
+One is centered on free-form prose; the other is a collection of semantically meaningful items.
+
+`shikumi-devdoc` does not force both into one specialized document format. They use the same foundation while choosing a shape appropriate to each document.
+
+```text
+README
+  └─ free-form prose first
+       └─ structure only where needed
+
+Specification
+  └─ collection of items first
+       └─ meaning attached to each item
+```
+
+Specification and API Reference are not special document grammars.
+
+They are built on the same canonical-source model by combining the meanings required by each document.
+
+## Referencing and inserting values
+
+Templates in canonical source can reference separately held values as `{{name}}` instead of containing only fixed prose.
+
+Those values can come from a field defined on the same node, a local reference brought in from another canonical source, or external context supplied at realization time.
+
+### Refer to a value defined on the same node
+
+A field defined on a node with `name @= value` can be referenced as `{{name}}` from that node's docstring or other template-bearing content.
+
+The `example_source` in the README example above uses exactly this mechanism. The code example is kept as independent literal text rather than duplicated directly in the prose, and the template references it where it should appear.
+
+`test_target_field` can be used to **separate code, configuration, commands, expected output, or other text that ordinary tests should reference directly**. The sample code in this README is itself separated from the canonical source as a `test_target_field`; ordinary pytest tests compare it with the corresponding example module and then validate and render that module.
+
+Separating a value with `test_target_field` does not automatically create or run a test, and it does not imply test coverage. What should be verified and how it should be verified remains part of the project's ordinary test design. `test_target_field` only makes the text an independent unit in the authoritative source that tests can address directly.
+
+### From another canonical source
+
+An object from another canonical source can also be brought into the same node as a local reference.
+
+Vocabulary, for example, uses this mechanism so that shared terminology can be defined once and reused across documents.
+
+```python
+merge @= TERMS.TERM_001
+```
+
+Instead of copying terms and definitions directly into prose, documents can retain relationships between authoritative sources.
+
+Vocabulary is one convenient use of this mechanism, but the mechanism itself is not specific to Vocabulary.
+
+### From external context
+
+Values can also be supplied from outside the canonical source.
+
+Typical examples include the current version shown in a README or other values determined at generation time.
+
+```text
+canonical source
+       +
+external context
+       ↓
+     document
+```
+
+These values do not have to be frozen into the canonical source itself; they can be supplied as the context in which the document is generated.
+
+## Choose insertion channels with merge policy
+
+Fields defined directly on the same node remain available to templates regardless of `merge_policy`.
+
+`merge_policy` constrains two explicit ways of bringing values into template-bearing content:
+
+- local merge through `merge @= ...`
+- external context supplied at realization time
+
+| policy | `merge @= ...` | external context |
+| --- | --- | --- |
+| `all` | allowed | allowed |
+| `local` | allowed | not used |
+| `external` | not used | allowed |
+| `forbidden` | not used | not used |
+
+This README uses `all` because it uses both external context and local merge. The Specification uses `local` because it uses local merge without external context. CHANGELOG uses `forbidden` because it uses neither. These are choices about the insertion channels used by each canonical source; they do not determine the document type itself.
+
+`merge_policy` also does not track the provenance of ordinary Python values. Once a value is bound directly on the node with `name @= value`, it is treated as that node's own field regardless of where the value originated before Python evaluated the assignment.
+
+See the [Authoring Guide](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/authoring_guide/advanced-authoring.md) and [Specification](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/specification/core.md) for the exact rules of all four policies.
+
+## Extensible by design
+
+The meanings and Markdown output provided by `shikumi-devdoc` are not the only possible uses of the model.
+
+The library is built on [Shikumi](https://github.com/minoru-jp/shikumi). See the [Shikumi documentation](https://github.com/minoru-jp/shikumi/tree/main/docs) for the underlying mechanisms for semantic annotation, structuring, validation, and realization.
+
+On that foundation, `shikumi-devdoc` can be extended in two directions.
+
+### Express project-specific meaning
+
+You are not limited to the meanings provided by `shikumi-devdoc`.
+
+Project-specific descriptors can add meaning to the same canonical source.
+
+For example, a development process can represent information such as Requirement, Risk, Decision, Owner, Component, or Review status.
+
+Instead of adapting the project to a fixed document format, you can **give documents the meaning that the project itself needs**.
+
+### Produce formats other than Markdown
+
+`shikumi-devdoc` provides a Markdown realizer.
+
+When another format is needed, a custom realizer can be implemented using Shikumi's realization model.
+
+Because the meaning held by canonical source is separate from the final output format, the same authoritative source can be used to produce other artifacts as well.
 
 ## Minimal usage
 
@@ -23,18 +239,19 @@ Install from PyPI:
 pip install shikumi-devdoc
 ```
 
-A minimal canonical source needs only a root class decorated with `@canonical_source(...)` and a nested class beneath it.
+A minimal canonical source needs only a root class and a nested class.
 
 ```python
 from shikumi_devdoc.norms.common import canonical_source
 
+
 @canonical_source("Example", filename="example.md", merge_policy="local", heading="identity")
 class EXAMPLE:
     class Introduction:
-        '''Hello from shikumi-devdoc.'''
+        """Hello from shikumi-devdoc."""
 ```
 
-Pass the module to the CLI to generate a canonical document:
+Pass the module to the CLI:
 
 ```bash
 shikumi-devdoc render document myproject.example -o build/
@@ -50,72 +267,38 @@ The generated Markdown is:
 Hello from shikumi-devdoc.
 ```
 
-Nested classes become child document nodes without additional decorators, and their nesting maps to heading depth. Context, fields, Vocabulary, indexes, and other features can be added to the same model when needed.
+From there, structured information, insertion, cross-document references, and other features can be added as needed.
 
-## Core model
-
-`shikumi-devdoc` does not treat hand-edited Markdown as the authoritative source. A canonical document is established through validation and realization from canonical source plus realization context.
-
-```text
-canonical source
-      + realization context
-        ↓ Shikumi interpretation and validation
-     SemanticView
-        ↓ shikumi-devdoc realizer
-canonical document
-        ↓ project-specific publication workflow
-  published document
-```
-
-`shikumi-devdoc` consistently owns the workflow through the canonical-document boundary. Translation, localization, prose editing, media conversion, and distribution belong to a project-specific publication workflow that produces published documents.
-
-A canonical document uses one common document node / template / field / merge model. Nested classes define document hierarchy, docstrings provide body templates, and fields carry structured supplemental information. Prose such as background explanations can remain in docstrings, while information that matters structurally can be separated into fields.
-
-The generic document core does not embed Specification or API Reference semantics. New document uses are expressed by combining the required field vocabulary and presentations with the same foundation rather than introducing a separate grammar.
-
-## Vocabulary and structured information
-
-Vocabulary keeps terminology names and concept definitions as canonical source. Each Vocabulary term has a stable `TERM_N` class identity, so consuming documents can reference the term class instead of duplicating the human-facing term string.
-
-```python
-merge @= TERMS.TERM_001
-```
-
-Templates can normally use a short reference such as `{{TERM_001}}`. If multiple Vocabularies contribute the same identity, qualify the Python identity only as far as needed to disambiguate it. See the Specification for the precise name-resolution rules.
-
-Document-specific structured information is declared as fields. Authors can define project-local field vocabularies or reuse common standard field sets from `shikumi_devdoc.fields`. The generic core does not own the domain meaning of those fields.
-
-Docstrings, `prose_field`, and `title @= ...` are template-bearing content and can use local references and external placeholders. A field written with `name @= value` is automatically available to templates on the same node as `{{name}}`; `merge` adds class targets, literal strings, or explicit aliases to the same local namespace. `merge_policy` controls which sources may participate: `"all"` allows local and external merge, `"local"` allows only local references, `"external"` allows only realization context, and `"forbidden"` allows neither. Use `"forbidden"` for snapshot-style sources such as a CHANGELOG when later changes must not rewrite historical content. The old `placeholders` boolean is deprecated in 0.3.2 and will be removed in 1.0.0; `True` maps to `"all"` and `False` maps to `"local"`.
-
-Ordinary `field`, `list_field`, `table_field`, and `test_target_field` values themselves remain literal content. `test_target_field` separates literal text that ordinary tests should inspect directly; Markdown fences and language markers belong in the surrounding template. Use `reference_field` when a Python object relationship should realize as a logical Markdown reference; the standard `related` field is a convenience field built on that presentation. Unreferenced fields can be appended to the body with `APPEND` or retained as source-only semantic information with `IGNORE`.
-
-## Documentation workflows with LLMs
-
-One intended workflow is that people own intent, decisions, and review while an LLM assists with ongoing canonical-source maintenance.
-
-The design therefore favors explicit meaning, mechanical validation, and stable regeneration of canonical documents rather than minimizing authoring syntax alone. At the same time, using an LLM is not a reason to accept unnecessary complexity, duplicated semantics, or abstractions without a concrete need.
+> [!IMPORTANT]
+> Canonical source is imported as a Python module. Do not execute an untrusted Python module as documentation input.
 
 ## Documentation
 
-`shikumi-devdoc` dogfoods its own documentation system.
+This repository's documentation is itself a working example of `shikumi-devdoc`.
 
 - [Authoring Guide](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/authoring_guide/INDEX.md): practical guidance for designing and maintaining canonical source.
-- [Specification](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/specification/INDEX.md): guaranteed behavior and constraints.
+- [Specification](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/specification/INDEX.md): behavior and constraints guaranteed by `shikumi-devdoc`.
 - [API Reference](https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/api/INDEX.md): public interfaces.
-- [Project Status](https://github.com/minoru-jp/shikumi-devdoc/blob/main/STATUS.md): current state and forward-looking notices.
-- [CHANGELOG](https://github.com/minoru-jp/shikumi-devdoc/blob/main/CHANGELOG.md): past changes.
-- [devdocs workspace](https://github.com/minoru-jp/shikumi-devdoc/blob/main/devdocs/README.md): this repository's documentation-generation workspace.
-- [`devdocs/canonical_sources/`](https://github.com/minoru-jp/shikumi-devdoc/tree/main/devdocs/canonical_sources): the canonical sources used by this project.
-- [`devdocs/canonical_documents/`](https://github.com/minoru-jp/shikumi-devdoc/tree/main/devdocs/canonical_documents): Japanese canonical documents generated from validated source and realization context.
+- [Project Status](https://github.com/minoru-jp/shikumi-devdoc/blob/main/STATUS.md): current development status.
+- [CHANGELOG](https://github.com/minoru-jp/shikumi-devdoc/blob/main/CHANGELOG.md): change history.
+- [`devdocs/canonical_sources/`](https://github.com/minoru-jp/shikumi-devdoc/tree/main/devdocs/canonical_sources): canonical sources used by this project itself.
+- [`devdocs/canonical_documents/`](https://github.com/minoru-jp/shikumi-devdoc/tree/main/devdocs/canonical_documents): Japanese canonical documents generated from canonical source.
+- [devdocs workspace](https://github.com/minoru-jp/shikumi-devdoc/blob/main/devdocs/README.md): how this repository generates and manages canonical documents.
 
-The `devdocs/` tree also serves as a reference corpus for the authoring API. Comparing a canonical source with its corresponding canonical document shows the relationship between authoring, context injection, and realization output.
+Comparing canonical source with the generated documents shows how `shikumi-devdoc` is used in practice.
 
-English published documents at the repository root and under `docs/` are produced by a separate publication workflow using the Japanese canonical documents as input. That translation and publication process is not a feature of `shikumi-devdoc` itself.
+English documents at the repository root and under `docs/` are produced by a separate publication workflow using the Japanese canonical documents as input. That translation and publication process is not itself a feature of `shikumi-devdoc`.
 
 ## Version
 
-Current version: `0.3.3`. Supported Python: `>=3.11`. See [`STATUS.md`](https://github.com/minoru-jp/shikumi-devdoc/blob/main/STATUS.md) for the current development stage and notices.
+Current version: `0.3.4`
+
+Supported Python: `>=3.11`
+
+See [`STATUS.md`](https://github.com/minoru-jp/shikumi-devdoc/blob/main/STATUS.md) for the current development stage and compatibility information.
 
 ## License
 
-`shikumi-devdoc` is available under the MIT License. See [`LICENSE`](https://github.com/minoru-jp/shikumi-devdoc/blob/main/LICENSE).
+`shikumi-devdoc` is available under the MIT License.
+
+See [`LICENSE`](https://github.com/minoru-jp/shikumi-devdoc/blob/main/LICENSE).

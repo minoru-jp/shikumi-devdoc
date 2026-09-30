@@ -51,7 +51,7 @@ Do not use merge as a general macro system for fragmenting long prose. Docstring
 
 A value is a good realization-context candidate when it is allowed to change when the same canonical source is realized later. The current project version is a typical example. Historical release versions, accepted design decisions, and normative conditions should remain in the canonical source.
 
-`merge_policy="all"` allows local and external merge, `"local"` allows only local merge, `"external"` allows only external merge, and `"forbidden"` rejects both. Use `"local"` for self-contained documents that may reuse local canonical information but must not vary with external context. Use `"forbidden"` for snapshot documents such as a CHANGELOG when later changes must not alter recorded history.
+`merge_policy` does not constrain fields defined directly on the same node. It only constrains the explicit insertion channels provided by `merge @= ...` and external context. `"all"` allows both, `"local"` allows local merge only, `"external"` allows external context only, and `"forbidden"` rejects both. A value bound directly with `name @= value` remains referenceable from the node's templates under every policy, and the policy does not track where that Python value originated before assignment.
 
 ## Protect code examples with normal tests
 
