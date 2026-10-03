@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-import json
-from typing import Any
+from typing import cast
 
 
 class ContextError(ValueError):
@@ -17,7 +17,7 @@ class UnknownContextKeyError(ContextError):
 
     def __init__(self, key: str) -> None:
         super().__init__(f"unknown context key: {key}")
-        self.key = key
+        self.key: str = key
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,47 +28,53 @@ class Context:
     Numeric path components can index arrays, e.g. ``PEOPLE.0.name``.
     """
 
-    data: Mapping[str, Any]
+    data: Mapping[str, object]
 
     def __post_init__(self) -> None:
         if not isinstance(self.data, Mapping):
             raise TypeError("context root must be a mapping")
 
     @classmethod
-    def from_json(cls, text: str) -> "Context":
+    def from_json(cls, text: str) -> Context:
         """Create context from a JSON object string."""
         try:
-            data = json.loads(text)
+            data = cast(object, json.loads(text))
         except json.JSONDecodeError as exc:
             raise ContextError(f"invalid context JSON: {exc.msg}") from exc
         if not isinstance(data, dict):
             raise ContextError("context JSON root must be an object")
-        return cls(data)
+        return cls(cast(Mapping[str, object], data))
 
     @classmethod
-    def from_mapping(cls, data: Mapping[str, Any]) -> "Context":
+    def from_mapping(cls, data: Mapping[str, object]) -> Context:
         return cls(data)
 
     def resolve(self, key: str) -> str:
-        if not isinstance(key, str) or not key or any(not part for part in key.split(".")):
+        if (
+            not isinstance(key, str)
+            or not key
+            or any(not part for part in key.split("."))
+        ):
             raise UnknownContextKeyError(key)
 
-        value: Any = self.data
+        value: object = self.data
         for part in key.split("."):
             if isinstance(value, Mapping):
-                if part not in value:
+                mapping = cast(Mapping[object, object], value)
+                if part not in mapping:
                     raise UnknownContextKeyError(key)
-                value = value[part]
+                value = mapping[part]
                 continue
             if (
                 isinstance(value, Sequence)
                 and not isinstance(value, (str, bytes, bytearray))
                 and part.isdecimal()
             ):
+                sequence: Sequence[object] = value
                 index = int(part)
-                if index >= len(value):
+                if index >= len(sequence):
                     raise UnknownContextKeyError(key)
-                value = value[index]
+                value = sequence[index]
                 continue
             raise UnknownContextKeyError(key)
 
@@ -78,7 +84,7 @@ class Context:
 
     def contains(self, key: str) -> bool:
         try:
-            self.resolve(key)
+            _ = self.resolve(key)
         except UnknownContextKeyError:
             return False
         return True
@@ -87,11 +93,14 @@ class Context:
 EMPTY_CONTEXT = Context({})
 
 
-def normalize_context(value: Context | Mapping[str, Any] | None) -> Context:
+def normalize_context(value: Context | Mapping[str, object] | None) -> Context:
     if value is None:
         return EMPTY_CONTEXT
     if isinstance(value, Context):
         return value
     if isinstance(value, Mapping):
         return Context(value)
-    raise TypeError("context must be a Context, mapping, or None")
+    # Preserve runtime validation for callers that do not use static typing.
+    raise TypeError(  # pyright: ignore[reportUnreachable]
+        "context must be a Context, mapping, or None"
+    )

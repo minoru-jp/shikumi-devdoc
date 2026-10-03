@@ -2,20 +2,23 @@
 
 from __future__ import annotations
 
+import sys
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from enum import Enum
-import sys
 from types import ModuleType
-from typing import Any, TypeVar
+from typing import Any, Self, TypeVar, cast
 
 from shikumi import (
     Cardinality,
     DescriptorUseRule,
     Diagnostic,
     InformationType,
+    SemanticView,
     Shikumi,
     StructuralKind,
     StructureSelector,
+    ViewItem,
     attach_information,
     information_of,
     record_descriptor_use,
@@ -24,26 +27,27 @@ from shikumi import (
 from shikumi.standard import PackageTreeStructure, information_type_rule
 
 from shikumi_devdoc._placeholder_syntax import placeholder_keys
+
 from ._common import (
     CanonicalContent,
     CanonicalDocumentPath,
     CanonicalFilename,
     CanonicalHeadingPolicy,
-    CanonicalOrder,
     CanonicalMergePolicy,
+    CanonicalOrder,
     CanonicalSource,
     CanonicalSummary,
     CanonicalTitle,
     CanonicalUnreferencedFields,
+    HeadingPolicy,
     MergeBinding,
     MergePolicy,
-    HeadingPolicy,
+    attached_information_values,
     canonical_source,
     merge,
     summary,
 )
 from ._partitioned import filename_value_error
-
 
 Title = InformationType("document node title", str)
 
@@ -83,13 +87,15 @@ S = TypeVar("S")
 class _TitleBinding:
     """Temporary class-body binding for one or more ``title @=`` writes."""
 
-    __slots__ = ("writer", "values")
+    __slots__: tuple[str, ...] = ("values", "writer")
+    writer: TitleWriter
+    values: tuple[str, ...]
 
-    def __init__(self, writer: "TitleWriter", values: tuple[str, ...]) -> None:
+    def __init__(self, writer: TitleWriter, values: tuple[str, ...]) -> None:
         self.writer = writer
         self.values = values
 
-    def __imatmul__(self, value: str) -> "_TitleBinding":
+    def __imatmul__(self, value: str) -> _TitleBinding:  # noqa: PYI034
         self.writer._validate(value)
         return _TitleBinding(self.writer, (*self.values, value))
 
@@ -103,37 +109,42 @@ class _TitleBinding:
 class TitleWriter:
     """Write one human-readable document-node title with ``title @= ...``."""
 
-    __slots__ = ()
+    __slots__: tuple[str, ...] = ()
 
     @staticmethod
-    def _validate(value: str) -> None:
+    def _validate(value: object) -> None:
         if not isinstance(value, str):
             raise TypeError("document node title must be a string")
         if not value.strip():
             raise ValueError("document node title must be non-empty")
         if "\n" in value or "\r" in value:
-            raise ValueError("document node title must be a single line before template expansion")
+            raise ValueError(
+                "document node title must be a single line before template expansion"
+            )
 
     def __imatmul__(self, value: str) -> _TitleBinding:
         self._validate(value)
         return _TitleBinding(self, (value,))
 
     def _connect(self, subject: type[object], value: str) -> None:
-        record_descriptor_use(subject, self)
-        attach_information(subject, Title, value)
+        _ = record_descriptor_use(subject, self)
+        _ = attach_information(subject, Title, value)
 
 
 class _FieldBinding:
     """Temporary class-body binding retaining one concrete assignment identity."""
 
-    __slots__ = ("writer", "values", "binding_name")
+    __slots__: tuple[str, ...] = ("binding_name", "values", "writer")
+    writer: FieldWriter
+    values: tuple[object, ...]
+    binding_name: str | None
 
-    def __init__(self, writer: "FieldWriter", values: tuple[object, ...]) -> None:
+    def __init__(self, writer: FieldWriter, values: tuple[object, ...]) -> None:
         self.writer = writer
         self.values = values
-        self.binding_name: str | None = None
+        self.binding_name = None
 
-    def __imatmul__(self, value: object) -> "_FieldBinding":
+    def __imatmul__(self, value: object) -> Self:
         # Keep the same object so an earlier ``merge @= ("alias", binding)``
         # continues to identify this exact field binding after later writes.
         self.values = self.values + (value,)
@@ -157,7 +168,10 @@ class FieldWriter:
     explicit ``merge`` target when an alias is useful.
     """
 
-    __slots__ = ("schema", "presentation", "columns")
+    __slots__: tuple[str, ...] = ("columns", "presentation", "schema")
+    schema: InformationType[Any]
+    presentation: FieldPresentation
+    columns: tuple[str, ...]
 
     def __init__(
         self,
@@ -169,7 +183,10 @@ class FieldWriter:
         columns: tuple[str, ...] = (),
     ) -> None:
         if not isinstance(name, str):
-            raise TypeError("field name must be a string")
+            # Preserve runtime validation for callers that do not use static typing.
+            raise TypeError(  # pyright: ignore[reportUnreachable]
+                "field name must be a string"
+            )
         if not name.strip():
             raise ValueError("field name must be non-empty")
         if "\n" in name or "\r" in name:
@@ -184,19 +201,19 @@ class FieldWriter:
         return self.schema.name
 
     @property
-    def value_type(self):
+    def value_type(self) -> type[Any] | tuple[type[Any], ...]:
         return self.schema.value_type
 
     @property
     def cardinality(self) -> Cardinality:
         return self.schema.cardinality
 
-    def __imatmul__(self, value: object) -> object:
+    def __imatmul__(self, value: object) -> _FieldBinding:
         return _FieldBinding(self, (value,))
 
     def _connect(self, subject: type[object], binding_name: str, value: object) -> None:
-        record_descriptor_use(subject, self)
-        attach_information(
+        _ = record_descriptor_use(subject, self)
+        _ = attach_information(
             subject,
             DocumentField,
             FieldValue(
@@ -269,7 +286,7 @@ def test_target_field(
 
 # pytest discovers imported module-level callables whose names start with ``test_``.
 # This is an authoring factory, not a test function.
-test_target_field.__test__ = False
+setattr(test_target_field, "__test__", False)  # noqa: B010
 
 
 def table_field(
@@ -280,7 +297,10 @@ def table_field(
     """Create a repeatable literal field rendered as a Markdown table."""
 
     if not isinstance(columns, tuple):
-        raise TypeError("table field columns must be a tuple")
+        # Preserve runtime validation for callers that do not use static typing.
+        raise TypeError(  # pyright: ignore[reportUnreachable]
+            "table field columns must be a tuple"
+        )
     if not columns:
         raise ValueError("table field requires at least one column")
     normalized: list[str] = []
@@ -318,11 +338,13 @@ def prose_field(name: str) -> FieldWriter:
 title = TitleWriter()
 
 
-def _direct_children(view, subject: object):
-    return [candidate for candidate in view.entities if candidate.node.parent is subject]
+def _direct_children(view: SemanticView, subject: object) -> list[ViewItem]:
+    return [
+        candidate for candidate in view.entities if candidate.node.parent is subject
+    ]
 
 
-def _document_roots(view):
+def _document_roots(view: SemanticView) -> list[ViewItem]:
     return [
         item
         for item in view.entities
@@ -330,8 +352,8 @@ def _document_roots(view):
     ]
 
 
-def _document_descendants(view, root):
-    result = []
+def _document_descendants(view: SemanticView, root: ViewItem) -> list[ViewItem]:
+    result: list[ViewItem] = []
 
     def visit(subject: object) -> None:
         for child in _direct_children(view, subject):
@@ -342,7 +364,7 @@ def _document_descendants(view, root):
     return result
 
 
-def _document_members(view, root):
+def _document_members(view: SemanticView, root: ViewItem) -> list[ViewItem]:
     return [root, *_document_descendants(view, root)]
 
 
@@ -362,7 +384,7 @@ def _qualified_class_chain(subject: type[object]) -> tuple[type[object], ...]:
     return tuple(classes) if classes and classes[-1] is subject else (subject,)
 
 
-def document_node_identity(subject: type[object]) -> str | None:
+def document_node_identity(subject: object) -> str | None:
     """Return the dotted lexical identity below the nearest canonical root."""
 
     if not isinstance(subject, type):
@@ -377,7 +399,7 @@ def document_node_identity(subject: type[object]) -> str | None:
     return ".".join(components) if components else None
 
 
-def canonical_document_root(subject: type[object]) -> type[object] | None:
+def canonical_document_root(subject: object) -> type[object] | None:
     """Return the nearest canonical document root containing ``subject``."""
 
     if not isinstance(subject, type):
@@ -389,12 +411,13 @@ def canonical_document_root(subject: type[object]) -> type[object] | None:
     return root
 
 
-def _reference_class_targets(value: object):
+def _reference_class_targets(value: object) -> Iterator[type[object]]:
     if isinstance(value, type):
         yield value
         return
     if isinstance(value, (tuple, list, set)):
-        for item in value:
+        items = cast(Iterable[object], value)
+        for item in items:
             yield from _reference_class_targets(item)
 
 
@@ -419,7 +442,7 @@ class _FieldReference:
     binding_name: str
 
 
-def _field_values_for_reference(item, target: object) -> list[FieldValue]:
+def _field_values_for_reference(item: ViewItem, target: object) -> list[FieldValue]:
     if not isinstance(target, _FieldReference):
         return []
     return [
@@ -429,7 +452,9 @@ def _field_values_for_reference(item, target: object) -> list[FieldValue]:
     ]
 
 
-def _field_references_for_merge_target(item, target: object) -> tuple[_FieldReference, ...]:
+def _field_references_for_merge_target(
+    item: ViewItem, target: object
+) -> tuple[_FieldReference, ...]:
     """Resolve a field merge target to concrete binding identities on this node."""
 
     if isinstance(target, _FieldReference):
@@ -458,14 +483,18 @@ def _reference_target_key(target: object) -> tuple[object, ...]:
     return ("object", id(target))
 
 
-def _add_reference_claim(claims: dict[str, list[object]], name: str, target: object) -> None:
+def _add_reference_claim(
+    claims: dict[str, list[object]], name: str, target: object
+) -> None:
     targets = claims.setdefault(name, [])
     key = _reference_target_key(target)
     if all(_reference_target_key(candidate) != key for candidate in targets):
         targets.append(target)
 
 
-def template_reference_bindings(item) -> tuple[dict[str, object], dict[str, tuple[object, ...]]]:
+def template_reference_bindings(
+    item: ViewItem,
+) -> tuple[dict[str, object], dict[str, tuple[object, ...]]]:
     """Resolve one node-local template namespace.
 
     Field bindings participate automatically under their Python ``@=`` left-hand
@@ -506,24 +535,26 @@ def template_reference_bindings(item) -> tuple[dict[str, object], dict[str, tupl
     return resolved, ambiguous
 
 
-
-def _group_fields(item) -> dict[str, list[FieldValue]]:
+def _group_fields(item: ViewItem) -> dict[str, list[FieldValue]]:
     grouped: dict[str, list[FieldValue]] = {}
     for value in item.values(DocumentField):
         if isinstance(value, FieldValue):
             grouped.setdefault(value.binding_name, []).append(value)
     return grouped
 
-def _prose_templates(item) -> tuple[str, ...]:
+
+def _prose_templates(item: ViewItem) -> tuple[str, ...]:
     texts: list[str] = []
     for values in _group_fields(item).values():
         for entry in values:
-            if entry.presentation is FieldPresentation.PROSE and isinstance(entry.value, str):
+            if entry.presentation is FieldPresentation.PROSE and isinstance(
+                entry.value, str
+            ):
                 texts.append(entry.value)
     return tuple(texts)
 
 
-def _template_texts(item) -> tuple[str, ...]:
+def _template_texts(item: ViewItem) -> tuple[str, ...]:
     texts = [value for value in item.values(CanonicalContent) if isinstance(value, str)]
     texts.extend(value for value in item.values(Title) if isinstance(value, str))
     texts.extend(_prose_templates(item))
@@ -541,7 +572,7 @@ def _reference_alternatives(
     )
 
 
-def _validate_local_references(item):
+def _validate_local_references(item: ViewItem) -> Iterator[Diagnostic]:
     from ._vocabulary import vocabulary_term_name
 
     raw = item.values(MergeBinding)
@@ -615,9 +646,7 @@ def _validate_local_references(item):
                     )
                     continue
                 python_names = merge_target_reference_names(target)
-                alternatives.append(
-                    python_names[-1] if python_names else repr(target)
-                )
+                alternatives.append(python_names[-1] if python_names else repr(target))
             yield Diagnostic(
                 f"local template reference {key!r} is ambiguous; use one of: "
                 + ", ".join(repr(value) for value in alternatives),
@@ -659,7 +688,7 @@ def _validate_local_references(item):
     stack: list[str] = []
     reported: set[tuple[str, ...]] = set()
 
-    def visit(name: str):
+    def visit(name: str) -> Iterator[Diagnostic]:
         state[name] = 1
         stack.append(name)
         for target in graph[name]:
@@ -678,7 +707,7 @@ def _validate_local_references(item):
                         code="document.reference.cycle",
                         subject=item.subject,
                     )
-        stack.pop()
+        _ = stack.pop()
         state[name] = 2
 
     for name in graph:
@@ -686,22 +715,17 @@ def _validate_local_references(item):
             yield from visit(name)
 
 
-
 def _merge_policy_for_subject(subject: object) -> MergePolicy | None:
     root = canonical_document_root(subject) if isinstance(subject, type) else None
     if root is None:
         return None
-    values = tuple(
-        record.value
-        for record in information_of(root)
-        if record.type is CanonicalMergePolicy
-    )
+    values = attached_information_values(root, CanonicalMergePolicy)
     if len(values) == 1 and isinstance(values[0], MergePolicy):
         return values[0]
     return None
 
 
-def _validate_merge_policy(item):
+def _validate_merge_policy(item: ViewItem) -> Iterator[Diagnostic]:
     policy = _merge_policy_for_subject(item.subject)
     if policy is None or policy.allows_local:
         return
@@ -718,8 +742,7 @@ def _validate_merge_policy(item):
         )
 
 
-
-def _validate_field_values(current):
+def _validate_field_values(current: ViewItem) -> Iterator[Diagnostic]:
     fields = current.values(DocumentField)
     if not fields:
         return
@@ -748,29 +771,27 @@ def _validate_field_values(current):
                 subject=current.subject,
             )
         if field_value.presentation is FieldPresentation.TABLE:
-            row = field_value.value
-            if isinstance(row, (tuple, list)) and len(row) != len(field_value.columns):
-                yield Diagnostic(
-                    f"table field {schema.name!r} requires {len(field_value.columns)} "
-                    f"cells per row, but {len(row)} are present",
-                    code="document.field.table.row_length",
-                    subject=current.subject,
-                )
+            row_value = field_value.value
+            if isinstance(row_value, (tuple, list)):
+                row = cast(tuple[object, ...] | list[object], row_value)
+                if len(row) != len(field_value.columns):
+                    yield Diagnostic(
+                        f"table field {schema.name!r} requires {len(field_value.columns)} "
+                        f"cells per row, but {len(row)} are present",
+                        code="document.field.table.row_length",
+                        subject=current.subject,
+                    )
 
         if field_value.presentation is FieldPresentation.REFERENCE:
             for target in _reference_class_targets(field_value.value):
                 root = canonical_document_root(target)
                 if root is None or target is root:
                     continue
-                policies = tuple(
-                    record.value
-                    for record in information_of(root)
-                    if record.type is CanonicalHeadingPolicy
-                )
+                policies = attached_information_values(root, CanonicalHeadingPolicy)
                 if len(policies) == 1 and policies[0] is not HeadingPolicy.IDENTITY:
                     yield Diagnostic(
                         "nested canonical document nodes used as semantic reference "
-                        "targets require heading=\"identity\" on their canonical root",
+                        'targets require heading="identity" on their canonical root',
                         code="document.reference.target.heading",
                         subject=current.subject,
                     )
@@ -803,7 +824,7 @@ def _validate_field_values(current):
             )
 
 
-def _validate_container(view):
+def _validate_container(view: SemanticView) -> Iterator[Diagnostic]:
     roots = _document_roots(view)
     if not roots:
         yield Diagnostic(
@@ -817,9 +838,11 @@ def _validate_container(view):
 
     for root in roots:
         filenames_values = root.values(CanonicalFilename)
-        if len(filenames_values) == 1 and filename_value_error(
-            filenames_values[0], label="canonical filename"
-        ) is None:
+        if (
+            len(filenames_values) == 1
+            and filename_value_error(filenames_values[0], label="canonical filename")
+            is None
+        ):
             key = filenames_values[0].casefold()
             previous = filenames.get(key)
             if previous is not None:
@@ -846,9 +869,7 @@ def _validate_container(view):
                     orders[order] = root.subject
 
     allowed = {
-        id(item.subject)
-        for root in roots
-        for item in _document_members(view, root)
+        id(item.subject) for root in roots for item in _document_members(view, root)
     }
     for candidate in view.entities:
         has_node_data = (
@@ -866,21 +887,21 @@ def _validate_container(view):
 
 
 @validator(focus=StructuralKind.MODULE)
-def document_module(view):
+def document_module(view: SemanticView) -> Iterator[Diagnostic]:
     if isinstance(view.focused.node.parent, ModuleType):
         return
     yield from _validate_container(view)
 
 
 @validator(focus=StructuralKind.PACKAGE)
-def document_package(view):
+def document_package(view: SemanticView) -> Iterator[Diagnostic]:
     if isinstance(view.focused.node.parent, ModuleType):
         return
     yield from _validate_container(view)
 
 
 @validator(focus=StructuralKind.ENTITY)
-def document_entity(view):
+def document_entity(view: SemanticView) -> Iterator[Diagnostic]:
     current = view.focused
 
     if current.has(CanonicalTitle):
@@ -896,23 +917,57 @@ def document_entity(view):
                 code="document.root_title",
                 subject=current.subject,
             )
-        for info_type, code, message in (
-            (CanonicalTitle, "document.title.required", "canonical document roots require exactly one title"),
-            (CanonicalContent, "document.content.required", "canonical document roots require exactly one content template"),
-            (CanonicalFilename, "document.filename.required", "canonical document roots require exactly one filename"),
-            (CanonicalDocumentPath, "document.path.required", "canonical document roots require exactly one logical document path"),
-            (CanonicalMergePolicy, "document.merge_policy.required", "canonical document roots require exactly one merge policy"),
-            (CanonicalUnreferencedFields, "document.fields.policy.required", "canonical document roots require exactly one unreferenced-field policy"),
-            (CanonicalHeadingPolicy, "document.heading.required", "canonical document roots require exactly one heading policy"),
-            (CanonicalSource, "document.canonical_source.required", "canonical document roots require exactly one canonical source"),
+        for count, code, message in (
+            (
+                len(current.values(CanonicalTitle)),
+                "document.title.required",
+                "canonical document roots require exactly one title",
+            ),
+            (
+                len(current.values(CanonicalContent)),
+                "document.content.required",
+                "canonical document roots require exactly one content template",
+            ),
+            (
+                len(current.values(CanonicalFilename)),
+                "document.filename.required",
+                "canonical document roots require exactly one filename",
+            ),
+            (
+                len(current.values(CanonicalDocumentPath)),
+                "document.path.required",
+                "canonical document roots require exactly one logical document path",
+            ),
+            (
+                len(current.values(CanonicalMergePolicy)),
+                "document.merge_policy.required",
+                "canonical document roots require exactly one merge policy",
+            ),
+            (
+                len(current.values(CanonicalUnreferencedFields)),
+                "document.fields.policy.required",
+                "canonical document roots require exactly one unreferenced-field policy",
+            ),
+            (
+                len(current.values(CanonicalHeadingPolicy)),
+                "document.heading.required",
+                "canonical document roots require exactly one heading policy",
+            ),
+            (
+                len(current.values(CanonicalSource)),
+                "document.canonical_source.required",
+                "canonical document roots require exactly one canonical source",
+            ),
         ):
-            if len(current.values(info_type)) != 1:
+            if count != 1:
                 yield Diagnostic(message, code=code, subject=current.subject)
 
         for filename in current.values(CanonicalFilename):
             error = filename_value_error(filename, label="canonical filename")
             if error is not None:
-                yield Diagnostic(error, code="document.filename.value", subject=current.subject)
+                yield Diagnostic(
+                    error, code="document.filename.value", subject=current.subject
+                )
 
         if len(current.values(CanonicalSummary)) > 1:
             yield Diagnostic(
@@ -949,19 +1004,16 @@ def document_entity(view):
                 code="document.node.title.cardinality",
                 subject=current.subject,
             )
-        if any(
-            current.values(info_type)
-            for info_type in (
-                CanonicalSource,
-                CanonicalSummary,
-                CanonicalTitle,
-                CanonicalFilename,
-                CanonicalDocumentPath,
-                CanonicalOrder,
-                CanonicalMergePolicy,
-                CanonicalUnreferencedFields,
-                CanonicalHeadingPolicy,
-            )
+        if (
+            current.values(CanonicalSource)
+            or current.values(CanonicalSummary)
+            or current.values(CanonicalTitle)
+            or current.values(CanonicalFilename)
+            or current.values(CanonicalDocumentPath)
+            or current.values(CanonicalOrder)
+            or current.values(CanonicalMergePolicy)
+            or current.values(CanonicalUnreferencedFields)
+            or current.values(CanonicalHeadingPolicy)
         ):
             yield Diagnostic(
                 "canonical document metadata belongs on document roots",
@@ -1009,7 +1061,9 @@ document = Shikumi(
         CanonicalHeadingPolicy,
     ],
     descriptor_rules=[
-        DescriptorUseRule(descriptor=canonical_source, allowed=_entity, name="canonical_source"),
+        DescriptorUseRule(
+            descriptor=canonical_source, allowed=_entity, name="canonical_source"
+        ),
         DescriptorUseRule(descriptor=summary, allowed=_entity, name="summary"),
         DescriptorUseRule(descriptor=merge, allowed=_entity, name="merge"),
         DescriptorUseRule(descriptor=title, allowed=_entity, name="title"),

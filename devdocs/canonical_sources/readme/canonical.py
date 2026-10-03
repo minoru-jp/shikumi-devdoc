@@ -3,9 +3,10 @@
 from shikumi_devdoc.norms.common import IGNORE, canonical_source
 from shikumi_devdoc.norms.document import test_target_field, title
 
-
 readme_source_example = test_target_field("README canonical source example")
-specification_source_example = test_target_field("Specification canonical source example")
+specification_source_example = test_target_field(
+    "Specification canonical source example"
+)
 install_command = test_target_field("install command")
 minimal_source = test_target_field("minimal source")
 render_command = test_target_field("render command")
@@ -36,13 +37,13 @@ class SECTION_001:
 
         たとえば、次のような考え方と組み合わせられます。
 
-        - **Spec-Driven Development (SDD)**  
+        - **Spec-Driven Development (SDD)**
           仕様を実装前の一時的な資料ではなく、実装とともに更新される開発上の正本として扱う。
 
-        - **Docs as Code**  
+        - **Docs as Code**
           文書をコードと同じリポジトリで管理し、変更・レビュー・履歴をソフトウェア開発の一部として扱う。
 
-        - **LLM-assisted development**  
+        - **LLM-assisted development**
           LLM に渡す仕様・設計・制約を、散在した文章ではなく、意味と構造を持った開発資産として維持する。
 
         特に SDD では、仕様を書くこと自体よりも、**仕様を実装と乖離させずに維持し続けること**が重要になります。
@@ -333,19 +334,30 @@ class SECTION_001:
         from shikumi_devdoc.norms.common import canonical_source
 
 
-        @canonical_source("Example", filename="example.md", merge_policy="local", heading="identity")
+        @canonical_source(
+            "Example", filename="example.md", merge_policy="local", heading="identity"
+        )
         class EXAMPLE:
             class Introduction:
                 """Hello from shikumi-devdoc."""
         '''
         render_command @= "shikumi-devdoc render document myproject.example -o build/"
-        rendered_markdown @= '''
+        rendered_markdown @= """
         # Example
 
         ## Introduction
 
         Hello from shikumi-devdoc.
-        '''
+        """
+
+        class AUTHORING_NOTATION:
+            r"""
+            `shikumi` 自体は `@=` を強制しませんが、`shikumi-devdoc` の canonical source では文書ソースとしての読みやすさを重視し、`shikumi.standard` 系の `name @= value` style を意図的に採用しています。
+
+            この style を mypy で検査する場合は canonical source package 向けの追加設定が必要です。理由、設定例、抑制範囲の注意点は [`STATUS_008`](https://github.com/minoru-jp/shikumi-devdoc/blob/main/STATUS.md#status_008) を参照してください。
+            """
+
+            title @= "`@=` 記法と mypy"
 
     class SECTION_008:
         r"""

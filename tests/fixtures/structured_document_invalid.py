@@ -1,8 +1,10 @@
-from tests.fixtures.document_field_vocabulary import compatibility, level
 from shikumi_devdoc.norms.common import canonical_source
+from tests.fixtures.document_field_vocabulary import compatibility, level
 
 
-@canonical_source("Invalid", filename="invalid.md", merge_policy="local", heading="identity")
+@canonical_source(
+    "Invalid", filename="invalid.md", merge_policy="local", heading="identity"
+)
 class INVALID:
     class RepeatedField:
         level @= "MUST"

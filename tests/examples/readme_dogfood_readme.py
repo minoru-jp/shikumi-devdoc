@@ -2,7 +2,6 @@
 from shikumi_devdoc.norms.common import IGNORE, canonical_source
 from shikumi_devdoc.norms.document import test_target_field, title
 
-
 example_source = test_target_field("example source")
 
 
@@ -37,4 +36,6 @@ class SECTION_001:
         """このプロジェクト自身の文書も、この仕組みで管理しています。"""
 
         title @= "このプロジェクト自身がサンプルです"
+
+
 # DOC-SNIPPET readme-dogfood-readme END

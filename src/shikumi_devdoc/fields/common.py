@@ -2,7 +2,6 @@
 
 from shikumi_devdoc.norms.document import field, reference_field
 
-
 kind = field("kind", str)
 condition = field("condition", str, many=True)
 detail = field("detail", str, many=True)

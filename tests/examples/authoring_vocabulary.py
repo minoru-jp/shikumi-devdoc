@@ -4,12 +4,19 @@ from shikumi_devdoc.norms.vocabulary import vocabulary
 
 
 @vocabulary
-@canonical_source("Project Vocabulary", filename="GLOSSARY.md", merge_policy="local", heading="identity")
+@canonical_source(
+    "Project Vocabulary",
+    filename="GLOSSARY.md",
+    merge_policy="local",
+    heading="identity",
+)
 class TERMS:
     class TERM_001:
-        '''
+        """
         {{project term}}
 
         プロジェクト内で共有する概念の簡潔な定義。
-        '''
+        """
+
+
 # DOC-SNIPPET authoring-vocabulary-definition END

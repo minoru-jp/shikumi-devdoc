@@ -1,28 +1,38 @@
 from pathlib import Path
 
-from shikumi_devdoc.cli import main
+from shikumi_devdoc.cli import _source_location, main
 
 
-def test_render_command_accepts_explicit_notice_and_json_context(tmp_path: Path) -> None:
+def test_source_location_ignores_unsupported_subject() -> None:
+    assert _source_location(object()) is None
+
+
+def test_render_command_accepts_explicit_notice_and_json_context(
+    tmp_path: Path,
+) -> None:
     output = tmp_path / "document"
-    context = '{"PROJECT":{"name":"Example","version":"0.1.0"},"PYTHON":{"minimum":"3.11"}}'
+    context = (
+        '{"PROJECT":{"name":"Example","version":"0.1.0"},"PYTHON":{"minimum":"3.11"}}'
+    )
     notice = tmp_path / "notice.toml"
     notice.write_text(
         '[notice]\ncontent = """Generated.\nCanonical: `{canonical_source}`.\n"""\n',
         encoding="utf-8",
     )
 
-    exit_code = main([
-        "render",
-        "document",
-        "tests.fixtures.document_source",
-        "-o",
-        str(output),
-        "--context",
-        context,
-        "--notice",
-        str(notice),
-    ])
+    exit_code = main(
+        [
+            "render",
+            "document",
+            "tests.fixtures.document_source",
+            "-o",
+            str(output),
+            "--context",
+            context,
+            "--notice",
+            str(notice),
+        ]
+    )
 
     assert exit_code == 0
     rendered = (output / "document_source.md").read_text(encoding="utf-8")
@@ -33,18 +43,21 @@ def test_render_command_accepts_explicit_notice_and_json_context(tmp_path: Path)
 
 def test_render_command_rejects_invalid_context_json(tmp_path: Path, capsys) -> None:
     output = tmp_path / "invalid-context"
-    exit_code = main([
-        "render",
-        "document",
-        "tests.fixtures.plain_document_source",
-        "-o",
-        str(output),
-        "--context",
-        "{invalid",
-    ])
+    exit_code = main(
+        [
+            "render",
+            "document",
+            "tests.fixtures.plain_document_source",
+            "-o",
+            str(output),
+            "--context",
+            "{invalid",
+        ]
+    )
 
     assert exit_code == 1
     assert "invalid context JSON" in capsys.readouterr().err
+
 
 def test_render_command_does_not_search_for_notice(tmp_path: Path) -> None:
     output = tmp_path / "no-notice"
@@ -54,15 +67,17 @@ def test_render_command_does_not_search_for_notice(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    exit_code = main([
-        "render",
-        "document",
-        "tests.fixtures.plain_document_source",
-        "-o",
-        str(output),
-        "--context",
-        context,
-    ])
+    exit_code = main(
+        [
+            "render",
+            "document",
+            "tests.fixtures.plain_document_source",
+            "-o",
+            str(output),
+            "--context",
+            context,
+        ]
+    )
 
     assert exit_code == 0
     rendered = (output / "plain_document_source.md").read_text(encoding="utf-8")
@@ -70,15 +85,19 @@ def test_render_command_does_not_search_for_notice(tmp_path: Path) -> None:
     assert "SHOULD NOT APPEAR" not in rendered
 
 
-def test_cli_formats_diagnostics_with_code_subject_and_source(tmp_path: Path, capsys) -> None:
+def test_cli_formats_diagnostics_with_code_subject_and_source(
+    tmp_path: Path, capsys
+) -> None:
     output = tmp_path / "diagnostics"
-    exit_code = main([
-        "render",
-        "document",
-        "tests.fixtures.document_reference_mismatch",
-        "-o",
-        str(output),
-    ])
+    exit_code = main(
+        [
+            "render",
+            "document",
+            "tests.fixtures.document_reference_mismatch",
+            "-o",
+            str(output),
+        ]
+    )
 
     assert exit_code == 1
     error = capsys.readouterr().err
@@ -90,18 +109,22 @@ def test_cli_formats_diagnostics_with_code_subject_and_source(tmp_path: Path, ca
 
 def test_render_command_can_emit_translation_source_metadata(tmp_path: Path) -> None:
     output = tmp_path / "translation"
-    context = '{"PROJECT":{"name":"Example","version":"0.1.0"},"PYTHON":{"minimum":"3.11"}}'
+    context = (
+        '{"PROJECT":{"name":"Example","version":"0.1.0"},"PYTHON":{"minimum":"3.11"}}'
+    )
 
-    exit_code = main([
-        "render",
-        "document",
-        "tests.fixtures.document_source",
-        "-o",
-        str(output),
-        "--context",
-        context,
-        "--translation-source",
-    ])
+    exit_code = main(
+        [
+            "render",
+            "document",
+            "tests.fixtures.document_source",
+            "-o",
+            str(output),
+            "--context",
+            context,
+            "--translation-source",
+        ]
+    )
 
     assert exit_code == 0
     rendered = (output / "document_source.md").read_text(encoding="utf-8")
@@ -113,13 +136,15 @@ def test_render_command_can_emit_translation_source_metadata(tmp_path: Path) -> 
 
 def test_cli_prints_non_fatal_warnings(tmp_path: Path, capsys) -> None:
     output = tmp_path / "warnings-fatal"
-    exit_code = main([
-        "render",
-        "document",
-        "tests.fixtures.document_structural_markdown",
-        "-o",
-        str(output),
-    ])
+    exit_code = main(
+        [
+            "render",
+            "document",
+            "tests.fixtures.document_structural_markdown",
+            "-o",
+            str(output),
+        ]
+    )
 
     # The level-7 heading is still fatal, but the warning must also be visible.
     assert exit_code == 1
@@ -130,13 +155,15 @@ def test_cli_prints_non_fatal_warnings(tmp_path: Path, capsys) -> None:
 
 def test_cli_warning_does_not_prevent_rendering(tmp_path: Path, capsys) -> None:
     output = tmp_path / "warnings"
-    exit_code = main([
-        "render",
-        "document",
-        "tests.fixtures.document_raw_heading",
-        "-o",
-        str(output),
-    ])
+    exit_code = main(
+        [
+            "render",
+            "document",
+            "tests.fixtures.document_raw_heading",
+            "-o",
+            str(output),
+        ]
+    )
 
     assert exit_code == 0
     error = capsys.readouterr().err
@@ -144,25 +171,34 @@ def test_cli_warning_does_not_prevent_rendering(tmp_path: Path, capsys) -> None:
     assert (output / "document_raw_heading.md").exists()
 
 
-def test_render_document_writes_each_declared_document_to_output_directory(tmp_path: Path) -> None:
+def test_render_document_writes_each_declared_document_to_output_directory(
+    tmp_path: Path,
+) -> None:
     output = tmp_path / "document"
     notice = tmp_path / "notice.toml"
-    notice.write_text('[notice]\ncontent = "Canonical: `{canonical_source}`."\n', encoding="utf-8")
+    notice.write_text(
+        '[notice]\ncontent = "Canonical: `{canonical_source}`."\n', encoding="utf-8"
+    )
 
-    exit_code = main([
-        "render",
-        "document",
-        "tests.fixtures.structured_document_source",
-        "-o",
-        str(output),
-        "--context",
-        '{"PROJECT":{"name":"Demo"}}',
-        "--notice",
-        str(notice),
-    ])
+    exit_code = main(
+        [
+            "render",
+            "document",
+            "tests.fixtures.structured_document_source",
+            "-o",
+            str(output),
+            "--context",
+            '{"PROJECT":{"name":"Demo"}}',
+            "--notice",
+            str(notice),
+        ]
+    )
 
     assert exit_code == 0
-    assert sorted(path.name for path in output.iterdir()) == ["rendering.md", "validation.md"]
+    assert sorted(path.name for path in output.iterdir()) == [
+        "rendering.md",
+        "validation.md",
+    ]
 
     validation = (output / "validation.md").read_text(encoding="utf-8")
     rendering = (output / "rendering.md").read_text(encoding="utf-8")
@@ -172,25 +208,29 @@ def test_render_document_writes_each_declared_document_to_output_directory(tmp_p
     assert "### RejectInvalidSource" in validation
     assert "level: MUST" in validation
     assert "## level" not in validation
-    assert "tests/fixtures/structured_document_source.py" in validation.split("-->", 1)[0]
-    assert "tests/fixtures/structured_document_source.py" in rendering.split("-->", 1)[0]
-
-
+    assert (
+        "tests/fixtures/structured_document_source.py" in validation.split("-->", 1)[0]
+    )
+    assert (
+        "tests/fixtures/structured_document_source.py" in rendering.split("-->", 1)[0]
+    )
 
 
 def test_render_index_collects_package_documents(tmp_path: Path) -> None:
     output = tmp_path / "index"
-    exit_code = main([
-        "render",
-        "index",
-        "tests.fixtures.index_source",
-        "-o",
-        str(output),
-        "--context",
-        '{"PROJECT":{"name":"Example"}}',
-        "--index-title",
-        "Example Reference",
-    ])
+    exit_code = main(
+        [
+            "render",
+            "index",
+            "tests.fixtures.index_source",
+            "-o",
+            str(output),
+            "--context",
+            '{"PROJECT":{"name":"Example"}}',
+            "--index-title",
+            "Example Reference",
+        ]
+    )
 
     assert exit_code == 0
     rendered = (output / "INDEX.md").read_text(encoding="utf-8")
@@ -201,15 +241,81 @@ def test_render_index_collects_package_documents(tmp_path: Path) -> None:
 
 def test_render_index_rejects_module_focus(tmp_path: Path, capsys) -> None:
     output = tmp_path / "index-module"
-    exit_code = main([
-        "render",
-        "index",
-        "tests.fixtures.index_source.core",
-        "-o",
-        str(output),
-        "--context",
-        '{"PROJECT":{"name":"Example"}}',
-    ])
+    exit_code = main(
+        [
+            "render",
+            "index",
+            "tests.fixtures.index_source.core",
+            "-o",
+            str(output),
+            "--context",
+            '{"PROJECT":{"name":"Example"}}',
+        ]
+    )
 
     assert exit_code == 1
     assert "markdown.index.package.required" in capsys.readouterr().err
+
+
+def test_render_glossary_writes_requested_output_file(tmp_path: Path) -> None:
+    output = tmp_path / "glossary.md"
+
+    exit_code = main(
+        [
+            "render",
+            "glossary",
+            "tests.fixtures.vocabulary_source",
+            "-o",
+            str(output),
+            "--context",
+            '{"PROJECT":{"name":"Example"}}',
+        ]
+    )
+
+    assert exit_code == 0
+    rendered = output.read_text(encoding="utf-8")
+    assert rendered.startswith("# Example Glossary\n\n")
+    assert "## Widget" in rendered
+    assert "InternalName" not in rendered
+
+
+def test_render_document_rejects_index_title_before_import(
+    tmp_path: Path, capsys
+) -> None:
+    output = tmp_path / "document"
+
+    exit_code = main(
+        [
+            "render",
+            "document",
+            "tests.fixtures.module_that_does_not_exist",
+            "-o",
+            str(output),
+            "--index-title",
+            "Not allowed",
+        ]
+    )
+
+    assert exit_code == 1
+    assert "--index-title is only valid with render index" in capsys.readouterr().err
+
+
+def test_render_glossary_rejects_index_title_before_import(
+    tmp_path: Path, capsys
+) -> None:
+    output = tmp_path / "glossary.md"
+
+    exit_code = main(
+        [
+            "render",
+            "glossary",
+            "tests.fixtures.module_that_does_not_exist",
+            "-o",
+            str(output),
+            "--index-title",
+            "Not allowed",
+        ]
+    )
+
+    assert exit_code == 1
+    assert "--index-title is only valid with render index" in capsys.readouterr().err

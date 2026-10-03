@@ -1,23 +1,25 @@
 """Generic canonical-document authoring API."""
 
 from .._document import (
-    test_target_field,
     document as system,
+)
+from .._document import (
     field,
     list_field,
     prose_field,
     reference_field,
     table_field,
+    test_target_field,
     title,
 )
 
 __all__ = [
-    "test_target_field",
     "field",
     "list_field",
     "prose_field",
     "reference_field",
     "system",
     "table_field",
+    "test_target_field",
     "title",
 ]

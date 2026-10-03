@@ -2,19 +2,24 @@
 
 from __future__ import annotations
 
-from enum import Enum
-from inspect import cleandoc
 import keyword
-from pathlib import Path, PurePosixPath
 import sys
 import warnings
+from collections.abc import Callable, Iterable, Iterator
+from enum import Enum
+from inspect import cleandoc
+from pathlib import Path, PurePosixPath
 from types import ModuleType
-from typing import TypeVar
+from typing import TypeVar, cast
 
-from shikumi import Cardinality, InformationType, attach_information, record_descriptor_use
+from shikumi import (
+    Cardinality,
+    InformationType,
+    attach_information,
+    record_descriptor_use,
+)
 
 from ._partitioned import validate_filename, validate_optional_order
-
 
 CanonicalSource = InformationType("canonical source", str)
 CanonicalTitle = InformationType("canonical title", str)
@@ -44,7 +49,10 @@ class MergePolicy(str, Enum):
 
 
 CanonicalMergePolicy = InformationType("canonical merge policy", MergePolicy)
-MergeBinding = InformationType("merge binding", tuple, cardinality=Cardinality.MANY)
+MergeBindingValue = tuple[str | None, object]
+MergeBinding: InformationType[MergeBindingValue] = InformationType(
+    "merge binding", tuple, cardinality=Cardinality.MANY
+)
 
 
 class UnreferencedFieldPolicy(str, Enum):
@@ -78,12 +86,27 @@ CanonicalHeadingPolicy = InformationType(
 S = TypeVar("S")
 
 
+def attached_information_values(
+    subject: object,
+    information_type: InformationType[S],
+) -> tuple[S, ...]:
+    """Return directly attached values narrowed by information-type identity."""
+
+    from shikumi import information_of
+
+    return tuple(
+        cast(S, record.value)
+        for record in information_of(subject)
+        if record.type is information_type
+    )
+
+
 class ShikumiDevdocDeprecationWarning(DeprecationWarning):
     """Deprecation warning emitted by shikumi-devdoc public APIs."""
 
 
 class _Unspecified:
-    __slots__ = ()
+    __slots__: tuple[str, ...] = ()
 
     def __repr__(self) -> str:
         return "<unspecified>"
@@ -99,7 +122,7 @@ def _docstring(subject: object) -> str:
     return cleandoc(raw)
 
 
-def _nonempty_string(value: str, *, label: str) -> str:
+def _nonempty_string(value: object, *, label: str) -> str:
     if not isinstance(value, str):
         raise TypeError(f"{label} must be a string")
     if not value.strip():
@@ -107,9 +130,10 @@ def _nonempty_string(value: str, *, label: str) -> str:
     return value
 
 
-def _direct_nested_classes(parent: type[object]):
+def _direct_nested_classes(parent: type[object]) -> Iterator[type[object]]:
     prefix = parent.__qualname__ + "."
-    for value in vars(parent).values():
+    values = cast(Iterable[object], vars(parent).values())
+    for value in values:
         if not isinstance(value, type):
             continue
         if value.__module__ != parent.__module__:
@@ -126,7 +150,7 @@ def _attach_document_content(parent: type[object]) -> None:
     """Capture docstrings for every lexical child of a canonical document root."""
 
     for child in _direct_nested_classes(parent):
-        attach_information(child, CanonicalContent, _docstring(child))
+        _ = attach_information(child, CanonicalContent, _docstring(child))
         _attach_document_content(child)
 
 
@@ -139,11 +163,11 @@ class CanonicalSourceDecorator:
     docstrings are captured as template content.
     """
 
-    __slots__ = ()
+    __slots__: tuple[str, ...] = ()
 
     def __call__(
         self,
-        subject_or_title=None,
+        subject_or_title: object | None = None,
         *,
         filename: str | None = None,
         order: int | None = None,
@@ -161,22 +185,30 @@ class CanonicalSourceDecorator:
                 or unreferenced_fields is not APPEND
                 or heading is not None
             ):
-                raise TypeError("bare @canonical_source does not accept document metadata")
+                raise TypeError(
+                    "bare @canonical_source does not accept document metadata"
+                )
             return self._apply_source(subject_or_title)
 
         if subject_or_title is None:
             raise TypeError("canonical_source() requires a document title")
         title = _nonempty_string(subject_or_title, label="canonical title")
         if filename is None:
-            raise TypeError("canonical_source() requires filename= for canonical documents")
+            raise TypeError(
+                "canonical_source() requires filename= for canonical documents"
+            )
         filename = validate_filename(filename, label="canonical filename")
         order = validate_optional_order(order, label="canonical order")
         if placeholders is not _UNSPECIFIED and merge_policy is not _UNSPECIFIED:
-            raise TypeError("canonical_source() cannot specify both placeholders= and merge_policy=")
+            raise TypeError(
+                "canonical_source() cannot specify both placeholders= and merge_policy="
+            )
         if placeholders is not _UNSPECIFIED:
             if not isinstance(placeholders, bool):
                 raise TypeError("canonical placeholders policy must be a bool")
-            effective_merge_policy = MergePolicy.ALL if placeholders else MergePolicy.LOCAL
+            effective_merge_policy = (
+                MergePolicy.ALL if placeholders else MergePolicy.LOCAL
+            )
             warnings.warn(
                 f"'placeholders={placeholders}' is deprecated and will be removed in 1.0.0; "
                 f"use 'merge_policy=\"{effective_merge_policy.value}\"' instead.",
@@ -194,31 +226,40 @@ class CanonicalSourceDecorator:
                         'canonical merge_policy must be "all", "local", "external", or "forbidden"'
                     ) from exc
         if not isinstance(unreferenced_fields, UnreferencedFieldPolicy):
-            raise TypeError("canonical unreferenced_fields must be APPEND or IGNORE")
+            # Preserve runtime validation for callers that do not use static typing.
+            raise TypeError(  # pyright: ignore[reportUnreachable]
+                "canonical unreferenced_fields must be APPEND or IGNORE"
+            )
         if heading is None:
-            raise TypeError('canonical_source() requires heading="title" or heading="identity"')
+            raise TypeError(
+                'canonical_source() requires heading="title" or heading="identity"'
+            )
         try:
             heading_policy = HeadingPolicy(heading)
         except (TypeError, ValueError) as exc:
             raise ValueError('canonical heading must be "title" or "identity"') from exc
 
         def apply(subject: S) -> S:
-            record_descriptor_use(subject, self)
+            _ = record_descriptor_use(subject, self)
             source_path = _source_path_for_subject(subject)
-            attach_information(subject, CanonicalSource, source_path)
-            attach_information(subject, CanonicalTitle, title)
-            attach_information(subject, CanonicalContent, _docstring(subject))
-            attach_information(subject, CanonicalFilename, filename)
-            attach_information(
+            _ = attach_information(subject, CanonicalSource, source_path)
+            _ = attach_information(subject, CanonicalTitle, title)
+            _ = attach_information(subject, CanonicalContent, _docstring(subject))
+            _ = attach_information(subject, CanonicalFilename, filename)
+            _ = attach_information(
                 subject,
                 CanonicalDocumentPath,
                 _document_path_for_source(source_path, filename),
             )
             if order is not None:
-                attach_information(subject, CanonicalOrder, order)
-            attach_information(subject, CanonicalMergePolicy, effective_merge_policy)
-            attach_information(subject, CanonicalUnreferencedFields, unreferenced_fields)
-            attach_information(subject, CanonicalHeadingPolicy, heading_policy)
+                _ = attach_information(subject, CanonicalOrder, order)
+            _ = attach_information(
+                subject, CanonicalMergePolicy, effective_merge_policy
+            )
+            _ = attach_information(
+                subject, CanonicalUnreferencedFields, unreferenced_fields
+            )
+            _ = attach_information(subject, CanonicalHeadingPolicy, heading_policy)
             if isinstance(subject, type):
                 _attach_document_content(subject)
             return subject
@@ -226,35 +267,39 @@ class CanonicalSourceDecorator:
         return apply
 
     def _apply_source(self, subject: S) -> S:
-        record_descriptor_use(subject, self)
-        attach_information(subject, CanonicalSource, _source_path_for_subject(subject))
+        _ = record_descriptor_use(subject, self)
+        _ = attach_information(
+            subject, CanonicalSource, _source_path_for_subject(subject)
+        )
         return subject
 
 
 class SummaryDecorator:
     """Attach a concise human-facing summary to one canonical source."""
 
-    __slots__ = ()
+    __slots__: tuple[str, ...] = ()
 
-    def __call__(self, value: str):
+    def __call__(self, value: str) -> Callable[[S], S]:
         value = _nonempty_string(value, label="canonical summary")
 
         def apply(subject: S) -> S:
-            record_descriptor_use(subject, self)
-            attach_information(subject, CanonicalSummary, value)
+            _ = record_descriptor_use(subject, self)
+            _ = attach_information(subject, CanonicalSummary, value)
             return subject
 
         return apply
 
 
-def _normalize_merge_value(value: object) -> tuple[object, object]:
-    if isinstance(value, tuple) and len(value) == 2:
-        name, target = value
-        if not isinstance(name, str):
-            raise TypeError("merge name must be a string")
-        if not name.isidentifier() or keyword.iskeyword(name):
-            raise ValueError("merge name must be a non-keyword Python identifier")
-        return name, target
+def _normalize_merge_value(value: object) -> MergeBindingValue:
+    if isinstance(value, tuple):
+        pair = cast(tuple[object, ...], value)
+        if len(pair) == 2:
+            name, target = pair
+            if not isinstance(name, str):
+                raise TypeError("merge name must be a string")
+            if not name.isidentifier() or keyword.iskeyword(name):
+                raise ValueError("merge name must be a non-keyword Python identifier")
+            return name, target
     if isinstance(value, type):
         return None, value
     raise TypeError(
@@ -265,13 +310,19 @@ def _normalize_merge_value(value: object) -> tuple[object, object]:
 class _MergeClassBinding:
     """Temporary class-body binding that normalizes every repeated merge write."""
 
-    __slots__ = ("values", "connect")
+    __slots__: tuple[str, ...] = ("connect", "values")
+    values: tuple[MergeBindingValue, ...]
+    connect: Callable[[type[object], MergeBindingValue], None]
 
-    def __init__(self, values, connect) -> None:
-        self.values = tuple(values)
+    def __init__(
+        self,
+        values: tuple[MergeBindingValue, ...],
+        connect: Callable[[type[object], MergeBindingValue], None],
+    ) -> None:
+        self.values = values
         self.connect = connect
 
-    def __imatmul__(self, value: object):
+    def __imatmul__(self, value: object) -> _MergeClassBinding:  # noqa: PYI034
         return _MergeClassBinding(
             (*self.values, _normalize_merge_value(value)),
             self.connect,
@@ -295,15 +346,14 @@ class MergeWriter:
     validation/realization rather than by this generic binding writer.
     """
 
-    __slots__ = ()
+    __slots__: tuple[str, ...] = ()
 
-    def __imatmul__(self, value: object) -> object:
+    def __imatmul__(self, value: object) -> _MergeClassBinding:
         return _MergeClassBinding((_normalize_merge_value(value),), self._connect)
 
-    def _connect(self, subject: type[object], value: tuple[object, object]) -> None:
-        record_descriptor_use(subject, self)
-        attach_information(subject, MergeBinding, value)
-
+    def _connect(self, subject: type[object], value: MergeBindingValue) -> None:
+        _ = record_descriptor_use(subject, self)
+        _ = attach_information(subject, MergeBinding, value)
 
 
 def _document_path_for_source(source_path: str, filename: str) -> str:
@@ -315,6 +365,7 @@ def _document_path_for_source(source_path: str, filename: str) -> str:
 
     source = PurePosixPath(source_path)
     return (source.parent / filename).as_posix()
+
 
 def _source_path_for_subject(subject: object) -> str:
     module_name = getattr(subject, "__module__", "")

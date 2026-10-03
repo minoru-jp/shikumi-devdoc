@@ -1,6 +1,5 @@
-from pathlib import Path
 import tomllib
-
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PYPROJECT = ROOT / "pyproject.toml"
@@ -13,7 +12,9 @@ def _project_config() -> dict[str, object]:
 
 def test_wheel_distributes_reference_and_published_document_resources() -> None:
     config = _project_config()
-    force_include = config["tool"]["hatch"]["build"]["targets"]["wheel"]["force-include"]
+    force_include = config["tool"]["hatch"]["build"]["targets"]["wheel"][
+        "force-include"
+    ]
     assert force_include == {
         "devdocs": "shikumi_devdoc/resources/devdocs",
         "README.md": "shikumi_devdoc/resources/published_docs/README.md",
@@ -32,5 +33,13 @@ def test_license_uses_distribution_metadata_not_document_resource_copy() -> None
     assert project["license"] == "MIT"
     assert project["license-files"] == ["LICENSE"]
 
-    force_include = config["tool"]["hatch"]["build"]["targets"]["wheel"]["force-include"]
+    force_include = config["tool"]["hatch"]["build"]["targets"]["wheel"][
+        "force-include"
+    ]
     assert "LICENSE" not in force_include
+
+
+def test_package_declares_pep561_marker() -> None:
+    marker = ROOT / "src/shikumi_devdoc/py.typed"
+    assert marker.is_file()
+    assert marker.read_text(encoding="utf-8") == ""

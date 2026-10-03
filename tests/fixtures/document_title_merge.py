@@ -1,8 +1,8 @@
 """Canonical documents exercising templated node titles."""
 
-from tests.fixtures.vocabulary_source import TERMS
 from shikumi_devdoc.norms.common import canonical_source, merge
 from shikumi_devdoc.norms.document import title
+from tests.fixtures.vocabulary_source import TERMS
 
 
 @canonical_source(

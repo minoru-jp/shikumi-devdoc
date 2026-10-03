@@ -1,7 +1,6 @@
-from pathlib import Path
 import json
 import tomllib
-
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 NOTICE = ROOT / "devdocs/config/notice.toml"
@@ -28,7 +27,7 @@ def test_repository_realization_context_is_explicit_json() -> None:
     assert context == {
         "project": {
             "name": "shikumi-devdoc",
-            "version": "0.3.4",
+            "version": "0.3.5",
             "requires-python": ">=3.11",
         }
     }

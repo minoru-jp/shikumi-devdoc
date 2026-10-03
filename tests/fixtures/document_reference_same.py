@@ -5,12 +5,18 @@ from shikumi_devdoc.norms.common import canonical_source
 from shikumi_devdoc.norms.document import title
 
 
-@canonical_source("Same-document references", filename="same-references.md", merge_policy="local", heading="identity")
+@canonical_source(
+    "Same-document references",
+    filename="same-references.md",
+    merge_policy="local",
+    heading="identity",
+)
 class SAME_REFERENCES:
     """See {{related}} for the stable target."""
 
     class SECTION_001:
         """Target section."""
+
         title @= "Natural target title"
 
     related @= (SECTION_001,)

@@ -1,0 +1,13 @@
+[tool.mypy]
+python_version = "3.11"
+show_error_codes = true
+# Harness-only settings; these are not part of the recipe documented in STATUS_008.
+# This fixture lives below the repository's ``tests`` package, so without them mypy
+# resolves the modules as ``tests.mypy_recipe.your_project...`` and the override
+# pattern below would silently stop matching.
+explicit_package_bases = true
+mypy_path = "$MYPY_CONFIG_FILE_DIR"
+
+[[tool.mypy.overrides]]
+module = ["your_project.devdocs.canonical_sources.*"]
+disable_error_code = ["misc"]

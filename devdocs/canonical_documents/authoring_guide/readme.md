@@ -48,16 +48,20 @@ from shikumi_devdoc.norms.common import canonical_source
 from shikumi_devdoc.norms.document import title
 
 
-@canonical_source("Example", filename="README.md", merge_policy="local", heading="title")
+@canonical_source(
+    "Example", filename="README.md", merge_policy="local", heading="title"
+)
 class README:
     """A small tool for processing example inputs."""
 
     class SECTION_001:
         """Install the package with your normal Python package workflow."""
+
         title @= "Installation"
 
     class SECTION_002:
         """Run the smallest useful example, then link to detailed guides."""
+
         title @= "Quick start"
 ```
 

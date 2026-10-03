@@ -2,19 +2,21 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Iterator
 from inspect import cleandoc
-from typing import TypeVar
+from typing import TypeVar, cast
 
 from shikumi import (
     Cardinality,
     DescriptorUseRule,
     Diagnostic,
     InformationType,
+    SemanticView,
     Shikumi,
     StructuralKind,
     StructureSelector,
+    ViewItem,
     attach_information,
-    information_of,
     record_descriptor_use,
     validator,
 )
@@ -34,13 +36,15 @@ from ._common import (
     CanonicalSource,
     CanonicalTitle,
     CanonicalUnreferencedFields,
+    attached_information_values,
     canonical_source,
 )
 
-
 VocabularyProfile = InformationType("vocabulary profile", bool)
 TermName = InformationType("term", str)
-Definition = content_type("definition")
+Definition: InformationType[str] = cast(
+    InformationType[str], content_type("definition")
+)
 PreserveSpelling = InformationType("preserve spelling", bool)
 Glossary = InformationType("glossary", bool)
 Alias = InformationType("alias", str, Cardinality.MANY)
@@ -57,11 +61,7 @@ def canonical_vocabulary_term(target: object) -> type[object] | None:
 
     if not isinstance(target, type):
         return None
-    names = [
-        record.value
-        for record in information_of(target)
-        if record.type is TermName
-    ]
+    names = attached_information_values(target, TermName)
     if len(names) != 1:
         return None
     return target
@@ -73,20 +73,17 @@ def vocabulary_term_name(target: object) -> str | None:
     canonical = canonical_vocabulary_term(target)
     if canonical is None:
         return None
-    names = [
-        record.value
-        for record in information_of(canonical)
-        if record.type is TermName
-    ]
+    names = attached_information_values(canonical, TermName)
     return names[0] if len(names) == 1 else None
 
 
 S = TypeVar("S")
 
 
-def _direct_nested_classes(parent: type[object]):
+def _direct_nested_classes(parent: type[object]) -> Iterator[type[object]]:
     prefix = parent.__qualname__ + "."
-    for value in vars(parent).values():
+    values = cast(Iterable[object], vars(parent).values())
+    for value in values:
         if not isinstance(value, type):
             continue
         if value.__module__ != parent.__module__:
@@ -126,12 +123,7 @@ def _term_declaration(subject: object) -> tuple[str, str] | None:
         return None
 
     name = normalized[2:end]
-    if (
-        not name
-        or name != name.strip()
-        or "{" in name
-        or "}" in name
-    ):
+    if not name or name != name.strip() or "{" in name or "}" in name:
         return None
 
     remainder = normalized[end + 2 :]
@@ -150,21 +142,21 @@ class VocabularyWriter:
     and ``Definition`` information for validation and Vocabulary realizers.
     """
 
-    __slots__ = ()
+    __slots__: tuple[str, ...] = ()
 
     def __call__(self, subject: S) -> S:
         if not isinstance(subject, type):
             raise TypeError("@vocabulary requires a class")
-        record_descriptor_use(subject, self)
-        attach_information(subject, VocabularyProfile, True)
+        _ = record_descriptor_use(subject, self)
+        _ = attach_information(subject, VocabularyProfile, True)
 
         for child in _direct_nested_classes(subject):
             declaration = _term_declaration(child)
             if declaration is None:
                 continue
             name, definition = declaration
-            attach_information(child, TermName, name)
-            attach_information(child, Definition, definition)
+            _ = attach_information(child, TermName, name)
+            _ = attach_information(child, Definition, definition)
         return subject
 
 
@@ -176,15 +168,11 @@ deprecated = assignment(Deprecated)
 replacement = assignment(Replacement)
 
 
-def _vocabulary_roots(view):
-    return [
-        item
-        for item in view.entities
-        if item.values(VocabularyProfile) == (True,)
-    ]
+def _vocabulary_roots(view: SemanticView) -> list[ViewItem]:
+    return [item for item in view.entities if item.values(VocabularyProfile) == (True,)]
 
 
-def _validate_vocabulary_container(view):
+def _validate_vocabulary_container(view: SemanticView) -> Iterator[Diagnostic]:
     """Validate a module/package containing one marked Vocabulary root."""
 
     roots = _vocabulary_roots(view)
@@ -196,21 +184,53 @@ def _validate_vocabulary_container(view):
         return
 
     root = roots[0]
-    for info_type, code, message in (
-        (CanonicalSource, "vocabulary.canonical_source.required", "vocabulary root requires exactly one canonical source"),
-        (CanonicalTitle, "vocabulary.title.required", "vocabulary root requires exactly one canonical title"),
-        (CanonicalContent, "vocabulary.introduction.required", "vocabulary root requires exactly one introduction"),
-        (CanonicalFilename, "vocabulary.filename.required", "vocabulary root requires exactly one canonical filename"),
-        (CanonicalDocumentPath, "vocabulary.path.required", "vocabulary root requires exactly one logical document path"),
-        (CanonicalMergePolicy, "vocabulary.merge_policy.required", "vocabulary root requires exactly one merge policy"),
-        (CanonicalUnreferencedFields, "vocabulary.fields.policy.required", "vocabulary root requires exactly one unreferenced-field policy"),
-        (CanonicalHeadingPolicy, "vocabulary.heading.required", "vocabulary root requires exactly one heading policy"),
+    for count, code, message in (
+        (
+            len(root.values(CanonicalSource)),
+            "vocabulary.canonical_source.required",
+            "vocabulary root requires exactly one canonical source",
+        ),
+        (
+            len(root.values(CanonicalTitle)),
+            "vocabulary.title.required",
+            "vocabulary root requires exactly one canonical title",
+        ),
+        (
+            len(root.values(CanonicalContent)),
+            "vocabulary.introduction.required",
+            "vocabulary root requires exactly one introduction",
+        ),
+        (
+            len(root.values(CanonicalFilename)),
+            "vocabulary.filename.required",
+            "vocabulary root requires exactly one canonical filename",
+        ),
+        (
+            len(root.values(CanonicalDocumentPath)),
+            "vocabulary.path.required",
+            "vocabulary root requires exactly one logical document path",
+        ),
+        (
+            len(root.values(CanonicalMergePolicy)),
+            "vocabulary.merge_policy.required",
+            "vocabulary root requires exactly one merge policy",
+        ),
+        (
+            len(root.values(CanonicalUnreferencedFields)),
+            "vocabulary.fields.policy.required",
+            "vocabulary root requires exactly one unreferenced-field policy",
+        ),
+        (
+            len(root.values(CanonicalHeadingPolicy)),
+            "vocabulary.heading.required",
+            "vocabulary root requires exactly one heading policy",
+        ),
     ):
-        if len(root.values(info_type)) != 1:
+        if count != 1:
             yield Diagnostic(message, code=code, subject=root.subject)
 
 
-def _validate_vocabulary_relationships(view):
+def _validate_vocabulary_relationships(view: SemanticView) -> Iterator[Diagnostic]:
     roots = _vocabulary_roots(view)
     if len(roots) != 1:
         return
@@ -218,9 +238,7 @@ def _validate_vocabulary_relationships(view):
     root = roots[0]
     entries = [item for item in view.entities if item.node.parent is root.subject]
     term_by_subject = {
-        item.subject: item
-        for item in entries
-        if len(item.values(TermName)) == 1
+        item.subject: item for item in entries if len(item.values(TermName)) == 1
     }
 
     canonical_names: dict[str, object] = {}
@@ -296,19 +314,19 @@ def _validate_vocabulary_relationships(view):
 
 
 @validator(focus=StructuralKind.MODULE)
-def vocabulary_module(view):
+def vocabulary_module(view: SemanticView) -> Iterator[Diagnostic]:
     yield from _validate_vocabulary_container(view)
     yield from _validate_vocabulary_relationships(view)
 
 
 @validator(focus=StructuralKind.PACKAGE)
-def vocabulary_package(view):
+def vocabulary_package(view: SemanticView) -> Iterator[Diagnostic]:
     yield from _validate_vocabulary_container(view)
     yield from _validate_vocabulary_relationships(view)
 
 
 @validator(focus=StructuralKind.ENTITY)
-def vocabulary_entity(view):
+def vocabulary_entity(view: SemanticView) -> Iterator[Diagnostic]:
     """Validate the marked vocabulary root and term entries."""
 
     entry = view.focused
@@ -320,9 +338,12 @@ def vocabulary_entity(view):
                 code="vocabulary.profile.required",
                 subject=entry.subject,
             )
-        if any(
-            entry.values(info_type)
-            for info_type in (Alias, Deprecated, Replacement, PreserveSpelling, Glossary)
+        if (
+            entry.values(Alias)
+            or entry.values(Deprecated)
+            or entry.values(Replacement)
+            or entry.values(PreserveSpelling)
+            or entry.values(Glossary)
         ):
             yield Diagnostic(
                 "term metadata belongs on vocabulary entries, not the vocabulary root",
@@ -354,9 +375,14 @@ def vocabulary_entity(view):
                 )
         return
 
-    is_term = bool(entry.values(TermName)) or any(
-        entry.values(info_type)
-        for info_type in (Definition, Alias, Deprecated, Replacement, PreserveSpelling, Glossary)
+    is_term = bool(
+        entry.values(TermName)
+        or entry.values(Definition)
+        or entry.values(Alias)
+        or entry.values(Deprecated)
+        or entry.values(Replacement)
+        or entry.values(PreserveSpelling)
+        or entry.values(Glossary)
     )
     if is_term:
         declaration = _term_declaration(entry.subject)
@@ -420,8 +446,12 @@ vocabulary_system = Shikumi(
     ],
     descriptor_rules=[
         DescriptorUseRule(descriptor=vocabulary, allowed=_entity, name="vocabulary"),
-        DescriptorUseRule(descriptor=canonical_source, allowed=_entity, name="canonical_source"),
-        DescriptorUseRule(descriptor=preserve_spelling, allowed=_entity, name="preserve_spelling"),
+        DescriptorUseRule(
+            descriptor=canonical_source, allowed=_entity, name="canonical_source"
+        ),
+        DescriptorUseRule(
+            descriptor=preserve_spelling, allowed=_entity, name="preserve_spelling"
+        ),
         DescriptorUseRule(descriptor=glossary, allowed=_entity, name="glossary"),
         DescriptorUseRule(descriptor=alias, allowed=_entity, name="alias"),
         DescriptorUseRule(descriptor=deprecated, allowed=_entity, name="deprecated"),

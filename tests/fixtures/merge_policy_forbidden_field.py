@@ -11,6 +11,6 @@ example = test_target_field("example")
     heading="identity",
 )
 class DOCUMENT:
-    """Example:\n\n    ```python\n    {{example}}\n    ```\n    """
+    """Example:\n\n    ```python\n    {{example}}\n    ```\n"""
 
     example @= "print('{{PROJECT.version}}')"

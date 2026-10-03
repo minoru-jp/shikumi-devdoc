@@ -4,7 +4,6 @@ from devdocs.canonical_sources.vocabulary.canonical import TERMS
 from shikumi_devdoc.norms.common import IGNORE, canonical_source, merge, summary
 from shikumi_devdoc.norms.document import test_target_field, title
 
-
 minimal_readme_example = test_target_field("minimal README source")
 
 
@@ -26,6 +25,7 @@ class AUTHORING_GUIDE_PART:
 
         README だけで十分な project なら、他の authoring pattern を形式的に追加しない。
         """
+
         title @= "README を作る場合"
 
     class SECTION_002:
@@ -40,6 +40,7 @@ class AUTHORING_GUIDE_PART:
 
         長い tutorial や完全な reference が必要になったら README を伸ばし続けず、Getting Started や専用 guide へ分ける。
         """
+
         title @= "推奨構造"
 
     class SECTION_003:
@@ -48,6 +49,7 @@ class AUTHORING_GUIDE_PART:
 
         コード例を通常のテストから直接検証して実装 drift を防ぎたい場合だけ `test_target_field` に分離する。小さな例示コードは docstring に直接書いてよい。fence は docstring 側に置き、現在 version のように再実現時に変わってよい値だけを realization context に置く。
         """
+
         title @= "正本は prose 中心でよい"
 
         merge @= TERMS.TERM_006
@@ -60,6 +62,7 @@ class AUTHORING_GUIDE_PART:
 
         README 固有の schema はない。これは generic canonical document の一例であり、必要な節だけを追加する。
         """
+
         title @= "最小例"
 
         minimal_readme_example @= r'''
@@ -67,16 +70,20 @@ class AUTHORING_GUIDE_PART:
         from shikumi_devdoc.norms.document import title
 
 
-        @canonical_source("Example", filename="README.md", merge_policy="local", heading="title")
+        @canonical_source(
+            "Example", filename="README.md", merge_policy="local", heading="title"
+        )
         class README:
             """A small tool for processing example inputs."""
 
             class SECTION_001:
                 """Install the package with your normal Python package workflow."""
+
                 title @= "Installation"
 
             class SECTION_002:
                 """Run the smallest useful example, then link to detailed guides."""
+
                 title @= "Quick start"
         '''
 
@@ -86,4 +93,5 @@ class AUTHORING_GUIDE_PART:
 
         README の見出し名を class name に反映し続ける必要もない。タイトル変更で identity が drift する場合は `SECTION_NNN` のような opaque identity を使う。
         """
+
         title @= "避けること"

@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import re
+from typing import TypeVar
 
 from shikumi import InformationType, SemanticView, ViewItem
+
+_InformationT = TypeVar("_InformationT")
 
 _ATX_HEADING = re.compile(r"^ {0,3}#{1,6}(?:[ \t]+|$)")
 _FENCE_OPEN = re.compile(r"^ {0,3}(`{3,}|~{3,})")
@@ -59,14 +62,16 @@ def heading_fragment(text: str) -> str:
 def heading_depth(
     view: SemanticView,
     item: ViewItem,
-    heading_types: tuple[InformationType, ...],
+    heading_types: tuple[InformationType[_InformationT], ...],
 ) -> int:
     """Return the Markdown depth implied by nested semantic headings."""
 
     entities = {entity.subject: entity for entity in view.entities}
     depth = 1
     parent = item.node.parent
-    while parent in entities and any(entities[parent].has(kind) for kind in heading_types):
+    while parent in entities and any(
+        entities[parent].has(kind) for kind in heading_types
+    ):
         depth += 1
         parent = entities[parent].node.parent
     return depth

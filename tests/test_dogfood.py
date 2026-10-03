@@ -1,24 +1,27 @@
-from pathlib import Path
 import json
 import re
+from pathlib import Path
 
 from devdocs.canonical_sources import api_reference, specification
-from devdocs.canonical_sources.changelog import canonical as changelog_source
 from devdocs.canonical_sources import authoring_guide as authoring_guide_source
+from devdocs.canonical_sources.changelog import canonical as changelog_source
 from devdocs.canonical_sources.readme import canonical as readme_source
-from devdocs.canonical_sources.status import canonical as status_source
-from devdocs.canonical_sources.workspace import canonical as workspace_source
 from devdocs.canonical_sources.specification.core import (
     SPECIFICATION_PART as CORE_SPEC,
 )
+from devdocs.canonical_sources.status import canonical as status_source
 from devdocs.canonical_sources.vocabulary.canonical import TERMS
+from devdocs.canonical_sources.workspace import canonical as workspace_source
 from shikumi_devdoc.norms.document import system as document
 
 document_system = document
-from shikumi_devdoc import fields as public_fields, norms as public_norms, realizers as public_realizers
-from shikumi_devdoc.realizers.document import MarkdownRealizer as DocumentMarkdownRealizer
+from shikumi_devdoc import fields as public_fields
+from shikumi_devdoc import norms as public_norms
+from shikumi_devdoc import realizers as public_realizers
+from shikumi_devdoc.realizers.document import (
+    MarkdownRealizer as DocumentMarkdownRealizer,
+)
 from shikumi_devdoc.realizers.index import IndexMarkdownRealizer
-
 
 
 def _public_paths(namespace, prefix: str) -> list[str]:
@@ -29,7 +32,11 @@ def _public_paths(namespace, prefix: str) -> list[str]:
         paths.append(path)
         child_all = getattr(value, "__all__", None)
         child_name = getattr(value, "__name__", "")
-        if child_all is not None and isinstance(child_name, str) and child_name.startswith(prefix):
+        if (
+            child_all is not None
+            and isinstance(child_name, str)
+            and child_name.startswith(prefix)
+        ):
             paths.extend(_public_paths(value, path))
     return paths
 
@@ -48,12 +55,21 @@ def test_repository_readme_dogfoods_external_context_and_document_examples() -> 
     assert rendered.filename == "README.md"
     assert rendered.content.startswith("# shikumi-devdoc\n")
     assert "## こんな開発に" in rendered.content
-    assert "merge_policy=\"all\"" in rendered.content
-    assert "merge_policy=\"local\"" in rendered.content
+    assert 'merge_policy="all"' in rendered.content
+    assert 'merge_policy="local"' in rendered.content
     assert "| `forbidden` |" in rendered.content
-    assert "https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/authoring_guide/INDEX.md" in rendered.content
-    assert "https://github.com/minoru-jp/shikumi-devdoc/blob/main/STATUS.md" in rendered.content
-    assert "https://github.com/minoru-jp/shikumi-devdoc/blob/main/LICENSE" in rendered.content
+    assert (
+        "https://github.com/minoru-jp/shikumi-devdoc/blob/main/docs/authoring_guide/INDEX.md"
+        in rendered.content
+    )
+    assert (
+        "https://github.com/minoru-jp/shikumi-devdoc/blob/main/STATUS.md"
+        in rendered.content
+    )
+    assert (
+        "https://github.com/minoru-jp/shikumi-devdoc/blob/main/LICENSE"
+        in rendered.content
+    )
 
 
 def test_repository_workspace_readme_is_canonical_document() -> None:
@@ -134,7 +150,10 @@ def test_repository_project_status_dogfoods_generic_documents() -> None:
     assert "title: Development stage" in status_document.content
     assert "## NOTICE_001" in status_document.content
     assert "kind: General" in status_document.content
-    assert "condition: `0.3.0` の Beta 公開から最初のメジャーバージョンへ移行するまで。" in status_document.content
+    assert (
+        "condition: `0.3.0` の Beta 公開から最初のメジャーバージョンへ移行するまで。"
+        in status_document.content
+    )
     assert "Installed documentation resources" in status_document.content
     assert "shikumi>=0.2.0" in status_document.content
     assert "GitHub Actions" in status_document.content
@@ -157,8 +176,9 @@ def test_repository_changelog_dogfoods_list_fields() -> None:
     assert len(documents) == 1
     changelog = documents[0]
     assert changelog.filename == "CHANGELOG.md"
+    assert "## V0_3_5" in changelog.content
+    assert "version: 0.3.5" in changelog.content
     assert "## V0_3_3" in changelog.content
-    assert "version: 0.3.4" in changelog.content
     assert "## V0_3_2" in changelog.content
     assert "version: 0.3.2" in changelog.content
     assert 'merge_policy="forbidden"' in changelog.content
@@ -167,9 +187,10 @@ def test_repository_changelog_dogfoods_list_fields() -> None:
     assert "## V0_3_0" in changelog.content
     assert "version: 0.3.0" in changelog.content
     assert "Added:\n\n- `shikumi_devdoc.norms.document`" in changelog.content
-    assert "Specification、API Reference、Project Status、CHANGELOG の専用規定体" in changelog.content
-
-
+    assert (
+        "Specification、API Reference、Project Status、CHANGELOG の専用規定体"
+        in changelog.content
+    )
 
 
 def test_repository_vocabulary_uses_stable_term_identifiers() -> None:
@@ -180,6 +201,7 @@ def test_repository_vocabulary_uses_stable_term_identifiers() -> None:
     ]
     assert identifiers == [f"TERM_{index:03d}" for index in range(1, 18)]
     assert not hasattr(TERMS, "CANONICAL_SOURCE")
+
 
 def test_repository_specification_dogfoods_vocabulary_terms() -> None:
     result = document_system.validate(specification, placement=())
@@ -219,7 +241,9 @@ def test_repository_specification_dogfoods_generic_documents() -> None:
         "vocabulary.md",
     }
 
-    index_realizer = IndexMarkdownRealizer(CONTEXT, title="shikumi-devdoc Specification")
+    index_realizer = IndexMarkdownRealizer(
+        CONTEXT, title="shikumi-devdoc Specification"
+    )
     index_check = index_realizer.check(result.view)
     assert index_check.is_realizable, index_check.diagnostics
     index = index_realizer.realize(result.view)
@@ -265,7 +289,9 @@ def test_repository_api_reference_dogfoods_standard_field_set() -> None:
         "realizers.md",
     }
 
-    index_realizer = IndexMarkdownRealizer(CONTEXT, title="shikumi-devdoc API Reference")
+    index_realizer = IndexMarkdownRealizer(
+        CONTEXT, title="shikumi-devdoc API Reference"
+    )
     index_check = index_realizer.check(result.view)
     assert index_check.is_realizable, index_check.diagnostics
     index = index_realizer.realize(result.view)
@@ -294,43 +320,52 @@ def test_repository_api_reference_dogfoods_standard_field_set() -> None:
 def test_repository_publishes_translated_dogfood_documents() -> None:
     expected = [
         Path("STATUS.md"),
-        *(Path("docs/authoring_guide") / name for name in (
-            "INDEX.md",
-            "overview.md",
-            "readme.md",
-            "getting-started.md",
-            "configuration-guide.md",
-            "cli-documentation.md",
-            "specification.md",
-            "api-reference.md",
-            "changelog.md",
-            "glossary.md",
-            "project-status.md",
-            "collections.md",
-            "advanced-authoring.md",
-            "llm-workflow.md",
-        )),
-        *(Path("docs/specification") / name for name in (
-            "INDEX.md",
-            "core.md",
-            "document.md",
-            "vocabulary.md",
-            "field-presentations.md",
-            "specification.md",
-            "api-reference.md",
-            "rendering.md",
-            "cli.md",
-            "distribution.md",
-        )),
-        *(Path("docs/api") / name for name in (
-            "INDEX.md",
-            "core.md",
-            "context.md",
-            "norms.md",
-            "fields.md",
-            "realizers.md",
-            "cli.md",
-        )),
+        *(
+            Path("docs/authoring_guide") / name
+            for name in (
+                "INDEX.md",
+                "overview.md",
+                "readme.md",
+                "getting-started.md",
+                "configuration-guide.md",
+                "cli-documentation.md",
+                "specification.md",
+                "api-reference.md",
+                "changelog.md",
+                "glossary.md",
+                "project-status.md",
+                "collections.md",
+                "advanced-authoring.md",
+                "llm-workflow.md",
+            )
+        ),
+        *(
+            Path("docs/specification") / name
+            for name in (
+                "INDEX.md",
+                "core.md",
+                "document.md",
+                "vocabulary.md",
+                "field-presentations.md",
+                "specification.md",
+                "api-reference.md",
+                "rendering.md",
+                "cli.md",
+                "distribution.md",
+            )
+        ),
+        *(
+            Path("docs/api") / name
+            for name in (
+                "INDEX.md",
+                "core.md",
+                "context.md",
+                "norms.md",
+                "fields.md",
+                "realizers.md",
+                "cli.md",
+            )
+        ),
     ]
     for path in expected:
         content = path.read_text(encoding="utf-8")
@@ -354,7 +389,6 @@ def test_published_api_corpus_covers_public_namespaces() -> None:
         assert f"shikumi_devdoc.{name}" in corpus
 
 
-
 def test_published_fragment_links_resolve_to_rendered_heading_contract() -> None:
     from shikumi_devdoc.realizers._markdown_heading import heading_fragment
 
@@ -376,16 +410,22 @@ def test_published_fragment_links_resolve_to_rendered_heading_contract() -> None
         assert "<a id=" not in text
         for match in link_pattern.finditer(text):
             destination = match.group(1)
-            if destination.startswith(("http://", "https://", "mailto:")) or "#" not in destination:
+            if (
+                destination.startswith(("http://", "https://", "mailto:"))
+                or "#" not in destination
+            ):
                 continue
             path_text, fragment = destination.split("#", 1)
-            target = (source.parent / path_text).resolve() if path_text else source.resolve()
+            target = (
+                (source.parent / path_text).resolve() if path_text else source.resolve()
+            )
             if target not in headings:
                 continue
             checked += 1
             assert fragment in headings[target], (source, destination)
 
     assert checked > 0
+
 
 def test_publication_rewrites_fragment_when_published_heading_changes() -> None:
     result = document_system.validate(api_reference, placement=())

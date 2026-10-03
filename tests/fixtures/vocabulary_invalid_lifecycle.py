@@ -12,6 +12,7 @@ class TERMS:
 
         Current term.
         """
+
         alias @= "OldWidget"
 
     class TERM_2:
@@ -19,5 +20,6 @@ class TERMS:
 
         Old term.
         """
+
         deprecated @= True
         replacement @= "MissingWidget"

@@ -1,7 +1,7 @@
 {
   "project": {
     "name": "shikumi-devdoc",
-    "version": "0.3.4",
+    "version": "0.3.5",
     "requires-python": ">=3.11"
   }
 }

@@ -3,7 +3,6 @@
 from shikumi_devdoc.norms.common import IGNORE, canonical_source, summary
 from shikumi_devdoc.norms.document import test_target_field, title
 
-
 cli_example = test_target_field("CLI example")
 
 
@@ -23,6 +22,7 @@ class AUTHORING_GUIDE_PART:
         r"""
         command-line interface が主要な公開 surface で、README の最小例だけでは argument、mode、入出力、安全条件を十分に説明できない場合に作る。
         """
+
         title @= "CLI documentation を作る場合"
 
     class SECTION_002:
@@ -31,6 +31,7 @@ class AUTHORING_GUIDE_PART:
 
         一枚が長くなる場合は同じ意味領域で collection 化する。単に option 数が多いという理由だけで細かくファイル分割しない。
         """
+
         title @= "操作のまとまりで構成する"
 
     class SECTION_003:
@@ -43,6 +44,7 @@ class AUTHORING_GUIDE_PART:
 
         option 名や invocation shape が実装と drift しやすい場合は、parser test または CLI integration test と対応させる。
         """
+
         title @= "Command 例をテスト可能にする"
 
         cli_example @= "example --input src --output build"
@@ -51,4 +53,5 @@ class AUTHORING_GUIDE_PART:
         r"""
         CLI document は「どう使うか」を中心にする。default の決定規則、複数 option の衝突、禁止組み合わせ、exit contract など互換性上の規範は Specification がある場合そちらへ置き、CLI document から対応ページへリンクする。
         """
+
         title @= "厳密な契約は Specification へ置く"

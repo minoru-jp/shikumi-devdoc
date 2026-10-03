@@ -1,6 +1,12 @@
-from tests.fixtures import vocabulary_source
-from shikumi_devdoc.norms._vocabulary import Definition, Glossary, PreserveSpelling, TermName, vocabulary_system
+from shikumi_devdoc.norms._vocabulary import (
+    Definition,
+    Glossary,
+    PreserveSpelling,
+    TermName,
+    vocabulary_system,
+)
 from shikumi_devdoc.realizers.glossary_markdown import MarkdownRealizer
+from tests.fixtures import vocabulary_source
 
 
 def test_glossary_renders_only_public_entries_and_context() -> None:
@@ -42,8 +48,8 @@ def test_vocabulary_preserve_spelling_is_semantic_information() -> None:
 
 
 def test_vocabulary_alias_and_deprecation_render_as_public_semantics() -> None:
-    from tests.fixtures import vocabulary_lifecycle
     from shikumi_devdoc.norms._vocabulary import Alias, Deprecated, Replacement
+    from tests.fixtures import vocabulary_lifecycle
 
     result = vocabulary_system.validate(vocabulary_lifecycle, placement=())
     assert result.is_valid, result.diagnostics

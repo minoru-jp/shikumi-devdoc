@@ -1,15 +1,18 @@
 """Document-collection authoring pattern."""
 
-from devdocs.canonical_sources.specification.specification import SPECIFICATION_PART as STRUCTURED_SPEC
+from devdocs.canonical_sources.specification.specification import (
+    SPECIFICATION_PART as STRUCTURED_SPEC,
+)
 from shikumi_devdoc.fields.common import related
 from shikumi_devdoc.norms.common import IGNORE, canonical_source, summary
 from shikumi_devdoc.norms.document import test_target_field, title
 
-
 collection_example = test_target_field("collection layout")
 
 
-@summary("大きな文書を意味領域ごとの独立 canonical document に分け、INDEX を別 realization する方法。")
+@summary(
+    "大きな文書を意味領域ごとの独立 canonical document に分け、INDEX を別 realization する方法。"
+)
 @canonical_source(
     "Building a document collection",
     filename="collections.md",
@@ -27,6 +30,7 @@ class AUTHORING_GUIDE_PART:
 
         小さい文書を形式的に分割しない。読者が全ページを順番に読まなければ意味が成立しない場合は、一枚の document の方が自然なこともある。
         """
+
         title @= "Collection を作る場合"
 
     class SECTION_002:
@@ -37,22 +41,24 @@ class AUTHORING_GUIDE_PART:
         {{collection_example}}
         ```
         """
+
         title @= "各 document を独立した canonical source にする"
 
-        collection_example @= r'''
+        collection_example @= r"""
         canonical_sources/
           specification/
             __init__.py
             overview.py
             paths.py
             output.py
-        '''
+        """
         related @= (STRUCTURED_SPEC.SPEC_003, STRUCTURED_SPEC.SPEC_011)
 
     class SECTION_003:
         r"""
         人間向けに安定順が必要なら `@canonical_source(..., order=...)` を指定し、INDEX で各文書の役割を示したい場合は `@summary(...)` を付ける。order は文書内容の identity ではなく collection presentation のための metadata として扱う。
         """
+
         title @= "順序と summary を metadata にする"
 
     class SECTION_004:
@@ -61,6 +67,7 @@ class AUTHORING_GUIDE_PART:
 
         公開工程で翻訳する場合も、INDEX だけに canonical source にない説明を追加せず、各 document の `@summary(...)` に戻して正本を更新する。
         """
+
         title @= "INDEX は別 realization にする"
 
         related @= (STRUCTURED_SPEC.SPEC_009,)

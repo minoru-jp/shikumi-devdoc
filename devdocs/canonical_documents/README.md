@@ -29,13 +29,13 @@ README、Specification、API Reference、CHANGELOG などの開発文書を、�
 
 たとえば、次のような考え方と組み合わせられます。
 
-- **Spec-Driven Development (SDD)**  
+- **Spec-Driven Development (SDD)**
   仕様を実装前の一時的な資料ではなく、実装とともに更新される開発上の正本として扱う。
 
-- **Docs as Code**  
+- **Docs as Code**
   文書をコードと同じリポジトリで管理し、変更・レビュー・履歴をソフトウェア開発の一部として扱う。
 
-- **LLM-assisted development**  
+- **LLM-assisted development**
   LLM に渡す仕様・設計・制約を、散在した文章ではなく、意味と構造を持った開発資産として維持する。
 
 特に SDD では、仕様を書くこと自体よりも、**仕様を実装と乖離させずに維持し続けること**が重要になります。
@@ -260,7 +260,9 @@ pip install shikumi-devdoc
 from shikumi_devdoc.norms.common import canonical_source
 
 
-@canonical_source("Example", filename="example.md", merge_policy="local", heading="identity")
+@canonical_source(
+    "Example", filename="example.md", merge_policy="local", heading="identity"
+)
 class EXAMPLE:
     class Introduction:
         """Hello from shikumi-devdoc."""
@@ -287,6 +289,12 @@ Hello from shikumi-devdoc.
 > [!IMPORTANT]
 > canonical source は Python module として読み込まれます。信頼できない Python module を文書入力として実行しないでください。
 
+### `@=` 記法と mypy
+
+`shikumi` 自体は `@=` を強制しませんが、`shikumi-devdoc` の canonical source では文書ソースとしての読みやすさを重視し、`shikumi.standard` 系の `name @= value` style を意図的に採用しています。
+
+この style を mypy で検査する場合は canonical source package 向けの追加設定が必要です。理由、設定例、抑制範囲の注意点は [`STATUS_008`](https://github.com/minoru-jp/shikumi-devdoc/blob/main/STATUS.md#status_008) を参照してください。
+
 ## Documentation
 
 このリポジトリの文書そのものが、`shikumi-devdoc` の実際の利用例です。
@@ -306,7 +314,7 @@ canonical source と生成された文書を並べて読むことで、`shikumi-
 
 ## Version
 
-Current version: `0.3.4`
+Current version: `0.3.5`
 
 Supported Python: `>=3.11`
 

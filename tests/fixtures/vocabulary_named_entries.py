@@ -12,4 +12,5 @@ class TERMS:
 
         A named vocabulary entry.
         """
+
         glossary @= True

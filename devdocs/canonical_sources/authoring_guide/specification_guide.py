@@ -1,10 +1,11 @@
 """Specification authoring pattern."""
 
-from devdocs.canonical_sources.specification.specification import SPECIFICATION_PART as STRUCTURED_SPEC
+from devdocs.canonical_sources.specification.specification import (
+    SPECIFICATION_PART as STRUCTURED_SPEC,
+)
 from shikumi_devdoc.fields.common import related
 from shikumi_devdoc.norms.common import IGNORE, canonical_source, summary
 from shikumi_devdoc.norms.document import test_target_field, title
-
 
 specification_example = test_target_field("specification example")
 
@@ -25,6 +26,7 @@ class AUTHORING_GUIDE_PART:
         r"""
         実装間で一致させる必要がある規則、互換性を判断する契約、曖昧さを残したくない edge case がある場合に作る。小さな project で README や API contract だけで十分なら、Specification を追加する必要はない。
         """
+
         title @= "Specification を作る場合"
 
     class SECTION_002:
@@ -33,6 +35,7 @@ class AUTHORING_GUIDE_PART:
 
         説明だけをまとめる container section は `SECTION_NNN` などの narrative identity でよい。
         """
+
         title @= "規則を独立 node にする"
 
     class SECTION_003:
@@ -43,11 +46,13 @@ class AUTHORING_GUIDE_PART:
         {{specification_example}}
         ```
         """
+
         title @= "標準 field set を使う"
 
         specification_example @= r'''
         from shikumi_devdoc.fields.specification import MUST, condition, level
         from shikumi_devdoc.norms.document import title
+
 
         class SPEC_001:
             """The implementation returns an error when the input is invalid."""
@@ -68,10 +73,12 @@ class AUTHORING_GUIDE_PART:
 
         `related` には Markdown filename や `#fragment` を書かず Python object relation を保つ。Markdown realizer は canonical source の出自から導出した source/target の canonical document logical path を相対化し、identity heading から導出した logical fragment と組み合わせて link を生成する。この logical path は realization の出力先ではなく canonical document 体系上の相対配置を表す。通常はその logical topology と GitHub 互換の heading slug 規則を保って公開すればリンクはそのまま有効になる。publication 側で filename、directory、または fragment 規則を変更する場合は、翻訳・公開処理で realized Markdown link を修正し、canonical `related` を公開 URL に合わせて変更しない。
         """
+
         title @= "related は依存方向を表す"
 
     class SECTION_005:
         r"""
         path、configuration、output、CLI contract のように独立して変更・参照できる領域が育った場合は、一枚の巨大な Specification を保たず document collection へ分ける。各 document は単独で validation / realization できる状態を保つ。
         """
+
         title @= "大きくなったら意味領域で collection 化する"

@@ -1,3 +1,11 @@
+from shikumi_devdoc.norms._document import (
+    DocumentField,
+    FieldPresentation,
+    FieldValue,
+    document_node_identity,
+)
+from shikumi_devdoc.norms.document import system, test_target_field
+from shikumi_devdoc.realizers.document import MarkdownRealizer
 from tests.fixtures import (
     document_field_invalid,
     document_fields,
@@ -6,14 +14,6 @@ from tests.fixtures import (
     structured_document_source,
 )
 from tests.fixtures.document_field_vocabulary import requirement_status
-from shikumi_devdoc.norms._document import (
-    DocumentField,
-    FieldPresentation,
-    FieldValue,
-    document_node_identity,
-)
-from shikumi_devdoc.norms.document import test_target_field, system
-from shikumi_devdoc.realizers.document import MarkdownRealizer
 
 
 def test_document_supports_external_author_defined_fields() -> None:
@@ -21,7 +21,9 @@ def test_document_supports_external_author_defined_fields() -> None:
     assert result.is_valid, result.diagnostics
 
     validation = next(
-        item for item in result.view.entities if item.subject is structured_document_source.VALIDATION
+        item
+        for item in result.view.entities
+        if item.subject is structured_document_source.VALIDATION
     )
     fields = validation.values(DocumentField)
     assert len(fields) == 1
@@ -37,15 +39,21 @@ def test_python_binding_name_and_canonical_field_name_are_independent() -> None:
 
     result = system.validate(structured_document_source, placement=())
     documents = MarkdownRealizer({"PROJECT": {"name": "Demo"}}).realize(result.view)
-    validation = next(document for document in documents if document.filename == "validation.md")
+    validation = next(
+        document for document in documents if document.filename == "validation.md"
+    )
     assert "status: draft" in validation.content
     assert "requirement_status" not in validation.content
 
 
-def test_nested_classes_are_markdown_heading_nesting_and_fields_are_not_headings() -> None:
+def test_nested_classes_are_markdown_heading_nesting_and_fields_are_not_headings() -> (
+    None
+):
     result = system.validate(structured_document_source, placement=())
     documents = MarkdownRealizer({"PROJECT": {"name": "Demo"}}).realize(result.view)
-    validation = next(document for document in documents if document.filename == "validation.md")
+    validation = next(
+        document for document in documents if document.filename == "validation.md"
+    )
 
     assert "# Validation" in validation.content
     assert "## SourceValidation" in validation.content
@@ -57,9 +65,14 @@ def test_nested_classes_are_markdown_heading_nesting_and_fields_are_not_headings
 
 
 def test_document_node_identity_follows_class_nesting_not_document_root() -> None:
-    assert document_node_identity(structured_document_source.VALIDATION.SourceValidation) == "SourceValidation"
     assert (
-        document_node_identity(structured_document_source.VALIDATION.SourceValidation.RejectInvalidSource)
+        document_node_identity(structured_document_source.VALIDATION.SourceValidation)
+        == "SourceValidation"
+    )
+    assert (
+        document_node_identity(
+            structured_document_source.VALIDATION.SourceValidation.RejectInvalidSource
+        )
         == "SourceValidation.RejectInvalidSource"
     )
 
@@ -77,7 +90,9 @@ def test_structural_fields_render_markdown_shapes() -> None:
     assert result.is_valid, result.diagnostics
 
     documents = MarkdownRealizer({"PROJECT": {"name": "Demo"}}).realize(result.view)
-    rendering = next(document for document in documents if document.filename == "rendering.md")
+    rendering = next(
+        document for document in documents if document.filename == "rendering.md"
+    )
 
     assert "steps:\n\n- validate the source\n- render the document" in rendering.content
     assert (

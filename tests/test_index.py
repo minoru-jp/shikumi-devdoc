@@ -1,3 +1,5 @@
+from shikumi_devdoc.norms._document import document
+from shikumi_devdoc.realizers.index import IndexMarkdownRealizer
 from tests.fixtures import (
     index_collision,
     index_missing_summary,
@@ -5,9 +7,6 @@ from tests.fixtures import (
     index_summary_placeholder_forbidden,
 )
 from tests.fixtures.index_source import core
-
-from shikumi_devdoc.norms._document import document
-from shikumi_devdoc.realizers.index import IndexMarkdownRealizer
 
 
 def test_index_realizer_collects_package_documents_in_declared_order() -> None:

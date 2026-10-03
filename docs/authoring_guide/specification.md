@@ -20,6 +20,7 @@ Use narrative `SECTION_NNN` containers for explanatory grouping when appropriate
 from shikumi_devdoc.fields.specification import MUST, condition, level
 from shikumi_devdoc.norms.document import title
 
+
 class SPEC_001:
     """The implementation returns an error when the input is invalid."""
 

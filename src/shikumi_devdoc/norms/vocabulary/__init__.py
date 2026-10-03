@@ -7,6 +7,8 @@ from .._vocabulary import (
     preserve_spelling,
     replacement,
     vocabulary,
+)
+from .._vocabulary import (
     vocabulary_system as system,
 )
 

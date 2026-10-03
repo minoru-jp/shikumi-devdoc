@@ -2,18 +2,25 @@ import json
 
 from shikumi import RealizationCheck, Realizer, SemanticView
 
-from tests.fixtures import document_source, structured_document_source, vocabulary_source
 from shikumi_devdoc.norms._document import document
-from shikumi_devdoc.norms.document import system as document_system
 from shikumi_devdoc.norms._vocabulary import vocabulary_system
+from shikumi_devdoc.norms.document import system as document_system
 from shikumi_devdoc.realizers.common import MarkdownDocument
-from shikumi_devdoc.realizers.document import MarkdownRealizer as DocumentMarkdownRealizer
+from shikumi_devdoc.realizers.document import (
+    MarkdownRealizer as DocumentMarkdownRealizer,
+)
 from shikumi_devdoc.realizers.translation import (
     SourceRealizer as TranslationSourceRealizer,
+)
+from shikumi_devdoc.realizers.translation import (
     translation_manifest,
 )
 from shikumi_devdoc.realizers.vocabulary import GlossaryMarkdownRealizer
-
+from tests.fixtures import (
+    document_source,
+    structured_document_source,
+    vocabulary_source,
+)
 
 CONTEXT = {
     "PROJECT": {"name": "Example", "version": "0.1.0"},
@@ -21,7 +28,9 @@ CONTEXT = {
 }
 
 
-def test_translation_manifest_carries_preserve_spelling_from_merged_vocabulary_term() -> None:
+def test_translation_manifest_carries_preserve_spelling_from_merged_vocabulary_term() -> (
+    None
+):
     result = document.validate(document_source, placement=())
     manifest, diagnostics = translation_manifest(result.view)
 
@@ -92,11 +101,15 @@ def test_translation_source_realizer_preserves_multi_document_shape() -> None:
     )
 
 
-def test_translation_source_realizer_adds_no_metadata_without_vocabulary_policy() -> None:
+def test_translation_source_realizer_adds_no_metadata_without_vocabulary_policy() -> (
+    None
+):
     result = document_system.validate(structured_document_source, placement=())
     assert result.is_valid, result.diagnostics
 
-    realizer = TranslationSourceRealizer(DocumentMarkdownRealizer({"PROJECT": {"name": "Demo"}}))
+    realizer = TranslationSourceRealizer(
+        DocumentMarkdownRealizer({"PROJECT": {"name": "Demo"}})
+    )
     rendered = realizer.realize(result.view)
 
     assert isinstance(rendered, tuple)

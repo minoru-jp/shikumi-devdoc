@@ -2,7 +2,6 @@
 
 from shikumi_devdoc.norms.document import field, prose_field
 
-
 introduced = field("introduced", str)
 deprecated = field("deprecated", str)
 removed = field("removed", str)

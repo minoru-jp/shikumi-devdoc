@@ -14,23 +14,28 @@ def filename_value_error(filename: object, *, label: str = "filename") -> str | 
         return f"{label} must be a non-empty file name"
     if "\x00" in filename:
         return f"{label} must not contain NUL"
-    if PurePosixPath(filename).name != filename or PureWindowsPath(filename).name != filename:
+    if (
+        PurePosixPath(filename).name != filename
+        or PureWindowsPath(filename).name != filename
+    ):
         return f"{label} must not contain a directory path"
     return None
 
 
-def validate_filename(filename: str, *, label: str = "filename") -> str:
+def validate_filename(filename: object, *, label: str = "filename") -> str:
     """Validate one declarative output filename at description time."""
 
     error = filename_value_error(filename, label=label)
-    if error is None:
+    if error is None and isinstance(filename, str):
         return filename
     if not isinstance(filename, str):
         raise TypeError(error)
     raise ValueError(error)
 
 
-def validate_optional_order(order: int | None, *, label: str = "part order") -> int | None:
+def validate_optional_order(
+    order: int | None, *, label: str = "part order"
+) -> int | None:
     """Validate an optional non-negative integer order at description time."""
 
     if order is None:

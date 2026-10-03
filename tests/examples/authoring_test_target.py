@@ -4,7 +4,6 @@
 from shikumi_devdoc.norms.common import canonical_source
 from shikumi_devdoc.norms.document import test_target_field, title
 
-
 example = test_target_field("example")
 
 
@@ -16,8 +15,11 @@ class GUIDE:
         {{example}}
         ```
         """
+
         title @= "Example"
         example @= """
         print("hello")
         """
+
+
 # DOC-SNIPPET authoring-test-target-field END

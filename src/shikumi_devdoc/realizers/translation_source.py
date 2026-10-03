@@ -2,18 +2,20 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
 import json
+from dataclasses import dataclass, replace
 from types import ModuleType
+from typing import TypeVar
 
-from shikumi import Diagnostic, RealizationCheck, Realizer, SemanticView, information_of
+from shikumi import Diagnostic, RealizationCheck, Realizer, SemanticView
 
-from shikumi_devdoc.norms._common import MergeBinding
+from shikumi_devdoc.norms._common import MergeBinding, attached_information_values
 from shikumi_devdoc.norms._vocabulary import (
     PreserveSpelling,
     TermName,
     canonical_vocabulary_term,
 )
+
 from .markdown_document import MarkdownDocument
 
 
@@ -51,12 +53,20 @@ class TranslationManifest:
 
 
 MarkdownRealization = str | MarkdownDocument | tuple[MarkdownDocument, ...]
+_MarkdownRealizationT = TypeVar(
+    "_MarkdownRealizationT",
+    str,
+    MarkdownDocument,
+    tuple[MarkdownDocument, ...],
+)
 
 
-class TranslationSourceRealizer(Realizer[MarkdownRealization]):
+class TranslationSourceRealizer(Realizer[_MarkdownRealizationT]):
     """Wrap a Markdown realizer and embed translation-relevant semantics."""
 
-    def __init__(self, markdown_realizer: Realizer) -> None:
+    markdown_realizer: Realizer[_MarkdownRealizationT]
+
+    def __init__(self, markdown_realizer: Realizer[_MarkdownRealizationT]) -> None:
         self.markdown_realizer = markdown_realizer
 
     def check(self, view: SemanticView) -> RealizationCheck:
@@ -64,7 +74,7 @@ class TranslationSourceRealizer(Realizer[MarkdownRealization]):
         _, diagnostics = translation_manifest(view)
         return RealizationCheck(view, (*base.diagnostics, *diagnostics))
 
-    def realize(self, view: SemanticView) -> MarkdownRealization:
+    def realize(self, view: SemanticView) -> _MarkdownRealizationT:
         rendered = self.markdown_realizer.realize(view)
         manifest, _ = translation_manifest(view)
         if not manifest.preserve_spelling:
@@ -88,21 +98,13 @@ class TranslationSourceRealizer(Realizer[MarkdownRealization]):
         )
 
 
-def _information_values(subject: object, information_type) -> tuple[object, ...]:
-    return tuple(
-        record.value
-        for record in information_of(subject)
-        if record.type is information_type
-    )
-
-
 def _term_manifest_entry(target: object) -> PreserveSpellingTerm | None:
     canonical = canonical_vocabulary_term(target)
     if canonical is None:
         return None
-    if _information_values(canonical, PreserveSpelling) != (True,):
+    if attached_information_values(canonical, PreserveSpelling) != (True,):
         return None
-    names = _information_values(canonical, TermName)
+    names = attached_information_values(canonical, TermName)
     if len(names) != 1 or not isinstance(names[0], str):
         return None
     return PreserveSpellingTerm(
@@ -112,7 +114,9 @@ def _term_manifest_entry(target: object) -> PreserveSpellingTerm | None:
     )
 
 
-def translation_manifest(view: SemanticView) -> tuple[TranslationManifest, tuple[Diagnostic, ...]]:
+def translation_manifest(
+    view: SemanticView,
+) -> tuple[TranslationManifest, tuple[Diagnostic, ...]]:
     """Collect translation policy from direct Vocabulary views or merge targets.
 
     A canonical document no longer attaches an entire Vocabulary. Translation

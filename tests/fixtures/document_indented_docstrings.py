@@ -10,8 +10,8 @@ class ROOT:
     """
 
     class CHILD:
-        r'''
+        r"""
         Child content.
 
             Child relative indentation.
-        '''
+        """

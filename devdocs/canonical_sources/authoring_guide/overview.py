@@ -5,7 +5,9 @@ from shikumi_devdoc.norms.common import IGNORE, canonical_source, merge, summary
 from shikumi_devdoc.norms.document import title
 
 
-@summary("必要な文書だけを選び、目的文書ごとの推奨パターンから authoring を始めるための総則。")
+@summary(
+    "必要な文書だけを選び、目的文書ごとの推奨パターンから authoring を始めるための総則。"
+)
 @canonical_source(
     "Authoring Guide overview",
     filename="overview.md",
@@ -29,6 +31,7 @@ class AUTHORING_GUIDE_PART:
 
         このガイドに挙げる文書は必須の document type ではなく、generic canonical-document model の推奨 authoring pattern である。project に当てはまらない文書を形式的に作らない。逆に、ここに名前のない文書も同じ generic model で自由に作成できる。
         """
+
         title @= "特定の文書セットを要求しない"
 
     class SECTION_002:
@@ -48,6 +51,7 @@ class AUTHORING_GUIDE_PART:
 
         特殊な設計判断が必要になった場合だけ、[Advanced authoring](advanced-authoring.md) を参照する。LLM が作業する場合は [LLM workflow](llm-workflow.md) も作業境界として使う。
         """
+
         title @= "まず作りたい文書を選ぶ"
 
     class SECTION_003:
@@ -58,6 +62,7 @@ class AUTHORING_GUIDE_PART:
 
         文書を増やすこと自体を目標にしない。既存の文書で目的を満たせるなら新しい文書を追加せず、責務が明確に分かれる場合だけ分割する。
         """
+
         title @= "基本原則"
 
         merge @= TERMS.TERM_001
@@ -70,4 +75,5 @@ class AUTHORING_GUIDE_PART:
 
         Specification や API Reference の完全な契約を Authoring Guide に複製しない。細部の挙動が必要な場合は Specification / API Reference を参照する。ただし、作者が基本的な文書を作るために複数の機能別ガイドを巡回しなければならない構成にはしない。
         """
+
         title @= "目的別ページだけで着手できるようにする"

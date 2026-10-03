@@ -1,11 +1,17 @@
 import ast
 from inspect import cleandoc
-from textwrap import dedent
 from pathlib import Path
+from textwrap import dedent
 
-from devdocs.canonical_sources.authoring_guide import advanced_authoring as authoring_advanced_source
-from devdocs.canonical_sources.authoring_guide import changelog_guide as authoring_changelog_source
-from devdocs.canonical_sources.authoring_guide import glossary_guide as authoring_glossary_source
+from devdocs.canonical_sources.authoring_guide import (
+    advanced_authoring as authoring_advanced_source,
+)
+from devdocs.canonical_sources.authoring_guide import (
+    changelog_guide as authoring_changelog_source,
+)
+from devdocs.canonical_sources.authoring_guide import (
+    glossary_guide as authoring_glossary_source,
+)
 from devdocs.canonical_sources.readme import canonical as readme_source
 from shikumi_devdoc.norms._document import DocumentField, FieldPresentation, FieldValue
 from shikumi_devdoc.norms.document import system as document_system
@@ -14,15 +20,14 @@ from shikumi_devdoc.realizers.document import MarkdownRealizer
 from tests.examples import (
     authoring_external_vocabulary,
     authoring_lifecycle,
+    authoring_test_target,
     authoring_vocabulary,
     authoring_vocabulary_reference,
-    authoring_test_target,
     readme_dogfood_readme,
     readme_dogfood_specification,
     readme_embedded_example,
     readme_quickstart,
 )
-
 
 ROOT = Path(__file__).resolve().parent
 
@@ -31,11 +36,17 @@ def _source_snippet(path: Path, name: str) -> str:
     start = f"# DOC-SNIPPET {name} START"
     end = f"# DOC-SNIPPET {name} END"
     lines = path.read_text(encoding="utf-8").splitlines()
-    start_index = lines.index(start) + 1 if start in lines else next(
-        index + 1 for index, line in enumerate(lines) if line.strip() == start
+    start_index = (
+        lines.index(start) + 1
+        if start in lines
+        else next(
+            index + 1 for index, line in enumerate(lines) if line.strip() == start
+        )
     )
-    end_index = lines.index(end) if end in lines else next(
-        index for index, line in enumerate(lines) if line.strip() == end
+    end_index = (
+        lines.index(end)
+        if end in lines
+        else next(index for index, line in enumerate(lines) if line.strip() == end)
     )
     return dedent("\n".join(lines[start_index:end_index])).strip()
 
@@ -99,9 +110,7 @@ def test_readme_dogfood_readme_source_is_executable() -> None:
     embedded_rendered = MarkdownRealizer().realize(embedded_result.view)[0]
     assert embedded_rendered.filename == "example.md"
     assert embedded_rendered.content == (
-        "# Example\n\n"
-        "## Introduction\n\n"
-        "Hello from shikumi-devdoc.\n"
+        "# Example\n\n## Introduction\n\nHello from shikumi-devdoc.\n"
     )
 
 
@@ -145,9 +154,7 @@ def test_readme_minimal_source_is_the_tested_example_module() -> None:
     rendered = MarkdownRealizer().realize(result.view)[0]
     assert rendered.filename == "example.md"
     assert rendered.content == (
-        "# Example\n\n"
-        "## Introduction\n\n"
-        "Hello from shikumi-devdoc.\n"
+        "# Example\n\n## Introduction\n\nHello from shikumi-devdoc.\n"
     )
 
 
@@ -167,7 +174,9 @@ def test_authoring_vocabulary_definition_is_the_tested_example_module() -> None:
     assert result.is_valid, result.diagnostics
 
 
-def test_authoring_external_vocabulary_snippet_is_covered_by_executable_module() -> None:
+def test_authoring_external_vocabulary_snippet_is_covered_by_executable_module() -> (
+    None
+):
     documented = _test_target_field_value(
         authoring_glossary_source,
         authoring_glossary_source.AUTHORING_GUIDE_PART.SECTION_004,
@@ -185,7 +194,9 @@ def test_authoring_external_vocabulary_snippet_is_covered_by_executable_module()
     assert "The shared name is framework term." in content
 
 
-def test_authoring_vocabulary_reference_snippet_is_covered_by_executable_module() -> None:
+def test_authoring_vocabulary_reference_snippet_is_covered_by_executable_module() -> (
+    None
+):
     documented = _test_target_field_value(
         authoring_glossary_source,
         authoring_glossary_source.AUTHORING_GUIDE_PART.SECTION_003,
@@ -219,7 +230,7 @@ def test_authoring_test_target_field_snippet_is_covered_by_executable_module() -
     assert result.is_valid, result.diagnostics
     rendered = MarkdownRealizer().realize(result.view)[0].content
     assert '```python\nprint("hello")\n```' in rendered
-    assert 'example:' not in rendered
+    assert "example:" not in rendered
 
 
 def test_authoring_lifecycle_snippet_is_covered_by_executable_module() -> None:

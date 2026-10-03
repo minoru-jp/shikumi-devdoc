@@ -15,4 +15,3 @@ class TERMS:
 
             Relative indentation remains part of the definition.
         """
-

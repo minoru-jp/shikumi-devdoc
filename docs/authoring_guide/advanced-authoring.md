@@ -19,6 +19,7 @@ For narrative documents, select `@canonical_source(..., heading="title")` so the
 class GUIDE:
     class SECTION_017:
         """Introductory text."""
+
         title @= "Getting started"
 ```
 

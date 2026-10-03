@@ -2,7 +2,6 @@
 
 from shikumi_devdoc.norms.document import field, list_field
 
-
 version = field("version", str)
 released_on = field("released on", str)
 added = list_field("Added", str)

@@ -1,5 +1,33 @@
 # shikumi-devdoc Changelog
 
+## V0_3_5
+
+Introduced Ruff and BasedPyright as shared development and release quality gates and made both package implementation and Pyright-family consumer-side DSL static analysis clean without changing runtime behavior.
+
+version: 0.3.5
+
+Added:
+
+- Added `ruff==0.16.10` as the `lint` optional dependency and `basedpyright==1.40.1` plus `mypy==2.4.0` as the `typecheck` optional dependencies. None is a runtime dependency. mypy is used to verify the documented canonical-source override recipe rather than to require the entire package to be zero-error under mypy.
+- Added the PEP 561 `py.typed` marker to the package, and extended wheel/sdist and installed-wheel distribution verification to require it.
+- Centralized GitHub Actions quality and test validation in reusable `checks.yml`. Both normal CI and the release workflow use the same checks, and release build requires those checks to succeed, so a revision that fails Ruff format/lint, BasedPyright, the documented mypy override recipe, canonical-document synchronization, the supported-Python test matrix, or the minimum-Shikumi test cannot proceed to PyPI publication.
+- Added a consumer-side typing contract under `tests/typing`. In addition to a focused authoring contract, BasedPyright standard mode checks `devdocs/canonical_sources` and `tests/examples`, so CI and release validation require actual DSL usage, including repeated field and merge `@=` operations, to remain at 0 errors / 0 warnings under the BasedPyright / Pyright type model.
+
+Changed:
+
+- Resolved the existing `ruff check .` findings, including import ordering and unused imports, type annotations, `__slots__` / `__all__` ordering, and pytest warning assertions. Intentionally empty docstrings and the `ValueError` used for invalid notice TOML remain as narrowly scoped, documented lint exceptions. Public API and runtime contracts are unchanged.
+- Applied the Ruff formatter across the repository and added `ruff format --check .` to the shared quality gate. Formatting changes only normalize syntax presentation and do not change public API or runtime behavior.
+- Made the Ruff baseline explicit in `pyproject.toml` with `target-version = "py311"` and the pinned version's stable default lint policy, and added `.gitattributes` to keep Python, TOML, YAML, Markdown, and JSON text files on LF line endings.
+- Removed readability workarounds that had been introduced only for static analysis. Same-document root checks again use Python identity with `is`, merge bindings expose the concrete binding type they actually return, remaining local BasedPyright suppressions carry an adjacent reason, and internal helpers use broader annotations where that matches their runtime validation contract.
+- Simplified the CLI by sharing realizer-check handling across document, index, and glossary rendering and validating invalid `--index-title` usage before importing the requested source module. Added direct pytest coverage for successful glossary rendering and for `--index-title` misuse with document and glossary rendering.
+- Resolved the 13 errors and 645 warnings previously reported by BasedPyright. Markdown-realizer context mappings, heading information types, and the translation-source wrapper now express concrete generic types, while the CLI preserves the relationship between each render kind, its realizer, and its artifact type in control flow. Type boundaries are now explicit for validators and helpers that pass `SemanticView` / `ViewItem`, dynamic information lookup, class attributes, and intentionally discarded return values, eliminating cascades of `Unknown` diagnostics at their source. The pytest `__test__` marker and diagnostic source-location handling were also made type-checker-compatible without changing runtime behavior.
+- Aligned the BasedPyright configuration with the quality policy used by Shikumi itself and checks `src/shikumi_devdoc` against Python 3.11. `reportUnnecessaryIsInstance`, `reportImplicitStringConcatenation`, `reportExplicitAny`, `reportPrivateUsage`, and `reportImplicitOverride` are disabled under that same policy; CI requires 0 errors / 0 warnings for the remaining diagnostics. Runtime defensive checks that cannot be represented faithfully by static typing remain only as narrowly scoped `pyright: ignore` exceptions with an explicit reason.
+- Documented that canonical-source `name @= value` notation is an authoring choice made by `shikumi-devdoc`, not a requirement of Shikumi core. STATUS now records the package-level mypy `misc` override used when canonical source is checked with mypy, including its broader diagnostic scope, and CI verifies that documented recipe.
+
+Fixed:
+
+- Fixed repeated `@=` appearing as a type error to BasedPyright / Pyright consumers because `FieldWriter.__imatmul__` and `MergeWriter.__imatmul__` were exposed as returning `object`. Each writer now accurately annotates the temporary binding type it actually returns, without changing runtime behavior such as field-binding identity preservation or merge-value normalization timing. The minimum supported Shikumi version remains `>=0.2.0`.
+
 ## V0_3_4
 
 This release reorganizes the README around real usage and dogfooding, and narrows `merge_policy` to explicit insertion channels.

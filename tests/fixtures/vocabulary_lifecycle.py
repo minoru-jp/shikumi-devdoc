@@ -17,6 +17,7 @@ class TERMS:
 
         The current public term.
         """
+
         alias @= "Component"
         alias @= "UI Widget"
 
@@ -25,5 +26,6 @@ class TERMS:
 
         The former public term.
         """
+
         deprecated @= True
         replacement @= "Widget"

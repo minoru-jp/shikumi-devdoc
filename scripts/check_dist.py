@@ -11,13 +11,13 @@ import venv
 import zipfile
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
 
 REQUIRED_WHEEL_SUFFIXES = {
     "shikumi_devdoc/__init__.py",
     "shikumi_devdoc/cli.py",
+    "shikumi_devdoc/py.typed",
     "shikumi_devdoc/resources/devdocs/canonical_sources/status/canonical.py",
     "shikumi_devdoc/resources/devdocs/canonical_documents/STATUS.md",
     "shikumi_devdoc/resources/published_docs/README.md",
@@ -30,6 +30,7 @@ REQUIRED_WHEEL_SUFFIXES = {
 
 REQUIRED_SDIST_SUFFIXES = {
     "src/shikumi_devdoc/__init__.py",
+    "src/shikumi_devdoc/py.typed",
     "tests/test_dogfood.py",
     "devdocs/canonical_sources/status/canonical.py",
     "devdocs/canonical_documents/STATUS.md",
@@ -47,7 +48,9 @@ REQUIRED_SDIST_SUFFIXES = {
 FORBIDDEN_ARCHIVE_PARTS = {".github", "__pycache__", ".pytest_cache"}
 
 
-def _run(args: list[str | os.PathLike[str]], *, env: dict[str, str] | None = None) -> None:
+def _run(
+    args: list[str | os.PathLike[str]], *, env: dict[str, str] | None = None
+) -> None:
     command = [os.fspath(arg) for arg in args]
     print("+", " ".join(command), flush=True)
     subprocess.run(command, cwd=ROOT, env=env, check=True)
@@ -70,13 +73,19 @@ def _build() -> tuple[Path, Path]:
 
 
 def _assert_no_forbidden_parts(names: list[str], *, archive: Path) -> None:
-    bad = [name for name in names if FORBIDDEN_ARCHIVE_PARTS.intersection(Path(name).parts)]
+    bad = [
+        name for name in names if FORBIDDEN_ARCHIVE_PARTS.intersection(Path(name).parts)
+    ]
     if bad:
         raise SystemExit(f"forbidden paths in {archive.name}: {bad[:20]}")
 
 
 def _assert_suffixes(names: list[str], required: set[str], *, archive: Path) -> None:
-    missing = [suffix for suffix in sorted(required) if not any(name.endswith(suffix) for name in names)]
+    missing = [
+        suffix
+        for suffix in sorted(required)
+        if not any(name.endswith(suffix) for name in names)
+    ]
     if missing:
         raise SystemExit(f"missing required paths in {archive.name}: {missing}")
 
@@ -87,9 +96,13 @@ def _check_wheel(wheel: Path) -> None:
         _assert_no_forbidden_parts(names, archive=wheel)
         _assert_suffixes(names, REQUIRED_WHEEL_SUFFIXES, archive=wheel)
 
-        metadata_names = [name for name in names if name.endswith(".dist-info/METADATA")]
+        metadata_names = [
+            name for name in names if name.endswith(".dist-info/METADATA")
+        ]
         if len(metadata_names) != 1:
-            raise SystemExit(f"expected one METADATA file in {wheel.name}, found {metadata_names}")
+            raise SystemExit(
+                f"expected one METADATA file in {wheel.name}, found {metadata_names}"
+            )
         metadata = archive.read(metadata_names[0]).decode("utf-8")
         requirements = [
             line.removeprefix("Requires-Dist: ").strip()
@@ -138,11 +151,12 @@ def _install_artifact(
 
 
 def _check_installed_wheel(python: Path, cli: Path, *, work: Path) -> None:
-    code = r'''
+    code = r"""
 from importlib.resources import files
 
 root = files("shikumi_devdoc")
 expected = (
+    "py.typed",
     "resources/devdocs/canonical_sources",
     "resources/devdocs/canonical_documents",
     "resources/published_docs/README.md",
@@ -159,7 +173,7 @@ for path in expected:
         missing.append(path)
 if missing:
     raise SystemExit(f"missing wheel resources: {missing}")
-'''
+"""
     _run([python, "-c", code])
 
     out = work / "dogfood"
@@ -169,17 +183,142 @@ if missing:
     env["PYTHONPATH"] = os.fspath(ROOT)
 
     commands = [
-        [cli, "render", "glossary", "devdocs.canonical_sources.vocabulary.canonical", "-o", out / "GLOSSARY.md", "--notice", "devdocs/config/notice.toml", "--translation-source"],
-        [cli, "render", "document", "devdocs.canonical_sources.readme.canonical", "-o", out / "readme", "--context", context, "--notice", "devdocs/config/notice.toml", "--translation-source"],
-        [cli, "render", "document", "devdocs.canonical_sources.authoring_guide", "-o", out / "authoring_guide", "--notice", "devdocs/config/notice.toml", "--translation-source"],
-        [cli, "render", "index", "devdocs.canonical_sources.authoring_guide", "-o", out / "authoring_guide", "--index-title", "shikumi-devdoc Authoring Guide", "--notice", "devdocs/config/notice.toml", "--translation-source"],
-        [cli, "render", "document", "devdocs.canonical_sources.workspace.canonical", "-o", out / "devdocs", "--notice", "devdocs/config/notice.toml"],
-        [cli, "render", "document", "devdocs.canonical_sources.status.canonical", "-o", out / "status", "--notice", "devdocs/config/notice.toml", "--translation-source"],
-        [cli, "render", "document", "devdocs.canonical_sources.changelog.canonical", "-o", out / "changelog", "--notice", "devdocs/config/notice.toml", "--translation-source"],
-        [cli, "render", "document", "devdocs.canonical_sources.specification", "-o", out / "specification", "--context", context, "--notice", "devdocs/config/notice.toml", "--translation-source"],
-        [cli, "render", "index", "devdocs.canonical_sources.specification", "-o", out / "specification", "--context", context, "--index-title", "shikumi-devdoc Specification", "--notice", "devdocs/config/notice.toml", "--translation-source"],
-        [cli, "render", "document", "devdocs.canonical_sources.api_reference", "-o", out / "api", "--context", context, "--notice", "devdocs/config/notice.toml", "--translation-source"],
-        [cli, "render", "index", "devdocs.canonical_sources.api_reference", "-o", out / "api", "--context", context, "--index-title", "shikumi-devdoc API Reference", "--notice", "devdocs/config/notice.toml", "--translation-source"],
+        [
+            cli,
+            "render",
+            "glossary",
+            "devdocs.canonical_sources.vocabulary.canonical",
+            "-o",
+            out / "GLOSSARY.md",
+            "--notice",
+            "devdocs/config/notice.toml",
+            "--translation-source",
+        ],
+        [
+            cli,
+            "render",
+            "document",
+            "devdocs.canonical_sources.readme.canonical",
+            "-o",
+            out / "readme",
+            "--context",
+            context,
+            "--notice",
+            "devdocs/config/notice.toml",
+            "--translation-source",
+        ],
+        [
+            cli,
+            "render",
+            "document",
+            "devdocs.canonical_sources.authoring_guide",
+            "-o",
+            out / "authoring_guide",
+            "--notice",
+            "devdocs/config/notice.toml",
+            "--translation-source",
+        ],
+        [
+            cli,
+            "render",
+            "index",
+            "devdocs.canonical_sources.authoring_guide",
+            "-o",
+            out / "authoring_guide",
+            "--index-title",
+            "shikumi-devdoc Authoring Guide",
+            "--notice",
+            "devdocs/config/notice.toml",
+            "--translation-source",
+        ],
+        [
+            cli,
+            "render",
+            "document",
+            "devdocs.canonical_sources.workspace.canonical",
+            "-o",
+            out / "devdocs",
+            "--notice",
+            "devdocs/config/notice.toml",
+        ],
+        [
+            cli,
+            "render",
+            "document",
+            "devdocs.canonical_sources.status.canonical",
+            "-o",
+            out / "status",
+            "--notice",
+            "devdocs/config/notice.toml",
+            "--translation-source",
+        ],
+        [
+            cli,
+            "render",
+            "document",
+            "devdocs.canonical_sources.changelog.canonical",
+            "-o",
+            out / "changelog",
+            "--notice",
+            "devdocs/config/notice.toml",
+            "--translation-source",
+        ],
+        [
+            cli,
+            "render",
+            "document",
+            "devdocs.canonical_sources.specification",
+            "-o",
+            out / "specification",
+            "--context",
+            context,
+            "--notice",
+            "devdocs/config/notice.toml",
+            "--translation-source",
+        ],
+        [
+            cli,
+            "render",
+            "index",
+            "devdocs.canonical_sources.specification",
+            "-o",
+            out / "specification",
+            "--context",
+            context,
+            "--index-title",
+            "shikumi-devdoc Specification",
+            "--notice",
+            "devdocs/config/notice.toml",
+            "--translation-source",
+        ],
+        [
+            cli,
+            "render",
+            "document",
+            "devdocs.canonical_sources.api_reference",
+            "-o",
+            out / "api",
+            "--context",
+            context,
+            "--notice",
+            "devdocs/config/notice.toml",
+            "--translation-source",
+        ],
+        [
+            cli,
+            "render",
+            "index",
+            "devdocs.canonical_sources.api_reference",
+            "-o",
+            out / "api",
+            "--context",
+            context,
+            "--index-title",
+            "shikumi-devdoc API Reference",
+            "--notice",
+            "devdocs/config/notice.toml",
+            "--translation-source",
+        ],
     ]
     for command in commands:
         command = [os.fspath(part) for part in command]
@@ -196,7 +335,11 @@ if missing:
         out / "specification/INDEX.md",
         out / "api/INDEX.md",
     )
-    missing = [path for path in expected_outputs if not path.is_file() or path.stat().st_size == 0]
+    missing = [
+        path
+        for path in expected_outputs
+        if not path.is_file() or path.stat().st_size == 0
+    ]
     if missing:
         raise SystemExit(f"dogfood smoke output missing or empty: {missing}")
 

@@ -6,9 +6,8 @@ from shikumi_devdoc.norms._common import (
     _source_path_for_module,
     _source_path_for_subject,
 )
+from tests.fixtures import canonical_document_package
 from tests.fixtures.canonical_document_package.canonical import DOCUMENT
-import tests.fixtures.canonical_document_package as canonical_document_package
-
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -28,14 +27,18 @@ def test_package_source_path_uses_init_module_structure() -> None:
 
 
 def test_logical_document_path_uses_source_parent_and_declared_filename() -> None:
-    assert _document_path_for_source(
-        "tests/fixtures/logical_reference_target/document.py",
-        "target.md",
-    ) == "tests/fixtures/logical_reference_target/target.md"
+    assert (
+        _document_path_for_source(
+            "tests/fixtures/logical_reference_target/document.py",
+            "target.md",
+        )
+        == "tests/fixtures/logical_reference_target/target.md"
+    )
 
 
 def test_canonical_document_root_carries_logical_document_path() -> None:
     from shikumi import information_of
+
     from tests.fixtures.logical_reference_target.document import TARGET
 
     values = tuple(

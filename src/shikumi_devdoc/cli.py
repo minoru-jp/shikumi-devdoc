@@ -5,14 +5,15 @@ from __future__ import annotations
 import argparse
 import importlib
 import inspect
-from pathlib import Path
 import sys
 import tomllib
 import warnings
+from collections.abc import Iterable, Mapping, Sequence
+from pathlib import Path
 from types import ModuleType
-from typing import Sequence
+from typing import Protocol, cast
 
-from shikumi import Diagnostic
+from shikumi import Diagnostic, RealizationCheck, SemanticView
 
 from shikumi_devdoc.context import Context, ContextError
 from shikumi_devdoc.norms._common import (
@@ -22,7 +23,6 @@ from shikumi_devdoc.norms._common import (
 )
 from shikumi_devdoc.norms._document import document
 from shikumi_devdoc.norms._vocabulary import vocabulary_system
-from shikumi_devdoc.realizers import common as common_realizers
 from shikumi_devdoc.realizers import document as document_realizers
 from shikumi_devdoc.realizers import index as index_realizers
 from shikumi_devdoc.realizers import translation as translation_realizers
@@ -31,8 +31,22 @@ from shikumi_devdoc.realizers import vocabulary as vocabulary_realizers
 DocumentMarkdownRealizer = document_realizers.MarkdownRealizer
 IndexMarkdownRealizer = index_realizers.IndexMarkdownRealizer
 GlossaryMarkdownRealizer = vocabulary_realizers.GlossaryMarkdownRealizer
-MarkdownDocument = common_realizers.MarkdownDocument
 TranslationSourceRealizer = translation_realizers.SourceRealizer
+
+
+class _CheckableRealizer(Protocol):
+    def check(self, view: SemanticView) -> RealizationCheck: ...
+
+
+class _ParsedArgs(Protocol):
+    command: str
+    kind: str
+    module: str
+    output: Path
+    context: str | None
+    notice: Path | None
+    translation_source: bool
+    index_title: str | None
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -43,37 +57,37 @@ def _build_parser() -> argparse.ArgumentParser:
         "render",
         help="validate a canonical source and render a canonical Markdown document",
     )
-    render.add_argument(
+    _ = render.add_argument(
         "kind",
         choices=("document", "index", "glossary"),
         help="kind of canonical artifact to render",
     )
-    render.add_argument(
+    _ = render.add_argument(
         "module",
         help="dotted import path of the canonical source module",
     )
-    render.add_argument(
+    _ = render.add_argument(
         "-o",
         "--output",
         required=True,
         type=Path,
         help="output path; document and index rendering use this as an output directory",
     )
-    render.add_argument(
+    _ = render.add_argument(
         "--context",
         help="JSON object containing realization-time external context",
     )
-    render.add_argument(
+    _ = render.add_argument(
         "--notice",
         type=Path,
         help="explicit TOML notice file whose [notice].content is embedded as a Markdown comment",
     )
-    render.add_argument(
+    _ = render.add_argument(
         "--translation-source",
         action="store_true",
         help="embed translation metadata such as preserve-spelling terms in the Markdown source",
     )
-    render.add_argument(
+    _ = render.add_argument(
         "--index-title",
         help="Markdown H1 title for index rendering; defaults to 'Index'",
     )
@@ -103,7 +117,15 @@ def _source_location(subject: object | None) -> str | None:
         if isinstance(subject, ModuleType):
             raw = getattr(subject, "__file__", None)
             path = raw if isinstance(raw, str) else None
-        else:
+        elif (
+            inspect.isclass(subject)
+            or inspect.ismethod(subject)
+            or inspect.isfunction(subject)
+            or inspect.istraceback(subject)
+            or inspect.isframe(subject)
+            or inspect.iscode(subject)
+            or callable(subject)
+        ):
             path = inspect.getsourcefile(subject)
             if path is not None:
                 _, line = inspect.getsourcelines(subject)
@@ -136,7 +158,7 @@ def _format_diagnostic(diagnostic: Diagnostic) -> str:
     return "\n".join(rows)
 
 
-def _print_diagnostics(diagnostics) -> None:
+def _print_diagnostics(diagnostics: Iterable[Diagnostic]) -> None:
     for index, diagnostic in enumerate(diagnostics):
         if index:
             print(file=sys.stderr)
@@ -153,29 +175,33 @@ def _load_notice(path: Path | None, canonical_source: str | None) -> str | None:
     if path is None:
         return None
     with path.open("rb") as stream:
-        config = tomllib.load(stream)
+        config = cast(Mapping[str, object], tomllib.load(stream))
     notice = config.get("notice")
-    if not isinstance(notice, dict) or not isinstance(notice.get("content"), str):
-        raise ValueError(f"notice TOML requires [notice].content: {path}")
-    content = notice["content"].strip()
+    if not isinstance(notice, dict):
+        # This reports invalid file content, not an invalid Python argument type.
+        raise ValueError(f"notice TOML requires [notice].content: {path}")  # noqa: TRY004
+    notice_values = cast(Mapping[str, object], notice)
+    content_value = notice_values.get("content")
+    if not isinstance(content_value, str):
+        raise ValueError(f"notice TOML requires [notice].content: {path}")  # noqa: TRY004
+    content = content_value.strip()
     if canonical_source is None:
         return content
     return content.replace("{canonical_source}", canonical_source)
 
 
-def _canonical_source_from_view(view, fallback: object) -> str:
-    values = [
-        value
-        for item in view.entities
-        for value in item.values(CanonicalSource)
-    ]
+def _canonical_source_from_view(view: SemanticView, fallback: object) -> str:
+    values = [value for item in view.entities for value in item.values(CanonicalSource)]
     if len(values) == 1:
         return values[0]
     return _canonical_source(fallback)
 
 
-def _root_canonical_source(view, fallback: object) -> str:
-    return _canonical_source_from_view(view, fallback)
+def _is_realizable(realizer: _CheckableRealizer, view: SemanticView) -> bool:
+    check = realizer.check(view)
+    if check.diagnostics:
+        _print_diagnostics(check.diagnostics)
+    return check.is_realizable
 
 
 def _render_markdown(
@@ -187,73 +213,82 @@ def _render_markdown(
     translation_source: bool,
     index_title: str | None,
 ) -> int:
+    if index_title is not None and kind != "index":
+        raise ValueError("--index-title is only valid with render index")
+
+    if kind in {"document", "index"}:
+        system = document
+    elif kind == "glossary":
+        system = vocabulary_system
+    else:  # pragma: no cover - argparse constrains this value
+        raise ValueError(f"unknown render kind: {kind}")
+
     importlib.invalidate_caches()
     with warnings.catch_warnings():
         warnings.simplefilter("default", ShikumiDevdocDeprecationWarning)
         module = importlib.import_module(module_name)
 
-    directory_output_kinds = {"document", "index"}
-
-    context = Context.from_json(context_json) if context_json is not None else Context({})
-
-    if kind == "document":
-        system = document
-        realizer_type = DocumentMarkdownRealizer
-    elif kind == "index":
-        system = document
-        realizer_type = IndexMarkdownRealizer
-    elif kind == "glossary":
-        system = vocabulary_system
-        realizer_type = GlossaryMarkdownRealizer
-    else:  # pragma: no cover - argparse constrains this value
-        raise ValueError(f"unknown render kind: {kind}")
-
+    context = (
+        Context.from_json(context_json) if context_json is not None else Context({})
+    )
     result = system.validate(module, placement=())
     if result.diagnostics:
         _print_diagnostics(result.diagnostics)
     if not result.is_valid:
         return 1
 
-    canonical_source = _root_canonical_source(result.view, module)
+    canonical_source = _canonical_source_from_view(result.view, module)
     header_comment = _load_notice(notice_path, canonical_source)
+
+    if kind == "document":
+        realizer = DocumentMarkdownRealizer(context, header_comment=header_comment)
+        if translation_source:
+            realizer = TranslationSourceRealizer(realizer)
+        if not _is_realizable(realizer, result.view):
+            return 1
+
+        rendered = realizer.realize(result.view)
+        output.mkdir(parents=True, exist_ok=True)
+        for realized_document in rendered:
+            target = output / realized_document.filename
+            _ = target.write_text(realized_document.content, encoding="utf-8")
+            print(target)
+        return 0
+
     if kind == "index":
-        realizer = realizer_type(
+        realizer = IndexMarkdownRealizer(
             context,
             title=index_title or "Index",
             header_comment=header_comment,
         )
-    else:
-        if index_title is not None:
-            raise ValueError("--index-title is only valid with render index")
-        realizer = realizer_type(context, header_comment=header_comment)
+        if translation_source:
+            realizer = TranslationSourceRealizer(realizer)
+        if not _is_realizable(realizer, result.view):
+            return 1
+
+        rendered = realizer.realize(result.view)
+        output.mkdir(parents=True, exist_ok=True)
+        target = output / rendered.filename
+        _ = target.write_text(rendered.content, encoding="utf-8")
+        print(target)
+        return 0
+
+    realizer = GlossaryMarkdownRealizer(context, header_comment=header_comment)
     if translation_source:
         realizer = TranslationSourceRealizer(realizer)
-
-    check = realizer.check(result.view)
-    if check.diagnostics:
-        _print_diagnostics(check.diagnostics)
-    if not check.is_realizable:
+    if not _is_realizable(realizer, result.view):
         return 1
 
     rendered = realizer.realize(result.view)
-    if kind in directory_output_kinds:
-        output.mkdir(parents=True, exist_ok=True)
-        documents = (rendered,) if isinstance(rendered, MarkdownDocument) else rendered
-        for realized_document in documents:
-            target = output / realized_document.filename
-            target.write_text(realized_document.content, encoding="utf-8")
-            print(target)
-        return 0
-
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(rendered, encoding="utf-8")
+    _ = output.write_text(rendered, encoding="utf-8")
     print(output)
     return 0
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = _build_parser()
-    args = parser.parse_args(argv)
+    args = cast(_ParsedArgs, cast(object, parser.parse_args(argv)))
     try:
         if args.command == "render":
             return _render_markdown(
@@ -269,7 +304,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(exc, file=sys.stderr)
         return 1
     parser.error(f"unknown command: {args.command}")
-    return 2
 
 
 if __name__ == "__main__":

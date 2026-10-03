@@ -1,4 +1,9 @@
-from shikumi_devdoc.norms.document import test_target_field, field, list_field, table_field
+from shikumi_devdoc.norms.document import (
+    field,
+    list_field,
+    table_field,
+    test_target_field,
+)
 
 level = field("level", str)
 requirement_status = field("status", str)

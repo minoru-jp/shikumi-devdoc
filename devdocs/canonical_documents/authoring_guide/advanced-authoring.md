@@ -34,6 +34,7 @@ narrative document では `@canonical_source(..., heading="title")` を選ぶと
 class GUIDE:
     class SECTION_017:
         """Introductory text."""
+
         title @= "Getting started"
 ```
 

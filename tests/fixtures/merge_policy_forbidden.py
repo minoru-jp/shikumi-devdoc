@@ -5,7 +5,9 @@ version = field("version")
 note = field("note")
 
 
-@canonical_source("Snapshot", filename="snapshot.md", merge_policy="forbidden", heading="identity")
+@canonical_source(
+    "Snapshot", filename="snapshot.md", merge_policy="forbidden", heading="identity"
+)
 class DOCUMENT:
     """Historical snapshot."""
 

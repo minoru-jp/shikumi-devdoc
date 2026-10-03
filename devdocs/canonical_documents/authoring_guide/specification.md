@@ -35,6 +35,7 @@ Specification root では原則として `@canonical_source(..., heading="identi
 from shikumi_devdoc.fields.specification import MUST, condition, level
 from shikumi_devdoc.norms.document import title
 
+
 class SPEC_001:
     """The implementation returns an error when the input is invalid."""
 

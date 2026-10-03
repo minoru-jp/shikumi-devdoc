@@ -4,7 +4,6 @@ from shikumi_devdoc.norms.document import field
 
 from .common import condition, detail, related
 
-
 level = field("level", str)
 
 MUST = "MUST"

@@ -1,15 +1,18 @@
 """API-reference authoring pattern."""
 
-from devdocs.canonical_sources.api_reference.fields import API_REFERENCE_PART as FIELDS_API
+from devdocs.canonical_sources.api_reference.fields import (
+    API_REFERENCE_PART as FIELDS_API,
+)
 from shikumi_devdoc.fields.common import related
 from shikumi_devdoc.norms.common import IGNORE, canonical_source, summary
 from shikumi_devdoc.norms.document import test_target_field, title
 
-
 api_example = test_target_field("API reference example")
 
 
-@summary("公開 API を name/kind/input/output/detail と lifecycle field で記述する方法。")
+@summary(
+    "公開 API を name/kind/input/output/detail と lifecycle field で記述する方法。"
+)
 @canonical_source(
     "Writing an API Reference",
     filename="api-reference.md",
@@ -25,12 +28,14 @@ class AUTHORING_GUIDE_PART:
         r"""
         Python API、HTTP API、command object など、利用者が個々の公開対象について名前、種別、入力、出力、詳細を調べる必要がある場合に作る。使用手順を教える tutorial ではなく、現在の公開 surface を確認する reference とする。
         """
+
         title @= "API Reference を作る場合"
 
     class SECTION_002:
         r"""
         API entry ごとに node を作り、表示名は `name` field へ置く。cross-reference される API node を持つ document では `@canonical_source(..., heading="identity")` を使用し、class identity に API 名の表記を同期させる必要がない場合は `API_NNN` のような opaque stable identity を使える。package や機能領域が大きい場合は document collection へ分ける。
         """
+
         title @= "API subject を node にする"
 
     class SECTION_003:
@@ -43,10 +48,12 @@ class AUTHORING_GUIDE_PART:
 
         入出力を文章だけに埋め込むより、一覧や差分で扱う価値がある場合に field として分離する。説明上の背景や例は prose に残してよい。
         """
+
         title @= "標準 field set を使う"
 
         api_example @= r'''
         from shikumi_devdoc.fields.api_reference import OPERATION, input, kind, name, output
+
 
         class API_001:
             """Process one request and return its result."""
@@ -64,4 +71,5 @@ class AUTHORING_GUIDE_PART:
 
         CHANGELOG は release-centered、lifecycle field は subject-centered であり、同じ変更事実が両方に現れても役割は異なる。
         """
+
         title @= "Lifecycle を対象のそばに置く"

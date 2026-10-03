@@ -62,3 +62,8 @@ The sdist must not require configuration used only for repository operations suc
 
 level: MUST NOT
 
+## DIST_011 PEP 561 typed-package marker
+
+To declare that its type information is available under PEP 561, the wheel and sdist must include the package `py.typed` marker originating from `src/shikumi_devdoc/py.typed`.
+
+level: MUST

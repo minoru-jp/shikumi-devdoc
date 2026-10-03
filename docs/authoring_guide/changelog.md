@@ -13,6 +13,7 @@ Use a node per release and select the needed fields from `shikumi_devdoc.fields.
 ```python
 from shikumi_devdoc.fields.changelog import added, fixed, version
 
+
 class V1_2_0:
     """Release 1.2.0."""
 

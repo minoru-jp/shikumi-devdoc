@@ -32,6 +32,7 @@ API entry ごとに node を作り、表示名は `name` field へ置く。cross
 ```python
 from shikumi_devdoc.fields.api_reference import OPERATION, input, kind, name, output
 
+
 class API_001:
     """Process one request and return its result."""
 

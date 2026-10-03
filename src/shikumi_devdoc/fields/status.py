@@ -2,7 +2,6 @@
 
 from .common import condition, kind, related
 
-
 GENERAL = "General"
 
 

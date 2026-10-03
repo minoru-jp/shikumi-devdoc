@@ -23,5 +23,6 @@ class TERMS:
 
         An implementation-only identifier.
         """
+
         glossary @= False
         preserve_spelling @= True

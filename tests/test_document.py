@@ -1,5 +1,7 @@
 import pytest
 
+from shikumi_devdoc.norms._document import document
+from shikumi_devdoc.realizers.document_markdown import MarkdownRealizer
 from tests.fixtures import (
     document_merge_string,
     document_multiple_terms,
@@ -8,9 +10,6 @@ from tests.fixtures import (
     document_source,
     plain_document_source,
 )
-from shikumi_devdoc.norms._document import document
-from shikumi_devdoc.realizers.document_markdown import MarkdownRealizer
-
 
 CONTEXT = {
     "PROJECT": {"name": "Example", "version": "0.1.0"},
@@ -27,7 +26,6 @@ def test_heading_fragment_contract_follows_rendered_heading_text() -> None:
     assert heading_fragment("CLI: --output_name") == "cli---output_name"
 
 
-
 def test_canonical_document_requires_explicit_heading_policy() -> None:
     from shikumi_devdoc.norms.common import canonical_source
 
@@ -38,8 +36,8 @@ def test_canonical_document_requires_explicit_heading_policy() -> None:
 
 
 def test_title_writer_is_assignment_only_and_supports_local_merge() -> None:
-    from tests.fixtures import document_title_merge
     from shikumi_devdoc.norms.document import title
+    from tests.fixtures import document_title_merge
 
     assert not callable(title)
 
@@ -70,15 +68,14 @@ def test_title_heading_document_root_remains_referenceable() -> None:
     result = document.validate(document_reference_title_root, placement=())
     assert result.is_valid, result.diagnostics
     rendered = {
-        item.filename: item.content
-        for item in MarkdownRealizer().realize(result.view)
+        item.filename: item.content for item in MarkdownRealizer().realize(result.view)
     }
     assert "related: [Narrative target](target-root.md)" in rendered["source-root.md"]
 
 
 def test_document_docstrings_are_cleandoc_normalized_before_semantic_view() -> None:
-    from tests.fixtures import document_indented_docstrings
     from shikumi_devdoc.norms._common import CanonicalContent
+    from tests.fixtures import document_indented_docstrings
 
     result = document.validate(document_indented_docstrings, placement=())
     assert result.is_valid, result.diagnostics
@@ -87,9 +84,9 @@ def test_document_docstrings_are_cleandoc_normalized_before_semantic_view() -> N
     assert by_subject[document_indented_docstrings.ROOT].values(CanonicalContent) == (
         "Root content.\n\n    Root relative indentation.",
     )
-    assert by_subject[document_indented_docstrings.ROOT.CHILD].values(CanonicalContent) == (
-        "Child content.\n\n    Child relative indentation.",
-    )
+    assert by_subject[document_indented_docstrings.ROOT.CHILD].values(
+        CanonicalContent
+    ) == ("Child content.\n\n    Child relative indentation.",)
 
 
 def test_document_with_vocabulary_and_context_renders_markdown() -> None:
@@ -169,7 +166,9 @@ def test_merge_bindings_are_local_to_each_document_node() -> None:
 
     check = MarkdownRealizer().check(result.view)
     assert not check.is_realizable
-    diagnostics = {(diagnostic.code, diagnostic.subject) for diagnostic in check.diagnostics}
+    diagnostics = {
+        (diagnostic.code, diagnostic.subject) for diagnostic in check.diagnostics
+    }
     assert (
         "markdown.document.placeholder.forbidden",
         document_reference_mismatch.TITLE_1.TITLE_2,
@@ -210,14 +209,18 @@ def test_markdown_check_warns_about_raw_headings_and_rejects_depth_over_six() ->
 
 
 def test_related_field_can_remain_source_only_under_ignore_policy() -> None:
+    from shikumi_devdoc.norms._document import DocumentField, FieldValue
     from tests.fixtures import document_related
     from tests.fixtures.document_related_targets import API_TARGET, SPEC_TARGET
-    from shikumi_devdoc.norms._document import DocumentField, FieldValue
 
     result = document.validate(document_related, placement=())
     assert result.is_valid, result.diagnostics
 
-    root = next(item for item in result.view.entities if item.subject is document_related.TITLE_1)
+    root = next(
+        item
+        for item in result.view.entities
+        if item.subject is document_related.TITLE_1
+    )
     related_values = [
         entry.value
         for entry in root.values(DocumentField)
@@ -257,14 +260,19 @@ def test_related_field_uses_normal_append_policy() -> None:
     assert "## API_TARGET" in target_rendered.content
     assert "<a id=" not in target_rendered.content
 
+
 def test_document_related_accepts_any_resolved_python_class_target() -> None:
+    from shikumi_devdoc.norms._document import DocumentField, FieldValue
     from tests.fixtures import document_related_plain
     from tests.fixtures.related_plain_target import PLAIN_TARGET
-    from shikumi_devdoc.norms._document import DocumentField, FieldValue
 
     result = document.validate(document_related_plain, placement=())
     assert result.is_valid, result.diagnostics
-    root = next(item for item in result.view.entities if item.subject is document_related_plain.TITLE_1)
+    root = next(
+        item
+        for item in result.view.entities
+        if item.subject is document_related_plain.TITLE_1
+    )
     related_values = [
         entry.value
         for entry in root.values(DocumentField)
@@ -317,7 +325,9 @@ def test_implicit_merge_reports_only_an_ambiguous_reference() -> None:
     }
 
 
-def test_implicit_merge_can_extend_to_module_identity_when_container_names_collide() -> None:
+def test_implicit_merge_can_extend_to_module_identity_when_container_names_collide() -> (
+    None
+):
     from tests.fixtures import document_module_qualified_terms
 
     result = document.validate(document_module_qualified_terms, placement=())
@@ -359,17 +369,18 @@ def test_reference_field_renders_same_document_heading_fragment_link() -> None:
     assert "related:" not in rendered.content
 
 
-def test_reference_field_uses_target_heading_fragment_without_requiring_joint_realization() -> None:
-    from tests.fixtures import document_reference_nested_source
-    from tests.fixtures import document_reference_nested_target
+def test_reference_field_uses_target_heading_fragment_without_requiring_joint_realization() -> (
+    None
+):
+    from tests.fixtures import (
+        document_reference_nested_source,
+        document_reference_nested_target,
+    )
 
     source_result = document.validate(document_reference_nested_source, placement=())
     assert source_result.is_valid, source_result.diagnostics
     source_rendered = MarkdownRealizer().realize(source_result.view)[0]
-    assert (
-        "related: [SPEC_050](runtime-targets.md#spec_050)"
-        in source_rendered.content
-    )
+    assert "related: [SPEC_050](runtime-targets.md#spec_050)" in source_rendered.content
     assert "SECTION_502.SPEC_050`" not in source_rendered.content
 
     target_result = document.validate(document_reference_nested_target, placement=())
@@ -379,7 +390,6 @@ def test_reference_field_uses_target_heading_fragment_without_requiring_joint_re
     assert "title: Runtime target resolution" in target_rendered.content
     assert "### SPEC_050" in target_rendered.content
     assert "<a id=" not in target_rendered.content
-
 
 
 def test_reference_field_uses_relative_logical_document_path() -> None:
@@ -394,7 +404,10 @@ def test_reference_field_uses_relative_logical_document_path() -> None:
         in rendered.content
     )
 
-def test_reference_field_distinguishes_document_identity_from_filename_equality() -> None:
+
+def test_reference_field_distinguishes_document_identity_from_filename_equality() -> (
+    None
+):
     from tests.fixtures import document_reference_same_filename_source
 
     result = document.validate(document_reference_same_filename_source, placement=())

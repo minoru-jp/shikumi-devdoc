@@ -146,16 +146,20 @@ shikumi-devdoc render index \
 
 `merge_policy` は `merge @= ...` による local merge と external context の許可範囲を `"all"` / `"local"` / `"external"` / `"forbidden"` で宣言する。同じ node に直接定義した field の template 参照は policy の対象外である。このリポジトリでは README は両方の差し込みを使うため `"all"`、Specification は local merge だけを使うため `"local"`、CHANGELOG はどちらも使わないため `"forbidden"` を指定する。これは文書種別そのものではなく、各 canonical source が採用する差し込み経路に合わせた設定である。旧 `placeholders` は 0.3.2 から非推奨である。
 
-## テスト
+## テストと静的解析
 
-sdist からテスト環境を再構築する場合は、テスト用 optional dependency をインストールする。
+sdist からテスト・静的解析環境を再構築する場合は、開発用 optional dependency をインストールする。
 
 ```bash
-python -m pip install '.[test]'
+python -m pip install '.[test,lint,typecheck]'
+ruff format --check .
+ruff check .
+basedpyright
+basedpyright -p tests/typing
 pytest
 ```
 
-`test` extra は `pytest>=8.0` を宣言する。pytest は通常利用時の必須依存には含めない。
+`test` extra は `pytest>=8.0`、`lint` extra は `ruff==0.16.10`、`typecheck` extra は `basedpyright==1.40.1` と `mypy==2.4.0` を宣言する。Ruff は Python 3.11 を target version とし、固定した Ruff 版の stable default lint rule set を baseline として format check と lint の両方を要求する。BasedPyright は package source と consumer contract を分離し、通常の `basedpyright` では `src/shikumi_devdoc` を Python 3.11 基準・Shikumi 本体と同じ診断方針で 0 errors / 0 warnings にする。`basedpyright -p tests/typing` は standard mode で専用 typing sample、`devdocs/canonical_sources`、`tests/examples` を consumer 利用コードとして検査し、同じく 0 errors / 0 warnings を要求する。mypy は canonical-source 向けに文書化した override recipe が成立し、`misc` 以外の診断を隠さないことだけを専用 script で確認する。いずれも通常利用時の必須依存には含めない。GitHub Actions ではこれらの静的解析、canonical document 同期、対応 Python と最低対応 Shikumi の test suite を reusable `checks.yml` に集約し、通常 CI と release workflow の双方から同じ品質ゲートを使用する。release artifact の build は checks 成功後だけ実行する。
 
 公開前の distribution verification は hosted CI に依存させず、ローカルで実行する。`build` frontend を利用可能にしたうえで次を実行し、wheel / sdist の内容、installed package、CLI、`pip check`、installed wheel を使った dogfood rendering を確認する。
 

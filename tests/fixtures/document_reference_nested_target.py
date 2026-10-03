@@ -4,10 +4,16 @@ from shikumi_devdoc.norms.common import canonical_source
 from shikumi_devdoc.norms.document import title
 
 
-@canonical_source("Runtime targets", filename="runtime-targets.md", merge_policy="local", heading="identity")
+@canonical_source(
+    "Runtime targets",
+    filename="runtime-targets.md",
+    merge_policy="local",
+    heading="identity",
+)
 class RUNTIME_TARGETS:
     class SECTION_502:
         title @= "Runtime target resolution"
+
         class SPEC_050:
             """Stable normative target."""
 

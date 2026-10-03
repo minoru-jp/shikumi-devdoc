@@ -1,18 +1,21 @@
 """Cross-cutting advanced authoring guidance."""
 
-from devdocs.canonical_sources.specification.document import SPECIFICATION_PART as DOCUMENT_SPEC
+from devdocs.canonical_sources.specification.document import (
+    SPECIFICATION_PART as DOCUMENT_SPEC,
+)
 from devdocs.canonical_sources.vocabulary.canonical import TERMS
 from shikumi_devdoc.fields.common import related
 from shikumi_devdoc.norms.common import IGNORE, canonical_source, merge, summary
 from shikumi_devdoc.norms.document import test_target_field, title
-
 
 indented_docstring_example = test_target_field("indented docstring example")
 section_identity_example = test_target_field("opaque section identity example")
 documented_snippet = test_target_field("documented snippet")
 
 
-@summary("目的別パターンで足りない場合に使う prose/field、identity、reference、context、code example の横断判断。")
+@summary(
+    "目的別パターンで足りない場合に使う prose/field、identity、reference、context、code example の横断判断。"
+)
 @canonical_source(
     "Advanced authoring decisions",
     filename="advanced-authoring.md",
@@ -30,6 +33,7 @@ class AUTHORING_GUIDE_PART:
 
         構造化できるものをすべて field にしない。`field`、`list_field`、`table_field`、`prose_field`、`reference_field` は必要な情報構造を分離するために使う。`test_target_field` は presentation のためではなく、通常のテストから直接参照したい literal text を正本上で独立させるために使う。
         """
+
         title @= "Prose と field を分ける"
 
         merge @= TERMS.TERM_007
@@ -46,6 +50,7 @@ class AUTHORING_GUIDE_PART:
 
         stable nested reference target が必要な document では `heading="identity"` を選ぶ。この場合 identity が見出しとなり、title は human-readable metadata として出力される。これは authoring convention であり identity の命名形式自体は validator が強制しない。Specification の `SPEC_NNN` など、目的文書に適した identity scheme を使ってよい。
         """
+
         title @= "Node identity と表示 title を分離する"
 
         section_identity_example @= r'''
@@ -53,6 +58,7 @@ class AUTHORING_GUIDE_PART:
         class GUIDE:
             class SECTION_017:
                 """Introductory text."""
+
                 title @= "Getting started"
         '''
         related @= (DOCUMENT_SPEC.DOC_001, DOCUMENT_SPEC.DOC_003)
@@ -67,6 +73,7 @@ class AUTHORING_GUIDE_PART:
         {{indented_docstring_example}}
         ```
         """
+
         title @= "Docstring は自然にインデントする"
 
         indented_docstring_example @= r'''
@@ -84,6 +91,7 @@ class AUTHORING_GUIDE_PART:
 
         merge を一般的な macro system として長い文章の断片化に使わない。docstring、`prose_field`、`title @= ...` は template-bearing content、通常の scalar/list/table/test target field value は literal content である。
         """
+
         title @= "Local reference は node 内に閉じる"
 
     class SECTION_005:
@@ -92,6 +100,7 @@ class AUTHORING_GUIDE_PART:
 
         `merge_policy` は同じ node に直接定義した field を制約せず、`merge @= ...` と external context という明示的な差し込み経路だけを制約する。`"all"` は両方、`"local"` は local merge のみ、`"external"` は external context のみを許可し、`"forbidden"` は両方を拒否する。`name @= value` に直接束縛された値はすべての policy で template から参照でき、Python 評価前の値の由来は追跡しない。
         """
+
         title @= "Realization context は変化してよい外部値だけに使う"
 
         merge @= TERMS.TERM_005
@@ -104,6 +113,7 @@ class AUTHORING_GUIDE_PART:
         {{documented_snippet}}
         ```
         """
+
         title @= "Code example は通常のテストで保護する"
 
         documented_snippet @= r'''
@@ -125,6 +135,7 @@ class AUTHORING_GUIDE_PART:
                 print("hello")
                 """
         '''
+
     class SECTION_007:
         r"""
         Python object 間の関係を公開 Markdown でも辿れる形にしたい場合は `reference_field()` を使う。標準 `related` はその convenience field である。canonical source には Markdown filename や fragment を書かず object relation を保持する。
@@ -133,5 +144,5 @@ class AUTHORING_GUIDE_PART:
 
         Markdown realizer は canonical source の出自から導出した source/target の canonical document logical path を相対化し、参照先 identity heading から導出した logical fragment と組み合わせて logical link を決定論的に生成する。明示 HTML anchor は追加しない。実際の publication layout や downstream Markdown renderer の fragment 規則は探索・推論・検証しない。通常は canonical document の logical topology と GitHub 互換の heading slug 規則を保てばそのまま有効なリンクになる。公開時に配置や fragment 規則が変わる場合は publication processing で realized link を修正する。
         """
-        title @= "Semantic reference と publication link を分離する"
 
+        title @= "Semantic reference と publication link を分離する"

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from shikumi import Diagnostic, RealizationCheck, Realizer, SemanticView
+from shikumi import Diagnostic, RealizationCheck, Realizer, SemanticView, ViewItem
 
 from shikumi_devdoc._placeholder_syntax import placeholder_keys
 from shikumi_devdoc.context import Context, UnknownContextKeyError
@@ -23,11 +23,12 @@ from shikumi_devdoc.norms._vocabulary import (
     TermName,
     VocabularyProfile,
 )
+
 from ._header_comment import markdown_header_comment
 from ._placeholders import PlaceholderResolver
 
 
-def _is_public_glossary_entry(item) -> bool:
+def _is_public_glossary_entry(item: ViewItem) -> bool:
     """Return the effective glossary-selection value for one vocabulary term."""
 
     values = item.values(Glossary)
@@ -37,9 +38,12 @@ def _is_public_glossary_entry(item) -> bool:
 class MarkdownRealizer(Realizer[str]):
     """Render a Vocabulary semantic view as Markdown glossary content."""
 
+    context: Context | Mapping[str, object] | None
+    header_comment: str | None
+
     def __init__(
         self,
-        context: Context | Mapping | None = None,
+        context: Context | Mapping[str, object] | None = None,
         *,
         header_comment: str | None = None,
     ) -> None:
@@ -52,7 +56,7 @@ class MarkdownRealizer(Realizer[str]):
         text: str,
         *,
         header_comment: str | None = None,
-    ) -> "MarkdownRealizer":
+    ) -> MarkdownRealizer:
         return cls(Context.from_json(text), header_comment=header_comment)
 
     def check(self, view: SemanticView) -> RealizationCheck:
@@ -131,7 +135,7 @@ class MarkdownRealizer(Realizer[str]):
                         )
                         continue
                     try:
-                        resolver.resolve(key)
+                        _ = resolver.resolve(key)
                     except UnknownContextKeyError:
                         diagnostics.append(
                             Diagnostic(
@@ -169,7 +173,9 @@ class MarkdownRealizer(Realizer[str]):
             if entry.values(Deprecated) == (True,):
                 replacements = entry.values(Replacement)
                 if replacements:
-                    lines.extend([f"> **Deprecated.** Use {replacements[0]} instead.", ""])
+                    lines.extend(
+                        [f"> **Deprecated.** Use {replacements[0]} instead.", ""]
+                    )
                 else:
                     lines.extend(["> **Deprecated.**", ""])
         return "\n".join(lines).rstrip() + "\n"

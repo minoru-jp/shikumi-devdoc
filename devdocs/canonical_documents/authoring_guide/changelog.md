@@ -28,6 +28,7 @@ release ごとに node を作り、`shikumi_devdoc.fields.changelog` の `versio
 ```python
 from shikumi_devdoc.fields.changelog import added, fixed, version
 
+
 class V1_2_0:
     """Release 1.2.0."""
 

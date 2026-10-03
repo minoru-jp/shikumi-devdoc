@@ -1,17 +1,22 @@
 """Glossary and Vocabulary authoring pattern."""
 
-from devdocs.canonical_sources.specification.vocabulary import SPECIFICATION_PART as VOCABULARY_SPEC
+from devdocs.canonical_sources.specification.vocabulary import (
+    SPECIFICATION_PART as VOCABULARY_SPEC,
+)
 from shikumi_devdoc.fields.common import related
 from shikumi_devdoc.norms.common import IGNORE, canonical_source, summary
 from shikumi_devdoc.norms.document import test_target_field, title
 
-
 vocabulary_definition_example = test_target_field("Vocabulary definition example")
 vocabulary_reference_example = test_target_field("Vocabulary reference example")
-external_vocabulary_merge_example = test_target_field("external Vocabulary merge example")
+external_vocabulary_merge_example = test_target_field(
+    "external Vocabulary merge example"
+)
 
 
-@summary("共有概念を Vocabulary として定義し、必要な term だけを各 document へ merge する方法。")
+@summary(
+    "共有概念を Vocabulary として定義し、必要な term だけを各 document へ merge する方法。"
+)
 @canonical_source(
     "Writing a Glossary / Vocabulary",
     filename="glossary.md",
@@ -29,6 +34,7 @@ class AUTHORING_GUIDE_PART:
 
         Vocabulary term は既定で Glossary の公開対象になる。内部用 term など公開したくないものだけ `glossary @= False` を明示する。`glossary @= True` は既定値と同じなので通常は書かない。
         """
+
         title @= "Glossary / Vocabulary を作る場合"
 
     class SECTION_002:
@@ -39,6 +45,7 @@ class AUTHORING_GUIDE_PART:
         {{vocabulary_definition_example}}
         ```
         """
+
         title @= "Stable term identity を定義する"
 
         vocabulary_definition_example @= r'''
@@ -47,7 +54,12 @@ class AUTHORING_GUIDE_PART:
 
 
         @vocabulary
-        @canonical_source("Project Vocabulary", filename="GLOSSARY.md", merge_policy="local", heading="identity")
+        @canonical_source(
+            "Project Vocabulary",
+            filename="GLOSSARY.md",
+            merge_policy="local",
+            heading="identity",
+        )
         class TERMS:
             class TERM_001:
                 """
@@ -66,6 +78,7 @@ class AUTHORING_GUIDE_PART:
         {{vocabulary_reference_example}}
         ```
         """
+
         title @= "利用する node で直接 merge する"
 
         vocabulary_reference_example @= r'''
@@ -85,6 +98,7 @@ class AUTHORING_GUIDE_PART:
 
         同じ短い `TERM_001` が衝突した場合だけ、より長い Python identity や明示 alias で区別する。最初から完全修飾名を多用しない。
         """
+
         title @= "外部 Vocabulary も同じように参照する"
 
         external_vocabulary_merge_example @= "merge @= FrameworkVocabulary.TERM_001"

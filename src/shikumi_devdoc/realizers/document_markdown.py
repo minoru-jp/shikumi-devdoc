@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from collections import OrderedDict
-from collections.abc import Mapping
-from enum import Enum
-from inspect import cleandoc
 import posixpath
 import sys
+from collections import OrderedDict
+from collections.abc import Iterable, Mapping
+from enum import Enum
+from inspect import cleandoc
+from typing import cast
 from urllib.parse import quote
 
 from shikumi import (
@@ -17,7 +18,6 @@ from shikumi import (
     Realizer,
     SemanticView,
     ViewItem,
-    information_of,
 )
 
 from shikumi_devdoc._placeholder_syntax import expand_placeholders, placeholder_keys
@@ -33,20 +33,22 @@ from shikumi_devdoc.norms._common import (
     CanonicalTitle,
     CanonicalUnreferencedFields,
     HeadingPolicy,
-    MergeBinding,
     MergePolicy,
+    UnreferencedFieldPolicy,
+    attached_information_values,
 )
 from shikumi_devdoc.norms._document import (
     DocumentField,
     FieldPresentation,
     FieldValue,
     Title,
-    document_node_identity,
-    _FieldReference,
     _field_values_for_reference,
+    _FieldReference,
+    document_node_identity,
     template_reference_bindings,
 )
 from shikumi_devdoc.norms._vocabulary import vocabulary_term_name
+
 from ._document_collection import canonical_documents, ordered_canonical_documents
 from ._header_comment import markdown_header_comment
 from ._markdown_heading import heading_depth, heading_fragment, raw_heading_lines
@@ -57,9 +59,12 @@ from .markdown_document import MarkdownDocument
 class MarkdownRealizer(Realizer[tuple[MarkdownDocument, ...]]):
     """Render canonical document nodes and fields without domain-specific semantics."""
 
+    context: Context | Mapping[str, object] | None
+    header_comment: str | None
+
     def __init__(
         self,
-        context: Context | Mapping | None = None,
+        context: Context | Mapping[str, object] | None = None,
         *,
         header_comment: str | None = None,
     ) -> None:
@@ -72,7 +77,7 @@ class MarkdownRealizer(Realizer[tuple[MarkdownDocument, ...]]):
         text: str,
         *,
         header_comment: str | None = None,
-    ) -> "MarkdownRealizer":
+    ) -> MarkdownRealizer:
         return cls(Context.from_json(text), header_comment=header_comment)
 
     @staticmethod
@@ -90,7 +95,9 @@ class MarkdownRealizer(Realizer[tuple[MarkdownDocument, ...]]):
             return self.header_comment.replace("{canonical_source}", sources[0])
         return self.header_comment
 
-    def _document_members(self, view: SemanticView, document: ViewItem) -> list[ViewItem]:
+    def _document_members(
+        self, view: SemanticView, document: ViewItem
+    ) -> list[ViewItem]:
         members = [document]
 
         def visit(subject: object) -> None:
@@ -146,14 +153,6 @@ class MarkdownRealizer(Realizer[tuple[MarkdownDocument, ...]]):
             return f"{module}.{qualname}"
         return qualname or repr(value)
 
-    @staticmethod
-    def _information_values(subject: object, information_type) -> tuple[object, ...]:
-        return tuple(
-            record.value
-            for record in information_of(subject)
-            if record.type is information_type
-        )
-
     @classmethod
     def _canonical_root_for(cls, subject: type[object]) -> type[object] | None:
         module_name = getattr(subject, "__module__", "")
@@ -170,7 +169,7 @@ class MarkdownRealizer(Realizer[tuple[MarkdownDocument, ...]]):
             if current is None:
                 return None
             if isinstance(current, type):
-                titles = cls._information_values(current, CanonicalTitle)
+                titles = attached_information_values(current, CanonicalTitle)
                 if len(titles) == 1:
                     root = current
         return root
@@ -186,20 +185,20 @@ class MarkdownRealizer(Realizer[tuple[MarkdownDocument, ...]]):
         root = cls._canonical_root_for(target)
         if root is None:
             return None
-        paths = cls._information_values(root, CanonicalDocumentPath)
+        paths = attached_information_values(root, CanonicalDocumentPath)
         if len(paths) != 1 or not isinstance(paths[0], str):
             return None
         document_path = paths[0]
 
         if target is root:
-            titles = cls._information_values(root, CanonicalTitle)
+            titles = attached_information_values(root, CanonicalTitle)
             if len(titles) != 1 or not isinstance(titles[0], str):
                 return None
             return root, document_path, resolver.expand(titles[0]), None
 
         if document_node_identity(target) is None:
             return None
-        policies = cls._information_values(root, CanonicalHeadingPolicy)
+        policies = attached_information_values(root, CanonicalHeadingPolicy)
         if len(policies) != 1 or policies[0] is not HeadingPolicy.IDENTITY:
             return None
         heading = target.__name__
@@ -220,15 +219,17 @@ class MarkdownRealizer(Realizer[tuple[MarkdownDocument, ...]]):
         source_document: object,
     ) -> str:
         if isinstance(value, (tuple, list)):
+            items = cast(Iterable[object], value)
             return ", ".join(
                 self._render_reference_value(
                     item,
                     resolver,
                     source_document=source_document,
                 )
-                for item in value
+                for item in items
             )
         if isinstance(value, set):
+            items = cast(Iterable[object], value)
             return ", ".join(
                 sorted(
                     self._render_reference_value(
@@ -236,7 +237,7 @@ class MarkdownRealizer(Realizer[tuple[MarkdownDocument, ...]]):
                         resolver,
                         source_document=source_document,
                     )
-                    for item in value
+                    for item in items
                 )
             )
 
@@ -247,14 +248,18 @@ class MarkdownRealizer(Realizer[tuple[MarkdownDocument, ...]]):
             return self._render_literal_value(value)
 
         target_root, target_path, label, anchor = metadata
-        source_paths = self._information_values(source_document, CanonicalDocumentPath)
+        source_paths = attached_information_values(
+            source_document, CanonicalDocumentPath
+        )
         if len(source_paths) != 1 or not isinstance(source_paths[0], str):
             if isinstance(value, type):
                 return f"`{self._python_identity(value)}`"
             return self._render_literal_value(value)
         source_path = source_paths[0]
 
-        if target_root is source_document and anchor is not None:
+        # Semantic metadata exposes the root as ``object``; runtime class identity
+        # is nevertheless the intended same-document test here.
+        if target_root is source_document and anchor is not None:  # pyright: ignore[reportUnnecessaryComparison]
             href = f"#{quote(anchor, safe='._-~')}"
         else:
             source_directory = posixpath.dirname(source_path) or "."
@@ -274,11 +279,13 @@ class MarkdownRealizer(Realizer[tuple[MarkdownDocument, ...]]):
         if isinstance(value, type):
             return f"`{self._python_identity(value)}`"
         if isinstance(value, Enum):
-            return str(value.value)
+            return str(cast(object, value.value))
         if isinstance(value, (tuple, list)):
-            return ", ".join(self._render_literal_value(item) for item in value)
+            items = cast(Iterable[object], value)
+            return ", ".join(self._render_literal_value(item) for item in items)
         if isinstance(value, set):
-            return ", ".join(sorted(self._render_literal_value(item) for item in value))
+            items = cast(Iterable[object], value)
+            return ", ".join(sorted(self._render_literal_value(item) for item in items))
         if value is None:
             return "None"
         return str(value)
@@ -289,7 +296,6 @@ class MarkdownRealizer(Realizer[tuple[MarkdownDocument, ...]]):
         rendered = [f"- {rows[0]}"]
         rendered.extend(f"  {row}" if row else "" for row in rows[1:])
         return rendered
-
 
     @staticmethod
     def _table_cell(value: str) -> str:
@@ -398,17 +404,23 @@ class MarkdownRealizer(Realizer[tuple[MarkdownDocument, ...]]):
         if presentation is FieldPresentation.LIST:
             lines: list[str] = []
             for entry in values:
-                lines.extend(self._render_list_item(self._render_literal_value(entry.value)))
+                lines.extend(
+                    self._render_list_item(self._render_literal_value(entry.value))
+                )
             return "\n".join(lines)
 
         if presentation is FieldPresentation.TEST_TARGET:
-            rendered = [cleandoc(self._render_literal_value(entry.value)) for entry in values]
+            rendered = [
+                cleandoc(self._render_literal_value(entry.value)) for entry in values
+            ]
             return "\n\n".join(rendered)
 
         if presentation is FieldPresentation.TABLE:
             columns = values[0].columns
             lines = [
-                "| " + " | ".join(self._table_cell(column) for column in columns) + " |",
+                "| "
+                + " | ".join(self._table_cell(column) for column in columns)
+                + " |",
                 "| " + " | ".join("---" for _ in columns) + " |",
             ]
             for entry in values:
@@ -417,7 +429,7 @@ class MarkdownRealizer(Realizer[tuple[MarkdownDocument, ...]]):
                     continue
                 cells = [
                     self._table_cell(self._render_literal_value(cell))
-                    for cell in row
+                    for cell in cast(Iterable[object], row)
                 ]
                 lines.append("| " + " | ".join(cells) + " |")
             return "\n".join(lines)
@@ -463,7 +475,10 @@ class MarkdownRealizer(Realizer[tuple[MarkdownDocument, ...]]):
         )
         presentation = values[0].presentation
 
-        if presentation in {FieldPresentation.INLINE, FieldPresentation.REFERENCE} and "\n" not in content:
+        if (
+            presentation in {FieldPresentation.INLINE, FieldPresentation.REFERENCE}
+            and "\n" not in content
+        ):
             lines.extend([f"{name}: {content}", ""])
             return
 
@@ -481,8 +496,12 @@ class MarkdownRealizer(Realizer[tuple[MarkdownDocument, ...]]):
 
         for _, values in grouped:
             for entry in values:
-                if entry.presentation is FieldPresentation.PROSE and isinstance(entry.value, str):
-                    suppressed.update(self._referenced_field_bindings(item, entry.value))
+                if entry.presentation is FieldPresentation.PROSE and isinstance(
+                    entry.value, str
+                ):
+                    suppressed.update(
+                        self._referenced_field_bindings(item, entry.value)
+                    )
 
         return [(name, values) for name, values in grouped if name not in suppressed]
 
@@ -584,7 +603,7 @@ class MarkdownRealizer(Realizer[tuple[MarkdownDocument, ...]]):
                             )
                             continue
                         try:
-                            resolver.resolve(key)
+                            _ = resolver.resolve(key)
                         except UnknownContextKeyError:
                             diagnostics.append(
                                 Diagnostic(
@@ -650,17 +669,21 @@ class MarkdownRealizer(Realizer[tuple[MarkdownDocument, ...]]):
         resolver: PlaceholderResolver,
         *,
         depth: int,
-        field_policy,
+        field_policy: UnreferencedFieldPolicy,
         heading_policy: HeadingPolicy,
         lines: list[str],
         source_filename: str,
         source_document: object,
     ) -> None:
-        lines.extend([
-            f"{'#' * depth} "
-            f"{self._node_title(item, resolver, heading_policy=heading_policy, source_filename=source_filename, source_document=source_document)}",
-            "",
-        ])
+        lines.extend(
+            [
+                (
+                    f"{'#' * depth} "
+                    f"{self._node_title(item, resolver, heading_policy=heading_policy, source_filename=source_filename, source_document=source_document)}"
+                ),
+                "",
+            ]
+        )
         bodies = item.values(CanonicalContent)
         body = bodies[0] if len(bodies) == 1 else ""
         if body:

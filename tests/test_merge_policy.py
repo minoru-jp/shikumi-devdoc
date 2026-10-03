@@ -1,8 +1,8 @@
 import os
-from pathlib import Path
 import subprocess
 import sys
 import warnings
+from pathlib import Path
 
 import pytest
 from shikumi import information_of
@@ -11,7 +11,6 @@ from shikumi_devdoc.norms._common import CanonicalMergePolicy, MergePolicy
 from shikumi_devdoc.norms.common import canonical_source
 from shikumi_devdoc.norms.document import system
 from shikumi_devdoc.realizers.document_markdown import MarkdownRealizer
-
 
 CONTEXT = {"PROJECT": {"name": "Example", "version": "1.2.3"}}
 
@@ -29,7 +28,9 @@ def _policy(subject) -> MergePolicy:
 def test_default_merge_policy_is_all_without_deprecation_warning() -> None:
     with warnings.catch_warnings(record=True) as recorded:
         warnings.simplefilter("always")
-        decorator = canonical_source("Default", filename="default.md", heading="identity")
+        decorator = canonical_source(
+            "Default", filename="default.md", heading="identity"
+        )
 
         @decorator
         class DOCUMENT:
@@ -40,7 +41,9 @@ def test_default_merge_policy_is_all_without_deprecation_warning() -> None:
 
 
 def test_deprecated_placeholders_true_maps_to_all() -> None:
-    with pytest.warns(DeprecationWarning, match=r'placeholders=True.*merge_policy="all"'):
+    with pytest.warns(
+        DeprecationWarning, match=r'placeholders=True.*merge_policy="all"'
+    ):
         decorator = canonical_source(
             "Legacy all",
             filename="legacy-all.md",
@@ -48,15 +51,17 @@ def test_deprecated_placeholders_true_maps_to_all() -> None:
             heading="identity",
         )
 
-        @decorator
-        class DOCUMENT:
-            """Legacy policy."""
+    @decorator
+    class DOCUMENT:
+        """Legacy policy."""
 
     assert _policy(DOCUMENT) is MergePolicy.ALL
 
 
 def test_deprecated_placeholders_false_maps_to_local() -> None:
-    with pytest.warns(DeprecationWarning, match=r'placeholders=False.*merge_policy="local"'):
+    with pytest.warns(
+        DeprecationWarning, match=r'placeholders=False.*merge_policy="local"'
+    ):
         decorator = canonical_source(
             "Legacy local",
             filename="legacy-local.md",
@@ -64,9 +69,9 @@ def test_deprecated_placeholders_false_maps_to_local() -> None:
             heading="identity",
         )
 
-        @decorator
-        class DOCUMENT:
-            """Legacy policy."""
+    @decorator
+    class DOCUMENT:
+        """Legacy policy."""
 
     assert _policy(DOCUMENT) is MergePolicy.LOCAL
 
@@ -120,7 +125,9 @@ def test_local_policy_allows_local_but_forbids_external_merge() -> None:
     assert result.is_valid, result.diagnostics
     check = MarkdownRealizer(CONTEXT).check(result.view)
     assert not check.is_realizable
-    assert "markdown.document.placeholder.forbidden" in {d.code for d in check.diagnostics}
+    assert "markdown.document.placeholder.forbidden" in {
+        d.code for d in check.diagnostics
+    }
 
 
 def test_external_policy_allows_external_merge() -> None:
@@ -195,7 +202,9 @@ def test_forbidden_policy_rejects_external_merge() -> None:
     assert result.is_valid, result.diagnostics
     check = MarkdownRealizer(CONTEXT).check(result.view)
     assert not check.is_realizable
-    assert "markdown.document.placeholder.forbidden" in {d.code for d in check.diagnostics}
+    assert "markdown.document.placeholder.forbidden" in {
+        d.code for d in check.diagnostics
+    }
 
 
 def test_cli_surfaces_deprecated_placeholders_warning(tmp_path) -> None:

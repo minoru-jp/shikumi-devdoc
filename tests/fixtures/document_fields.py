@@ -1,10 +1,10 @@
 from shikumi_devdoc.norms.common import APPEND, IGNORE, canonical_source, merge
 from shikumi_devdoc.norms.document import (
-    test_target_field,
     field,
     list_field,
     prose_field,
     table_field,
+    test_target_field,
 )
 
 status_writer = field("status", str)
@@ -27,8 +27,8 @@ hidden = field("hidden", str)
 class FIELD_TEMPLATES:
     r"""{{summary}}
 
-External value: {{PROJECT.name}}.
-"""
+    External value: {{PROJECT.name}}.
+    """
 
     status_value @= "stable {{PROJECT.name}}"
     summary @= r"Status: {{status}}. Literal marker: \{{changes}}."

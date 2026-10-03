@@ -7,7 +7,6 @@ import sys
 import tempfile
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 CANONICAL_DOCUMENTS = ROOT / "devdocs/canonical_documents"
 CONTEXT_FILE = ROOT / "devdocs/config/context.json"
@@ -162,7 +161,11 @@ def _check(generated: Path) -> None:
 
     missing = sorted(expected.keys() - actual.keys())
     extra = sorted(actual.keys() - expected.keys())
-    changed = sorted(path for path in expected.keys() & actual.keys() if expected[path] != actual[path])
+    changed = sorted(
+        path
+        for path in expected.keys() & actual.keys()
+        if expected[path] != actual[path]
+    )
 
     if not (missing or extra or changed):
         print("canonical documents are up to date")
@@ -185,7 +188,9 @@ def _check(generated: Path) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Render this repository's canonical documents.")
+    parser = argparse.ArgumentParser(
+        description="Render this repository's canonical documents."
+    )
     parser.add_argument(
         "--check",
         action="store_true",

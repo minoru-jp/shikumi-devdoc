@@ -15,9 +15,10 @@ class PlaceholderResolver:
     falling back to this external resolver.
     """
 
-    __slots__ = ("context",)
+    __slots__: tuple[str, ...] = ("context",)
+    context: Context
 
-    def __init__(self, context: Context | Mapping | None = None) -> None:
+    def __init__(self, context: Context | Mapping[str, object] | None = None) -> None:
         self.context = normalize_context(context)
 
     def resolve(self, key: str) -> str:
@@ -27,7 +28,7 @@ class PlaceholderResolver:
         missing: list[str] = []
         for key in placeholder_keys(text):
             try:
-                self.resolve(key)
+                _ = self.resolve(key)
             except UnknownContextKeyError:
                 if key not in missing:
                     missing.append(key)

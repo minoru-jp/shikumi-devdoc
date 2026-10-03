@@ -2,18 +2,36 @@ import shikumi_devdoc
 from shikumi_devdoc import Context, fields, norms, realizers
 from shikumi_devdoc.fields import (
     api_reference as api_reference_fields,
+)
+from shikumi_devdoc.fields import (
     changelog as changelog_fields,
+)
+from shikumi_devdoc.fields import (
     common as common_fields,
+)
+from shikumi_devdoc.fields import (
     lifecycle as lifecycle_fields,
+)
+from shikumi_devdoc.fields import (
     specification as specification_fields,
+)
+from shikumi_devdoc.fields import (
     status as status_fields,
 )
 from shikumi_devdoc.norms import common, document, vocabulary
 from shikumi_devdoc.realizers import (
     common as common_realizers,
+)
+from shikumi_devdoc.realizers import (
     document as document_realizers,
+)
+from shikumi_devdoc.realizers import (
     index as index_realizers,
+)
+from shikumi_devdoc.realizers import (
     translation as translation_realizers,
+)
+from shikumi_devdoc.realizers import (
     vocabulary as vocabulary_realizers,
 )
 
@@ -32,8 +50,6 @@ def test_top_level_public_api_is_small_and_namespaced() -> None:
         "SpecificationMarkdownRealizer",
     ):
         assert not hasattr(shikumi_devdoc, old_flat_name)
-
-
 
 
 def test_standard_fields_public_api_is_namespaced_and_generic() -> None:

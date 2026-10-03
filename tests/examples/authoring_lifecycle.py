@@ -1,4 +1,9 @@
-from shikumi_devdoc.fields.lifecycle import deprecated, introduced, migration, replacement
+from shikumi_devdoc.fields.lifecycle import (
+    deprecated,
+    introduced,
+    migration,
+    replacement,
+)
 from shikumi_devdoc.norms.common import APPEND, canonical_source
 
 

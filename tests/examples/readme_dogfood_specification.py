@@ -19,4 +19,6 @@ class SPECIFICATION_PART:
         merge @= TERMS.TERM_006
         title @= "Class-derived document-node identity"
         level @= MUST
+
+
 # DOC-SNIPPET readme-dogfood-specification END

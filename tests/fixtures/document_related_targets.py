@@ -3,7 +3,9 @@
 from shikumi_devdoc.norms.common import canonical_source
 
 
-@canonical_source("Targets", filename="targets.md", merge_policy="local", heading="identity")
+@canonical_source(
+    "Targets", filename="targets.md", merge_policy="local", heading="identity"
+)
 class TARGETS:
     class SPEC_TARGET:
         """A document node referenced by another canonical document."""

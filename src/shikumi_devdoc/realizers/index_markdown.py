@@ -5,7 +5,14 @@ from __future__ import annotations
 from collections.abc import Mapping
 from urllib.parse import quote
 
-from shikumi import Diagnostic, RealizationCheck, Realizer, SemanticView, StructuralKind
+from shikumi import (
+    Diagnostic,
+    RealizationCheck,
+    Realizer,
+    SemanticView,
+    StructuralKind,
+    ViewItem,
+)
 
 from shikumi_devdoc._placeholder_syntax import placeholder_keys
 from shikumi_devdoc.context import Context, UnknownContextKeyError
@@ -18,6 +25,7 @@ from shikumi_devdoc.norms._common import (
 )
 from shikumi_devdoc.norms._document import template_reference_bindings
 from shikumi_devdoc.norms._partitioned import validate_filename
+
 from ._document_collection import canonical_documents, ordered_canonical_documents
 from ._header_comment import markdown_header_comment
 from ._placeholders import PlaceholderResolver
@@ -27,16 +35,22 @@ from .markdown_document import MarkdownDocument
 class IndexMarkdownRealizer(Realizer[MarkdownDocument]):
     """Render one collection index from a package-level canonical-document view."""
 
+    context: Context | Mapping[str, object] | None
+    title: str
+    filename: str
+    header_comment: str | None
+
     def __init__(
         self,
-        context: Context | Mapping | None = None,
+        context: Context | Mapping[str, object] | None = None,
         *,
         title: str = "Index",
         filename: str = "INDEX.md",
         header_comment: str | None = None,
     ) -> None:
         if not isinstance(title, str):
-            raise TypeError("index title must be a string")
+            # Preserve runtime validation for callers that do not use static typing.
+            raise TypeError("index title must be a string")  # pyright: ignore[reportUnreachable]
         if not title.strip():
             raise ValueError("index title must be non-empty")
         self.context = context
@@ -48,7 +62,7 @@ class IndexMarkdownRealizer(Realizer[MarkdownDocument]):
         return PlaceholderResolver(self.context)
 
     @staticmethod
-    def _local_reference_names(document) -> set[str]:
+    def _local_reference_names(document: ViewItem) -> set[str]:
         bindings, ambiguous = template_reference_bindings(document)
         return set(bindings) | set(ambiguous)
 
@@ -88,7 +102,7 @@ class IndexMarkdownRealizer(Realizer[MarkdownDocument]):
 
         for key in placeholder_keys(self.title):
             try:
-                resolver.resolve(key)
+                _ = resolver.resolve(key)
             except UnknownContextKeyError:
                 diagnostics.append(
                     Diagnostic(
@@ -100,7 +114,10 @@ class IndexMarkdownRealizer(Realizer[MarkdownDocument]):
 
         for document in documents:
             filenames = document.values(CanonicalFilename)
-            if len(filenames) == 1 and filenames[0].casefold() == self.filename.casefold():
+            if (
+                len(filenames) == 1
+                and filenames[0].casefold() == self.filename.casefold()
+            ):
                 diagnostics.append(
                     Diagnostic(
                         f"index filename {self.filename!r} collides with a canonical document output",
@@ -151,7 +168,7 @@ class IndexMarkdownRealizer(Realizer[MarkdownDocument]):
                         )
                         continue
                     try:
-                        resolver.resolve(key)
+                        _ = resolver.resolve(key)
                     except UnknownContextKeyError:
                         diagnostics.append(
                             Diagnostic(

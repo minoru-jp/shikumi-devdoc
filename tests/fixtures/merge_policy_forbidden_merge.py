@@ -1,5 +1,4 @@
 from shikumi_devdoc.norms.common import canonical_source, merge
-from shikumi_devdoc.norms.document import system
 
 
 @canonical_source(

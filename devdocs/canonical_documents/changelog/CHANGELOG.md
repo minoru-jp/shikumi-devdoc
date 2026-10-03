@@ -17,6 +17,34 @@ Canonical source は `devdocs/canonical_sources/changelog/canonical.py` です�
 
 `shikumi-devdoc` の versioned change history を記録する。公開されなかった開発 milestone はその旨を明記する。
 
+## V0_3_5
+
+Ruff と BasedPyright を開発・release の共通品質ゲートとして導入し、実行時動作を変えずに package 実装と Pyright 系 consumer から見た DSL の静的解析を clean にした。
+
+version: 0.3.5
+
+Added:
+
+- `lint` optional dependency として `ruff==0.16.10`、`typecheck` optional dependency として `basedpyright==1.40.1` と `mypy==2.4.0` を追加した。いずれも通常利用時の runtime dependency には含めない。mypy は package 全体を 0-error とする release contract ではなく、canonical-source 向けの documented override recipe を検証するために使用する。
+- PEP 561 の `py.typed` marker を package に追加し、wheel / sdist と installed wheel の distribution verification でその同梱を確認するようにした。
+- GitHub Actions の品質・テスト検証を reusable `checks.yml` に集約した。通常 CI と release workflow の双方が同じ checks を使用し、release は checks 成功を build の必須条件とするため、Ruff format / lint、BasedPyright、documented mypy override recipe、canonical document 同期、対応 Python と最低対応 Shikumi の test suite を通らない revision は PyPI publish へ進まない。
+- `tests/typing` に consumer-side typing contract を追加した。専用の authoring contract に加えて `devdocs/canonical_sources` と `tests/examples` を BasedPyright standard mode で検査し、field / merge の反復 `@=` を含む実際の DSL 利用が BasedPyright / Pyright の型モデルで 0 errors / 0 warnings であることを CI と release の共通品質ゲートで確認する。
+
+Changed:
+
+- `ruff check .` の既存指摘を解消した。import の順序・未使用 import、型注釈、`__slots__` / `__all__` の順序、pytest の warning assertion などを静的検査に適合させ、意味上必要な空 docstring と不正な notice TOML に対する `ValueError` は意図を明示した局所的な lint 例外として保持した。公開 API と実行時の契約は変更しない。
+- Ruff formatter を repository 全体へ適用し、`ruff format --check .` を共通品質ゲートへ追加した。formatting は構文上の表記だけを統一し、公開 API と実行時動作は変更しない。
+- Ruff の `target-version = "py311"` と stable default lint baseline を `pyproject.toml` に明示し、`.gitattributes` で Python・TOML・YAML・Markdown・JSON の LF 改行を固定した。
+- 静的解析対応で導入されていた可読性上の workaround を整理した。同一 document root の判定は `id(...)` 比較ではなく Python の `is` で表し、merge binding は実際に返す concrete binding 型を注釈する。runtime validation のため残す BasedPyright 局所抑制には理由を隣接記述し、内部 helper は runtime contract に合わせた型へ広げて不要な抑制を削除した。
+- CLI の document / index / glossary に重複していた realizer check を共通化し、`--index-title` の誤用を module import より前に検証するよう整理した。`render glossary` の正常系と document / glossary での `--index-title` 誤用を pytest で直接回帰検証する。
+- BasedPyright で検出されていた 13 件の error と 645 件の warning を解消した。Markdown realizer の context mapping、heading information type、translation-source wrapper の artifact type を concrete generic 型として表現し、CLI は render kind ごとの realizer と成果物型の対応を制御フロー上で保持するよう整理した。SemanticView / ViewItem を受け渡す validator・helper、動的 information lookup、class attribute、意図的に破棄する戻り値などの型境界を明示し、Unknown の連鎖を根から解消した。pytest 用 `__test__` marker と diagnostic source location も実行時動作を維持したまま型検査に適合させた。
+- BasedPyright の設定を Shikumi 本体の品質方針に揃え、`src/shikumi_devdoc` を Python 3.11 基準で検査する。`reportUnnecessaryIsInstance`、`reportImplicitStringConcatenation`、`reportExplicitAny`、`reportPrivateUsage`、`reportImplicitOverride` は同じ方針で無効化し、それ以外は 0 errors / 0 warnings を CI で要求する。静的型だけでは表現できない runtime defensive check は、意味を保持するため理由を限定した局所的な `pyright: ignore` として残す。
+- canonical source の `name @= value` は Shikumi core が強制する記法ではなく、`shikumi-devdoc` が可読性を重視して選択している authoring style であることを明記した。mypy で canonical source を検査する場合の package-level `misc` override とその診断範囲を STATUS に記録し、推奨設定を専用 recipe check で検証するようにした。
+
+Fixed:
+
+- BasedPyright / Pyright の consumer から、`FieldWriter.__imatmul__` と `MergeWriter.__imatmul__` の戻り値が `object` と見えて反復 `@=` が型エラーになる問題を修正した。各 writer は実際に返す temporary binding 型を正確に注釈し、field binding の identity 維持や merge value の正規化タイミングを含む runtime behavior は変更しない。最低対応 Shikumi も `>=0.2.0` のまま維持する。
+
 ## V0_3_4
 
 README を実際の利用像とドッグフーディング中心に再構成し、`merge_policy` の責務を明示的な差し込み経路の制約へ絞り込んだ。

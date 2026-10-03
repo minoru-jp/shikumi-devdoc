@@ -1,14 +1,22 @@
 """CLI specification part."""
 
-from shikumi_devdoc.fields.specification import MUST, level, related
+from devdocs.canonical_sources.specification.specification import (
+    SPECIFICATION_PART as SPECIFICATION_SPEC,
+)
 from devdocs.canonical_sources.vocabulary.canonical import TERMS
+from shikumi_devdoc.fields.specification import MUST, level, related
 from shikumi_devdoc.norms.common import canonical_source, merge, summary
 from shikumi_devdoc.norms.document import title
-from devdocs.canonical_sources.specification.specification import SPECIFICATION_PART as SPECIFICATION_SPEC
 
 
-@summary('`shikumi-devdoc` CLI の入出力規則。')
-@canonical_source("Command-line interface", filename="cli.md", order=80, merge_policy="local", heading="identity")
+@summary("`shikumi-devdoc` CLI の入出力規則。")
+@canonical_source(
+    "Command-line interface",
+    filename="cli.md",
+    order=80,
+    merge_policy="local",
+    heading="identity",
+)
 class SPECIFICATION_PART:
     """`shikumi-devdoc` CLI の入出力規則。"""
 
@@ -32,6 +40,7 @@ class SPECIFICATION_PART:
 
         title @= "Notice is explicit"
         level @= MUST
+
     class CLI_004:
         """`render index` は {{TERM_001}} package を入力として受け取り、その package に含まれる {{TERM_002}} の索引を `INDEX.md` として指定出力ディレクトリへ生成しなければならない。module 単体は `render index` の入力として受理してはならない。"""
 
@@ -41,4 +50,3 @@ class SPECIFICATION_PART:
         title @= "Explicit package index rendering"
         level @= MUST
         related @= (SPECIFICATION_SPEC.SPEC_009,)
-

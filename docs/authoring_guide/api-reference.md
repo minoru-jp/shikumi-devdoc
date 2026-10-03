@@ -17,6 +17,7 @@ Create a node for each API entry and put the visible API name in the `name` fiel
 ```python
 from shikumi_devdoc.fields.api_reference import OPERATION, input, kind, name, output
 
+
 class API_001:
     """Process one request and return its result."""
 

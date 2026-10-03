@@ -1,16 +1,21 @@
+from shikumi_devdoc.norms.common import canonical_source
 from tests.fixtures.document_field_vocabulary import (
     compatibility,
     example,
     level,
-    related,
     requirement_status,
     steps,
     tag,
 )
-from shikumi_devdoc.norms.common import canonical_source
 
 
-@canonical_source("Validation", filename="validation.md", order=10, merge_policy="all", heading="identity")
+@canonical_source(
+    "Validation",
+    filename="validation.md",
+    order=10,
+    merge_policy="all",
+    heading="identity",
+)
 class VALIDATION:
     """Validation rules for {{PROJECT.name}}."""
 
@@ -29,7 +34,13 @@ class VALIDATION:
             level @= "MUST"
 
 
-@canonical_source("Rendering", filename="rendering.md", order=20, merge_policy="local", heading="identity")
+@canonical_source(
+    "Rendering",
+    filename="rendering.md",
+    order=20,
+    merge_policy="local",
+    heading="identity",
+)
 class RENDERING:
     """Rendering rules."""
 

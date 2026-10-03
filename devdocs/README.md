@@ -129,16 +129,20 @@ shikumi-devdoc render index \
 
 `merge_policy` declares which explicit insertion channels a canonical document accepts through `merge @= ...` and external context: `"all"`, `"local"`, `"external"`, or `"forbidden"`. Direct field references on the same node are outside the policy. This repository uses `"all"` for README because it uses both channels, `"local"` for Specification because it uses local merge only, and `"forbidden"` for CHANGELOG because it uses neither. These settings describe the insertion channels used by each canonical source rather than defining a document type. The legacy `placeholders` boolean is deprecated as of 0.3.2 and scheduled for removal in 1.0.0. Class merge targets use the shortest unambiguous suffix of their Python identity, with longer qualification available when names collide; field bindings use their `@=` left-hand names and may be given explicit aliases when needed.
 
-## Tests
+## Tests and static analysis
 
-To reconstruct the test environment from an sdist:
+To reconstruct the test and static-analysis environment from an sdist:
 
 ```bash
-python -m pip install '.[test]'
+python -m pip install '.[test,lint,typecheck]'
+ruff format --check .
+ruff check .
+basedpyright
+basedpyright -p tests/typing
 pytest
 ```
 
-The `test` extra declares `pytest>=8.0`; pytest is not a runtime dependency.
+The `test` extra declares `pytest>=8.0`, the `lint` extra declares `ruff==0.16.10`, and the `typecheck` extra declares `basedpyright==1.40.1` and `mypy==2.4.0`. Ruff targets Python 3.11, uses the pinned version's stable default lint rule set as its baseline, and requires both format checking and linting. BasedPyright separates package-source and consumer-contract checks: plain `basedpyright` checks `src/shikumi_devdoc` against Python 3.11 under the same diagnostic policy used by Shikumi itself and requires 0 errors / 0 warnings, while `basedpyright -p tests/typing` uses standard mode to check a focused typing sample, `devdocs/canonical_sources`, and `tests/examples` as consumer usage and likewise requires 0 errors / 0 warnings. mypy is used only to verify that the documented canonical-source override recipe accepts the `@=` authoring style without hiding a separate non-`misc` diagnostic. None of these extras is a runtime dependency. GitHub Actions centralizes these static-analysis checks, canonical-document synchronization, the supported-Python test matrix, and the minimum-supported-Shikumi test in reusable `checks.yml`; both normal CI and the release workflow use the same gate, and release artifacts are built only after the checks succeed.
 
 Release distribution verification is performed locally rather than relying on hosted CI. With the `build` frontend available, run:
 

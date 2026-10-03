@@ -245,7 +245,9 @@ A minimal canonical source needs only a root class and a nested class.
 from shikumi_devdoc.norms.common import canonical_source
 
 
-@canonical_source("Example", filename="example.md", merge_policy="local", heading="identity")
+@canonical_source(
+    "Example", filename="example.md", merge_policy="local", heading="identity"
+)
 class EXAMPLE:
     class Introduction:
         """Hello from shikumi-devdoc."""
@@ -272,6 +274,12 @@ From there, structured information, insertion, cross-document references, and ot
 > [!IMPORTANT]
 > Canonical source is imported as a Python module. Do not execute an untrusted Python module as documentation input.
 
+### `@=` notation and mypy
+
+Shikumi itself does not require `@=`. `shikumi-devdoc` intentionally uses the `shikumi.standard`-style `name @= value` notation because it keeps canonical source readable as document source.
+
+Checking this style with mypy requires an additional canonical-source-package setting. See [`STATUS_008`](https://github.com/minoru-jp/shikumi-devdoc/blob/main/STATUS.md#status_008) for the rationale, the configuration recipe, and the scope of the suppression.
+
 ## Documentation
 
 This repository's documentation is itself a working example of `shikumi-devdoc`.
@@ -291,7 +299,7 @@ English documents at the repository root and under `docs/` are produced by a sep
 
 ## Version
 
-Current version: `0.3.4`
+Current version: `0.3.5`
 
 Supported Python: `>=3.11`
 

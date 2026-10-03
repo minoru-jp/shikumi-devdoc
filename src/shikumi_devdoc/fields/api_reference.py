@@ -4,7 +4,6 @@ from shikumi_devdoc.norms.document import field
 
 from .common import detail, kind, related
 
-
 name = field("name", str)
 input = field("input", str, many=True)
 output = field("output", str, many=True)

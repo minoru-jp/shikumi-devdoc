@@ -1,0 +1,8 @@
+{
+  "include": [".", "../../devdocs/canonical_sources", "../examples"],
+  "extraPaths": ["../..", "../../src"],
+  "pythonVersion": "3.11",
+  "typeCheckingMode": "standard",
+  "enableTypeIgnoreComments": false,
+  "reportUnnecessaryTypeIgnoreComment": "error"
+}

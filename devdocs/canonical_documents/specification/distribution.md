@@ -96,3 +96,11 @@ sdist は Git hosting や hosted CI などリポジトリ運用にだけ必要�
 title: Repository-operation files are outside sdist
 
 level: MUST NOT
+
+## DIST_011
+
+PEP 561 に従って型情報を利用できることを宣言するため、wheel と sdist は `src/shikumi_devdoc/py.typed` に由来する `py.typed` marker を package に含めなければならない。
+
+title: PEP 561 typed-package marker
+
+level: MUST

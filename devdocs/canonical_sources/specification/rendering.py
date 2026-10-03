@@ -1,15 +1,23 @@
 """Rendering specification part."""
 
-from shikumi_devdoc.fields.specification import MUST, SHOULD, condition, level, related
+from devdocs.canonical_sources.specification.core import SPECIFICATION_PART as CORE_SPEC
+from devdocs.canonical_sources.specification.specification import (
+    SPECIFICATION_PART as SPECIFICATION_SPEC,
+)
 from devdocs.canonical_sources.vocabulary.canonical import TERMS
+from shikumi_devdoc.fields.specification import MUST, SHOULD, condition, level, related
 from shikumi_devdoc.norms.common import canonical_source, merge, summary
 from shikumi_devdoc.norms.document import title
-from devdocs.canonical_sources.specification.specification import SPECIFICATION_PART as SPECIFICATION_SPEC
-from devdocs.canonical_sources.specification.core import SPECIFICATION_PART as CORE_SPEC
 
 
-@summary('Markdown 実現、realization context、canonical document 境界に関する規則。')
-@canonical_source("Rendering", filename="rendering.md", order=70, merge_policy="local", heading="identity")
+@summary("Markdown 実現、realization context、canonical document 境界に関する規則。")
+@canonical_source(
+    "Rendering",
+    filename="rendering.md",
+    order=70,
+    merge_policy="local",
+    heading="identity",
+)
 class SPECIFICATION_PART:
     """Markdown 実現、realization context、canonical document 境界に関する規則。"""
 
@@ -52,6 +60,7 @@ class SPECIFICATION_PART:
 
         title @= "Header comments are caller supplied"
         level @= MUST
+
     class RENDER_006:
         """標準 index realizer は document system で package を検証した SemanticView を入力とし、その package tree に含まれる `@canonical_source(...)` {{TERM_001}} root を収集して一つの Markdown index を生成しなければならない。module focus から collection index を生成してはならない。"""
 
@@ -60,6 +69,7 @@ class SPECIFICATION_PART:
         title @= "Package-level collection index"
         level @= MUST
         related @= (SPECIFICATION_SPEC.SPEC_009, SPECIFICATION_SPEC.SPEC_011)
+
     class RENDER_007:
         """標準 index realizer は索引対象となる各 {{TERM_002}} に `@summary(...)` metadata を要求し、索引には document title へのリンクと summary を提示しなければならない。{{TERM_001}} path のような作者側の実装詳細を索引本文へ露出してはならない。"""
 
@@ -68,6 +78,7 @@ class SPECIFICATION_PART:
 
         title @= "Index summary metadata"
         level @= MUST
+
     class RENDER_008:
         """標準 document Markdown realizer は nested document node を ATX heading として実現し、semantic reference に使う logical fragment を実際に出力する heading text から決定論的に導出しなければならない。`heading="title"` では解決済み `title @= ...` を見出しに使用し、title がない node は class identity へ fallback する。`heading="identity"` では title の有無にかかわらず class identity を見出しに使用し、title がある場合は human-readable metadata として本文側へ実現する。標準 fragment 変換は GitHub 互換の heading slug 規則を logical reference convention として採用し、heading text を strip・小文字化し、Unicode の英数字・`-`・`_`・空白だけを残した後、連続する空白を `-` へ置換する。これは Markdown 標準による fragment 保証ではなく、downstream renderer が異なる規則を使う場合の調整は publication 側の責務とする。明示 HTML anchor を追加してはならない。"""
 
@@ -86,9 +97,9 @@ class SPECIFICATION_PART:
 
         title @= "Publication layout owns link rewrites"
         level @= MUST
+
     class RENDER_011:
         """canonical document root 自体は filename によって semantic reference target にできる。nested canonical document node を `reference_field` の target にする場合、その target を含む root は `heading="identity"` を使用しなければならない。`heading="title"` の nested heading は title、Vocabulary term、context の変更によって fragment が変化し得るため、stable semantic reference target として扱ってはならない。"""
 
         title @= "Stable nested reference targets require identity headings"
         level @= MUST
-
